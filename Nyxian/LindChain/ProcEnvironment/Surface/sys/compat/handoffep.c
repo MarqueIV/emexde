@@ -3,6 +3,7 @@
 
  Copyright (C) 2025 - 2026 emexlab
  Copyright (C) 2026 zipgod24
+ Copyright (C) 2026 semvis123
 
  This file is part of Nyxian.
 
@@ -56,7 +57,7 @@ void *dothework(void *work)
     if(kr != KERN_SUCCESS ||
        pid != proc_getpid(hep->proc))
     {
-        goto release_task;
+        goto release_proc_plus_unlock_task;
     }
     
     hep->proc->task = task;
@@ -68,6 +69,9 @@ void *dothework(void *work)
     free(work);
     return NULL;
     
+release_proc_plus_unlock_task:
+    task_unlock();
+    kvo_release(hep->proc);
 release_task:
     mach_port_deallocate(mach_task_self(), task);
 release_work:
