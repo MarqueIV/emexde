@@ -83,13 +83,14 @@ int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char
 
 void LCOverwriteExecutablePath(NSString *executablePath)
 {
-    /* allocators shall match */
+    /* literally swapping CFBundle CFRuntime instances */
     CFBundleRef currentMainCFBundle = (__bridge CFBundleRef)NSBundle.mainBundle._cfBundle;
     if(currentMainCFBundle == NULL)
     {
         goto skip_cf_swap;
     }
     
+    /* allocators shall match */
     CFAllocatorRef allocator = CFGetAllocator(currentMainCFBundle); /* doesnt matter if zero */
     
     /* first overwriting bundle MARK: i think both can fail on runtime, so we need to use something else than asserts */
@@ -107,12 +108,12 @@ void LCOverwriteExecutablePath(NSString *executablePath)
     }
     
     /*
-     * overwrites CF object, means all our pointers become
-     * unsafe, it also takes a reference of passed Bundle
-     * so we can safely release our bundle... after that
-     * we shouldnt touch our bundle ever again, because
-     * remember its now owned by the main bundle's prior
-     * object.
+     * Swaps both bundles simply, not leaking any memory
+     * as both internal states are stable by CFRuntime it
+     * self we can safely exploit that angle to swap both
+     * and release the original bundle. To my knowledge
+     * CFBundle also doesn't cary any extra inline
+     * buffers but relies on other CF types.
      */
     CFSwap(currentMainCFBundle, guestMainCFBundle); /* doesnt matter if it succeeded or nah */
     CFRelease(guestMainCFBundle);                   /* destroys the real bundle, sounds like swizzling x3 */
