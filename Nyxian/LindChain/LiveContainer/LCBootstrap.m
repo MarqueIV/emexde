@@ -187,18 +187,6 @@ void LCInsertLibrariesIfNeeded(void)
     }
 }
 
-typedef enum: UInt8 {
-    __CFBundleUnknownBinary,
-    __CFBundleCFMBinary,
-    __CFBundleDYLDExecutableBinary,
-    __CFBundleDYLDBundleBinary,
-    __CFBundleDYLDFrameworkBinary,
-    __CFBundleDLLBinary,
-    __CFBundleUnreadableBinary,
-    __CFBundleNoBinary,
-    __CFBundleELFBinary
-} __CFPBinaryType;
-
 int LCBootstrapMain(NSString *executablePath,
                     int argc,
                     char *argv[])
@@ -241,7 +229,7 @@ int LCBootstrapMain(NSString *executablePath,
     CFBundleLoadExecutable(bundle);
     
     /* patching binaryType to be executable at CFBundle level */
-    ((UInt8*)bundle)[48] = __CFBundleDYLDExecutableBinary;
+    CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
     
     /* find main */
     int (*appMain)(int, char**) = LCGetAppEntryPoint(appHandle);

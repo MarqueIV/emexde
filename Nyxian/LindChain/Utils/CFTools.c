@@ -75,3 +75,54 @@ Boolean CFSwap(CFTypeRef ref1,
     memcpy((UInt8*)ref2 + cfheader_size(), buffer + cfheader_size(), len - cfheader_size());
     return true;
 }
+
+static inline CFIndex __CFBundleGetBinaryTypeOffset(CFBundleRef hostBundle)
+{
+    static CFIndex discoveredOffset = -1;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        uint32_t *ptr = (uint32_t *)hostBundle;
+        for(CFIndex i = 4; i < 30; i++)
+        {
+            if(ptr[i] == __CFBundleDYLDExecutableBinary || ptr[i] == __CFBundleDYLDFrameworkBinary)
+            {
+                discoveredOffset = i * sizeof(uint32_t);
+                return;
+            }
+        }
+    });
+    return discoveredOffset;
+}
+
+void CFBundleSetBinaryType(CFBundleRef bundle,
+                           __CFPBinaryType type)
+{
+    if(bundle == NULL)
+    {
+        return;
+    }
+    
+    CFIndex offset = __CFBundleGetBinaryTypeOffset(bundle);
+    if(offset < 0)
+    {
+        return;
+    }
+    
+    ((UInt8*)bundle)[offset] = (UInt8)type;
+}
+
+__CFPBinaryType CFBundleGetBinaryType(CFBundleRef bundle)
+{
+    if(bundle == NULL)
+    {
+        return __CFBundleUnknownBinary;
+    }
+    
+    CFIndex offset = __CFBundleGetBinaryTypeOffset(bundle);
+    if(offset < 0)
+    {
+        return __CFBundleUnknownBinary;
+    }
+    
+    return (__CFPBinaryType)((UInt8*)bundle)[offset];
+}
