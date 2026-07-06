@@ -29,7 +29,15 @@
 
 #define MDKOSNumericVersionConversionFailed 0xFFFFFFFF
 
+@class MDKOSVersion;
+
+typedef struct {
+    MDKOSVersion * _Nonnull minimumVersion;
+    MDKOSVersion * _Nonnull maximumVersion;
+} MDKOSVersionRange;
+
 uint32_t MDKVersionStringToNumeric(NSString * _Nonnull versionString);
+NSString * _Nullable MDKNumericVersionToVersionString(uint32_t numeric);
 
 @interface MDKOSVersion : NSObject
 
@@ -45,7 +53,9 @@ uint32_t MDKVersionStringToNumeric(NSString * _Nonnull versionString);
 - (instancetype _Nullable)initWithVersionString:(NSString * _Nullable)versionString;
 
 - (BOOL)isEqual:(MDKOSVersion * _Nonnull)version;
-- (NSString*)description;
+- (NSString * _Nonnull)description;
+
++ (instancetype _Nonnull)versionForVersion:(MDKOSVersion * _Nonnull)version inVersionRange:(MDKOSVersionRange)range;
 
 @end
 

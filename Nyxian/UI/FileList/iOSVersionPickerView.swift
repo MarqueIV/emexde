@@ -33,21 +33,35 @@ fileprivate var NXSDK: MDKSDK? {
 }
 
 fileprivate var _NXOSVersionSupportedBuildVersions: [String] = []
-var NXOSVersionSupportedBuildVersions: [String] {
-    get {
-        if !_NXOSVersionSupportedBuildVersions.isEmpty {
-            return _NXOSVersionSupportedBuildVersions
-        }
-        
-        if let sdk = NXSDK,
-           let supportedVersions = sdk.supportedVersions {
-            for version in supportedVersions {
-                _NXOSVersionSupportedBuildVersions.append(version.versionString)
+@objc class NXOSVersion: NSObject {
+    @objc static var NXOSVersionSupportedBuildVersionsRaw: [MDKOSVersion] {
+        get {
+            if let sdk = NXSDK,
+               let supportedVersion = sdk.supportedVersions {
+                return supportedVersion
             }
-            return _NXOSVersionSupportedBuildVersions
+            if let fallback = MDKOSVersion(versionString: "26.5") {
+                return [fallback]
+            }
+            return []
         }
-        
-        return ["26.5"]
+    }
+    @objc static var NXOSVersionSupportedBuildVersions: [String] {
+        get {
+            if !_NXOSVersionSupportedBuildVersions.isEmpty {
+                return _NXOSVersionSupportedBuildVersions
+            }
+            
+            if let sdk = NXSDK,
+               let supportedVersions = sdk.supportedVersions {
+                for version in supportedVersions {
+                    _NXOSVersionSupportedBuildVersions.append(version.versionString)
+                }
+                return _NXOSVersionSupportedBuildVersions
+            }
+            
+            return ["26.5"]
+        }
     }
 }
 
@@ -61,7 +75,7 @@ class IOSVersionPickerViewController: UIThemedViewController, UIPickerViewDelega
     private let pickerTitle: String
 
     init(title: String, selectedVersion: String) {
-        let osVersion: MDKOSVersion = MDKOSVersion(versionString: selectedVersion) ?? MDKOSVersion(versionString: NXOSVersionSupportedBuildVersions.last!)!
+        let osVersion: MDKOSVersion = MDKOSVersion(versionString: selectedVersion) ?? MDKOSVersion(versionString: NXOSVersion.NXOSVersionSupportedBuildVersions.last!)!
         self.pickerTitle = title
         self.selectedVersion = osVersion.versionString
         super.init(nibName: nil, bundle: nil)
@@ -79,7 +93,7 @@ class IOSVersionPickerViewController: UIThemedViewController, UIPickerViewDelega
         pickerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(pickerView)
         
-        let idx = NXOSVersionSupportedBuildVersions.firstIndex(of: selectedVersion) ?? NXOSVersionSupportedBuildVersions.count - 1
+        let idx = NXOSVersion.NXOSVersionSupportedBuildVersions.firstIndex(of: selectedVersion) ?? NXOSVersion.NXOSVersionSupportedBuildVersions.count - 1
         pickerView.selectRow(idx, inComponent: 0, animated: false)
         
         NSLayoutConstraint.activate([
@@ -92,15 +106,15 @@ class IOSVersionPickerViewController: UIThemedViewController, UIPickerViewDelega
     func numberOfComponents(in pickerView: UIPickerView) -> Int { 1 }
 
     func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
-        NXOSVersionSupportedBuildVersions.count
+        NXOSVersion.NXOSVersionSupportedBuildVersions.count
     }
 
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
-        "iOS \(NXOSVersionSupportedBuildVersions[row])"
+        "iOS \(NXOSVersion.NXOSVersionSupportedBuildVersions[row])"
     }
 
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        selectedVersion = NXOSVersionSupportedBuildVersions[row]
+        selectedVersion = NXOSVersion.NXOSVersionSupportedBuildVersions[row]
         onVersionSelected?(selectedVersion)
     }
 }

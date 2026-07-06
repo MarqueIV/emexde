@@ -231,8 +231,8 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         
         
         // Nyxian requirement check
-        let minimumOSVersion: MDKOSVersion = MDKOSVersion(versionString: NXOSVersionSupportedBuildVersions.first)!
-        let maximumOSVersion: MDKOSVersion = MDKOSVersion(versionString: NXOSVersionSupportedBuildVersions.last)!
+        let minimumOSVersion: MDKOSVersion = MDKOSVersion(versionString: NXOSVersion.NXOSVersionSupportedBuildVersions.first)!
+        let maximumOSVersion: MDKOSVersion = MDKOSVersion(versionString: NXOSVersion.NXOSVersionSupportedBuildVersions.last)!
         if osVersionNeeded < minimumOSVersion || osVersionNeeded > maximumOSVersion {
             throw NSError(domain: "com.cr4zy.nyxian.builder.headsup", code: 1, userInfo: [NSLocalizedDescriptionKey:"Target \"\(self.project.projectConfig.displayName ?? "Unknown") (\(self.project.projectConfig.bundleid ?? "Unknown"))\" declares deployment target \(osVersionNeeded) which is not supported by this version of emexDE. This version of emexDE supports \(minimumOSVersion) up to \(maximumOSVersion)."])
         }

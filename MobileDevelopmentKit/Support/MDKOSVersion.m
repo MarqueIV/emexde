@@ -60,6 +60,20 @@ uint32_t MDKVersionStringToNumeric(NSString *versionString)
     }
 }
 
+NSString *MDKNumericVersionToVersionString(uint32_t numeric)
+{
+    if(numeric == MDKOSNumericVersionConversionFailed)
+    {
+        return nil;
+    }
+
+    uint32_t major = numeric / 1000000;
+    uint32_t minor = (numeric / 1000) % 1000;
+    uint32_t patch = numeric % 1000;
+
+    return [NSString stringWithFormat:@"%u.%u.%u", major, minor, patch];
+}
+
 @implementation MDKOSVersion
 
 + (instancetype)hostVersion
@@ -139,6 +153,21 @@ uint32_t MDKVersionStringToNumeric(NSString *versionString)
             break;
     }
     return [system stringByAppendingFormat:@" %@", self.versionString];
+}
+
++ (instancetype _Nonnull)versionForVersion:(MDKOSVersion * _Nonnull)version
+                         inVersionRange:(MDKOSVersionRange)range
+{
+    if(version.versionNumeric >= range.maximumVersion.versionNumeric)
+    {
+        return range.maximumVersion;
+    }
+    if(version.versionNumeric <= range.minimumVersion.versionNumeric)
+    {
+        return range.minimumVersion;
+    }
+    
+    return version;
 }
 
 @end

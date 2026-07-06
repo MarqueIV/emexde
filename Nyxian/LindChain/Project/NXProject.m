@@ -261,6 +261,19 @@
         }];
     }
     
+    MDKOSVersion *version = MDKOSVersion.hostVersion;
+    MDKOSVersion *minVer = [NXOSVersion.NXOSVersionSupportedBuildVersionsRaw firstObject];
+    MDKOSVersion *maxVer = [NXOSVersion.NXOSVersionSupportedBuildVersionsRaw lastObject];
+    if(minVer != NULL && maxVer != NULL)
+    {
+        MDKOSVersionRange range = {
+            .minimumVersion = minVer,
+            .maximumVersion = maxVer,
+        };
+        
+        version = [MDKOSVersion versionForVersion:MDKOSVersion.hostVersion inVersionRange:range];
+    }
+    
     NSMutableDictionary *projConfigPlist = [NSMutableDictionary dictionaryWithDictionary:@{
         @"NXProjectFormat": NXProjectFormatAvisR2,
         @"NXProjectScheme": NXProjectSchemeFromSchemeKind(schemeKind),
@@ -268,7 +281,7 @@
         @"NXDisplayName": name,
         @"NXOrganizationPrefix": organizationIdentifierValue,
         @"NXBundleIdentifier": bundleIdentifierValue,
-        @"NXDeploymentTarget": MDKOSVersion.hostVersion.versionString ?: @"26.5",
+        @"NXDeploymentTarget": version.versionString ?: @"26.5",
         @"NXClangFlags": NXCompilerFlagsForCodeTemplateLanguage(schemeKind, languageKind),
         @"NXLinkerFlags": @[],
         @"NXSwiftFlags": NXSwiftFlagsForCodeTemplateLanguage(schemeKind, languageKind),
