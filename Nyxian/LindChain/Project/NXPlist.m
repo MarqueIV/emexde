@@ -363,7 +363,7 @@ withRemapHandler:(id (^)(id oldObj))handler
     BOOL needsReload = ![hash isEqualToString:_dataHash];
     if(needsReload)
     {
-        _originalDictionary = [NSDictionary dictionaryWithContentsOfFile:_plistPath];
+        _originalDictionary = [NSDictionary dictionaryWithContentsOfFile:_plistPath]?: @{};
         _dictionary = [_originalDictionary mutableCopy];
         _dataHash = hash;
         _dictionary.variables = self.variables;
