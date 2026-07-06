@@ -161,50 +161,109 @@ class SplitScreenDetailViewController: UIViewController {
                 var constraints: [NSLayoutConstraint] = []
                 
                 if #available(iOS 26.0, *) {
-                    vc.view.layer.cornerRadius = 20
-                    vc.view.layer.cornerCurve = .continuous
-                    vc.view.layer.borderWidth = 1.0
-                    vc.view.layer.borderColor = currentTheme?.backgroundColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
-                    vc.view.layer.masksToBounds = true
-                    
+                    if #unavailable(iOS 27.0) {
+                        vc.view.layer.cornerRadius = 20
+                        vc.view.layer.cornerCurve = .continuous
+                        vc.view.layer.borderWidth = 1.0
+                        vc.view.layer.borderColor = currentTheme?.backgroundColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
+                        vc.view.layer.masksToBounds = true
+                        
+                        constraints = [
+                            vc.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                            vc.view.bottomAnchor.constraint(equalTo: (self.project.projectConfig.schemeKind == .app) ? logView!.topAnchor : view.bottomAnchor, constant: -16),
+                            vc.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                            vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                        ]
+                        
+                        if self.project.projectConfig.schemeKind == .app {
+                            self.logViewTopConstraint?.isActive = false
+                            
+                            constraints.append(contentsOf: [
+                                {
+                                    let h = logView!.heightAnchor.constraint(equalToConstant: logViewHeight)
+                                    self.logViewHeightConstraint = h
+                                    return h
+                                }()
+                            ])
+                        }
+                        
+                        NSLayoutConstraint.activate(constraints)
+                        
+                        self.childVCMasterConstraints = constraints
+                        
+                        UIView.animate(withDuration: 0.3) {
+                            vc.view.alpha = 1
+                        }
+                        
+                        return
+                    }
+                }
+                
+                
+                /*
+                 * on iOS prior 26 we wont do anything
+                 * floating cuz its not designed for it
+                 */
+                if #available(iOS 27.0, *) {
                     constraints = [
-                        vc.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-                        vc.view.bottomAnchor.constraint(equalTo: (self.project.projectConfig.schemeKind == .app) ? logView!.topAnchor : view.bottomAnchor, constant: -16),
-                        vc.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-                        vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                        vc.view.topAnchor.constraint(equalTo: view.topAnchor),
+                        vc.view.bottomAnchor.constraint(equalTo: (self.project.projectConfig.schemeKind == .app) ? logView!.topAnchor : view.bottomAnchor),
+                        vc.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                        vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
                     ]
                     
-                    if self.project.projectConfig.schemeKind == .app {
-                        self.logViewTopConstraint?.isActive = false
-                        
-                        constraints.append(contentsOf: [
-                            {
-                                let h = logView!.heightAnchor.constraint(equalToConstant: logViewHeight)
-                                self.logViewHeightConstraint = h
-                                return h
-                            }()
-                        ])
-                    }
+                    //vc.view.layer.borderWidth = 0.5
+                    //vc.view.layer.borderColor = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
                     
-                    NSLayoutConstraint.activate(constraints)
-                    
-                    self.childVCMasterConstraints = constraints
-                } else {
-                    /*
-                     * on iOS prior 26 we wont do anything
-                     * floating cuz its not designed for it
-                     */
+                    let hairline = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
+
+                    let leftEdge = UIView()
+                    leftEdge.translatesAutoresizingMaskIntoConstraints = false
+                    leftEdge.backgroundColor = UIColor(cgColor: hairline)
+                    vc.view.addSubview(leftEdge)
+
+                    let bottomEdge = UIView()
+                    bottomEdge.translatesAutoresizingMaskIntoConstraints = false
+                    bottomEdge.backgroundColor = UIColor(cgColor: hairline)
+                    vc.view.addSubview(bottomEdge)
+
+                    NSLayoutConstraint.activate([
+                        leftEdge.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor),
+                        leftEdge.topAnchor.constraint(equalTo: vc.view.topAnchor),
+                        leftEdge.bottomAnchor.constraint(equalTo: vc.view.bottomAnchor),
+                        leftEdge.widthAnchor.constraint(equalToConstant: 0.5),
+
+                        bottomEdge.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor),
+                        bottomEdge.trailingAnchor.constraint(equalTo: vc.view.trailingAnchor),
+                        bottomEdge.bottomAnchor.constraint(equalTo: vc.view.bottomAnchor),
+                        bottomEdge.heightAnchor.constraint(equalToConstant: 0.5),
+                    ])
+                }
+                else
+                {
                     constraints = [
                         vc.view.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
                         vc.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
                         vc.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
                         vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
                     ]
-                    
-                    NSLayoutConstraint.activate(constraints)
-                    
-                    self.childVCMasterConstraints = constraints
                 }
+                
+                if self.project.projectConfig.schemeKind == .app {
+                    self.logViewTopConstraint?.isActive = false
+                    
+                    constraints.append(contentsOf: [
+                        {
+                            let h = logView!.heightAnchor.constraint(equalToConstant: logViewHeight)
+                            self.logViewHeightConstraint = h
+                            return h
+                        }()
+                    ])
+                }
+                
+                NSLayoutConstraint.activate(constraints)
+                
+                self.childVCMasterConstraints = constraints
                 
                 UIView.animate(withDuration: 0.3) {
                     vc.view.alpha = 1
@@ -352,11 +411,13 @@ class SplitScreenDetailViewController: UIViewController {
             logView = LogTextView()
             logView!.isEditable = true
             logView!.isSelectable = true
-            logView!.layer.cornerRadius = 20
-            logView!.layer.cornerCurve = .continuous
-            logView!.layer.borderWidth = 1.0
-            logView!.layer.borderColor = currentTheme?.backgroundColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
-            logView!.layer.masksToBounds = true
+            if #unavailable(iOS 27.0) {
+                logView!.layer.cornerRadius = 20
+                logView!.layer.cornerCurve = .continuous
+                logView!.layer.borderWidth = 1.0
+                logView!.layer.borderColor = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
+                logView!.layer.masksToBounds = true
+            }
             logView!.translatesAutoresizingMaskIntoConstraints = false
             logView!.backgroundColor = currentTheme?.backgroundColor
             logView!.textColor = currentTheme?.textColor
@@ -365,20 +426,49 @@ class SplitScreenDetailViewController: UIViewController {
             self.logViewTopConstraint = logView!.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor)
             self.logViewTopConstraint?.isActive = true
             
-            NSLayoutConstraint.activate([
-                logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-                logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
-            ])
-            
-            resizeHandle.translatesAutoresizingMaskIntoConstraints = false
-            self.view.addSubview(resizeHandle)
-            NSLayoutConstraint.activate([
-                resizeHandle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-                resizeHandle.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                resizeHandle.bottomAnchor.constraint(equalTo: logView!.topAnchor),
-                resizeHandle.heightAnchor.constraint(equalToConstant: 24)
-            ])
+            if #unavailable(iOS 27.0) {
+                NSLayoutConstraint.activate([
+                    logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                    logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                    logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
+                ])
+                
+                resizeHandle.translatesAutoresizingMaskIntoConstraints = false
+                self.view.addSubview(resizeHandle)
+                NSLayoutConstraint.activate([
+                    resizeHandle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                    resizeHandle.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                    resizeHandle.bottomAnchor.constraint(equalTo: logView!.topAnchor),
+                    resizeHandle.heightAnchor.constraint(equalToConstant: 24)
+                ])
+            } else {
+                NSLayoutConstraint.activate([
+                    logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                    logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+                    logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+                ])
+                
+                resizeHandle.translatesAutoresizingMaskIntoConstraints = false
+                self.view.addSubview(resizeHandle)
+                NSLayoutConstraint.activate([
+                    resizeHandle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                    resizeHandle.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+                    resizeHandle.bottomAnchor.constraint(equalTo: logView!.topAnchor),
+                    resizeHandle.heightAnchor.constraint(equalToConstant: 24)
+                ])
+                
+                let logLeftBorder = UIView()
+                logLeftBorder.translatesAutoresizingMaskIntoConstraints = false
+                logLeftBorder.backgroundColor = currentTheme?.gutterHairlineColor ?? UIColor.white.withAlphaComponent(0.2)
+                self.view.addSubview(logLeftBorder)
+
+                NSLayoutConstraint.activate([
+                    logLeftBorder.leadingAnchor.constraint(equalTo: logView!.leadingAnchor),
+                    logLeftBorder.topAnchor.constraint(equalTo: logView!.topAnchor),
+                    logLeftBorder.bottomAnchor.constraint(equalTo: logView!.bottomAnchor),
+                    logLeftBorder.widthAnchor.constraint(equalToConstant: 0.5)
+                ])
+            }
             
             let pan = UIPanGestureRecognizer(target: self, action: #selector(handleResizePan(_:)))
             resizeHandle.addGestureRecognizer(pan)

@@ -240,6 +240,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
         }
             
         self.textView.translatesAutoresizingMaskIntoConstraints = false
+        self.textView.contentInsetAdjustmentBehavior = .always
         self.view.addSubview(textView)
         
         NSLayoutConstraint.activate([

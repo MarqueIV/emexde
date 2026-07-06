@@ -1,13 +1,13 @@
 {
-  "originHash" : "f32f787b57875c631a1c9ebef4011b14c7eaa979c8bc9f92e9c0663e8e1d0208",
+  "originHash" : "afb2bc5fd5f3bfc1dcc041b53be801a347170ea440e74970b5b5999dc108ff16",
   "pins" : [
     {
       "identity" : "runestone",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/emexlab/Runestone",
       "state" : {
-        "revision" : "8b98d2559233279c404a48b544ab6c02f4ab0f5b",
-        "version" : "0.0.2"
+        "branch" : "main",
+        "revision" : "50adf2f233054a1776828be3b2b4851704f66cf4"
       }
     },
     {
