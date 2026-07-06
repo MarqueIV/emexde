@@ -83,11 +83,28 @@ int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char
 
 void LCOverwriteExecutablePath(NSString *executablePath)
 {
+    /* allocators shall match */
+    CFBundleRef currentMainCFBundle = (__bridge CFBundleRef)NSBundle.mainBundle._cfBundle;
+    if(currentMainCFBundle == NULL)
+    {
+        goto skip_cf_swap;
+    }
+    
+    CFAllocatorRef allocator = CFGetAllocator(currentMainCFBundle); /* doesnt matter if zero */
+    
     /* first overwriting bundle MARK: i think both can fail on runtime, so we need to use something else than asserts */
-    CFURLRef urlRef = CFURLCreateWithFileSystemPath(kCFAllocatorSystemDefault, (__bridge CFStringRef)[executablePath stringByDeletingLastPathComponent], kCFURLPOSIXPathStyle, true);
-    assert(urlRef != nil);
-    CFBundleRef guestMainCFBundle = CFBundleCreate(kCFAllocatorSystemDefault, urlRef);
-    assert(guestMainCFBundle != nil);
+    CFURLRef urlRef = CFURLCreateWithFileSystemPath(allocator, (__bridge CFStringRef)[executablePath stringByDeletingLastPathComponent], kCFURLPOSIXPathStyle, true);
+    if(urlRef == NULL)
+    {
+        goto skip_cf_swap;
+    }
+    
+    CFBundleRef guestMainCFBundle = CFBundleCreate(allocator, urlRef);
+    CFRelease(urlRef);  /* took a reference of it most probably */
+    if(guestMainCFBundle == NULL)
+    {
+        goto skip_cf_swap;
+    }
     
     /*
      * overwrites CF object, means all our pointers become
@@ -97,31 +114,33 @@ void LCOverwriteExecutablePath(NSString *executablePath)
      * remember its now owned by the main bundle's prior
      * object.
      */
-    CFOverwrite((__bridge CFBundleRef)NSBundle.mainBundle._cfBundle, guestMainCFBundle);
-    CFRelease(guestMainCFBundle);
-    CFRelease(urlRef);
+    CFSwap(currentMainCFBundle, guestMainCFBundle); /* doesnt matter if it succeeded or nah */
+    CFRelease(guestMainCFBundle);                   /* destroys the real bundle, sounds like swizzling x3 */
     
-    /*
-     * dyld4 stores executable path in a different place (iOS 15.0 +)
-     * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
-     */
-    int (*orig__NSGetExecutablePath)(void* dyldPtr, char* buf, uint32_t* bufsize);
-    performHookDyldApi("_NSGetExecutablePath", 2, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
-    _NSGetExecutablePath((char*)[executablePath UTF8String], NULL);
-    /* put the original function back */
-    performHookDyldApi("_NSGetExecutablePath", 2, nil, orig__NSGetExecutablePath);
-    
-    /* overwriting remaining upper systems */
-    NSString *procName = [executablePath lastPathComponent];
-    NSProcessInfo.processInfo.processName = procName;
-    *_CFGetProgname() = strdup(procName.UTF8String);
-    *_CFGetProcessPath() = strdup(executablePath.UTF8String);
-    Class swiftNSProcessInfo = NSClassFromString(@"_NSSwiftProcessInfo");
-    if(swiftNSProcessInfo)
+skip_cf_swap:
     {
-        /* swizzle the arguments method to return the ObjC arguments */
-        SEL selector = @selector(arguments);
-        method_setImplementation(class_getInstanceMethod(swiftNSProcessInfo, selector), class_getMethodImplementation(NSProcessInfo.class, selector));
+        /*
+         * dyld4 stores executable path in a different place (iOS 15.0 +)
+         * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
+         */
+        int (*orig__NSGetExecutablePath)(void* dyldPtr, char* buf, uint32_t* bufsize);
+        performHookDyldApi("_NSGetExecutablePath", 2, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
+        _NSGetExecutablePath((char*)[executablePath UTF8String], NULL);
+        /* put the original function back */
+        performHookDyldApi("_NSGetExecutablePath", 2, nil, orig__NSGetExecutablePath);
+        
+        /* overwriting remaining upper systems */
+        NSString *procName = [executablePath lastPathComponent];
+        NSProcessInfo.processInfo.processName = procName;
+        *_CFGetProgname() = strdup(procName.UTF8String);
+        *_CFGetProcessPath() = strdup(executablePath.UTF8String);
+        Class swiftNSProcessInfo = NSClassFromString(@"_NSSwiftProcessInfo");
+        if(swiftNSProcessInfo)
+        {
+            /* swizzle the arguments method to return the ObjC arguments */
+            SEL selector = @selector(arguments);
+            method_setImplementation(class_getInstanceMethod(swiftNSProcessInfo, selector), class_getMethodImplementation(NSProcessInfo.class, selector));
+        }
     }
 }
 

@@ -49,3 +49,29 @@ void CFOverwrite(CFTypeRef dst,
     
     memcpy((uint8_t *)dst + cfheader_size(), (uint8_t *)src + cfheader_size(), size - cfheader_size());
 }
+
+Boolean CFSwap(CFTypeRef ref1,
+               CFTypeRef ref2)
+{
+    if(ref1 == NULL || ref2 == NULL || CFGetTypeID(ref1) != CFGetTypeID(ref2))
+    {
+        return false;
+    }
+    
+    /*
+     * CFRuntimeBase = isa (8) + refcount/flags (8) = 16 bytes
+     * skip it... preserve identity (pointer) and retain count
+     */
+    size_t len = malloc_size(ref1);
+    if(len != malloc_size(ref2))
+    {
+        return false;
+    }
+    
+    /* lets do the magic */
+    UInt8 buffer[len];
+    memcpy(buffer + cfheader_size(), (UInt8*)ref1 + cfheader_size(), len - cfheader_size());
+    memcpy((UInt8*)ref1 + cfheader_size(), (UInt8*)ref2 + cfheader_size(), len - cfheader_size());
+    memcpy((UInt8*)ref2 + cfheader_size(), buffer + cfheader_size(), len - cfheader_size());
+    return true;
+}

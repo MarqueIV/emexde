@@ -29,5 +29,6 @@
 #define cfheader_size() sizeof(CFRuntimeBase)
 
 void CFOverwrite(CFTypeRef dst, CFTypeRef src);
+Boolean CFSwap(CFTypeRef ref1, CFTypeRef ref2);
 
 #endif /* CFTOOLS_H */
