@@ -209,11 +209,23 @@ int LCBootstrapMain(NSString *executablePath,
     void *appHandle = dlopenBypassingLock(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE);
     appExecutableHandle = appHandle;
     const char *dlerr = dlerror();
-    
     if(!appHandle || (uint64_t)appHandle > 0xf00000000000 || dlerr)
     {
         return 1;
     }
+    
+    /*
+     * now we load the executable of the bundle, as it doesn't
+     * matter anymore from now on what CF does we can safely
+     * load it and complete the safe initilization of the bundle
+     * swap LCOverwriteExecutablePath did. This is necessary
+     * cause of NSBundle's internal state, it can also fix
+     * known issues with the old implementation of Duy Tran.
+     * Not only the app cares about this bundle, the frameworks
+     * the app uses do aswell.
+     */
+    CFBundleRef bundle = CFBundleGetMainBundle();
+    CFBundleLoadExecutable(bundle);
     
     /* find main */
     int (*appMain)(int, char**) = LCGetAppEntryPoint(appHandle);
