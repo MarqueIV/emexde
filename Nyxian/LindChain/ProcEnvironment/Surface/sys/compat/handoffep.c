@@ -32,7 +32,7 @@ typedef struct {
     ksurface_proc_t *proc;  /* kernel surface process reference */
 } khandoffep_t;
 
-void *dothework(void *work)
+static void *dothework(void *work)
 {
     khandoffep_t *hep = (khandoffep_t*)work;
     
@@ -48,29 +48,26 @@ void *dothework(void *work)
         goto release_task;
     }
     
-    task_wrlock();
+    kvo_wrlock(hep->proc);
     
     /* checking if pid matches up */
     pid_t pid;
     kern_return_t kr = pid_for_task(task, &pid);
-    
-    if(kr != KERN_SUCCESS ||
-       pid != proc_getpid(hep->proc))
+    if(kr != KERN_SUCCESS || pid != proc_getpid(hep->proc))
     {
-        goto release_proc_plus_unlock_task;
+        goto release_unlock_proc;
     }
     
     hep->proc->task = task;
     
-    task_unlock();
-    
+    kvo_unlock(hep->proc);
     kvo_event_trigger(hep->proc, kvObjEventCustom1, 0);
     kvo_release(hep->proc);
     free(work);
     return NULL;
     
-release_proc_plus_unlock_task:
-    task_unlock();
+release_unlock_proc:
+    kvo_unlock(hep->proc);
     kvo_release(hep->proc);
 release_task:
     mach_port_deallocate(mach_task_self(), task);
@@ -82,17 +79,13 @@ release_work:
 DEFINE_SYSCALL_HANDLER(handoffep)
 {
     sys_need_in_ports(1, MACH_MSG_TYPE_MOVE_RECEIVE);
-    task_rdlock();
     
     /* sanity check */
     if(sys_proc_->task != MACH_PORT_NULL)
     {
         /* task port already set */
-        task_unlock();
         sys_return_failure(EPERM);
     }
-    
-    task_unlock();
     
     /* preparing ktfp */
     khandoffep_t *hep = malloc(sizeof(khandoffep_t));

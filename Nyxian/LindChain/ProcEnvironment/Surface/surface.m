@@ -91,8 +91,8 @@ static inline void ksurface_kinit_kinfo(void)
      * one at a time.
      */
     klog_log("ksurface:kinit:kinfo", "initilizing locks");
-    pthread_rwlock_t *wls[4] = { &(ksurface->proc_info.struct_lock), &(ksurface->proc_info.task_lock),  &(ksurface->host_info.struct_lock), &(ksurface->tty_info.struct_lock) };
-    for(unsigned char i = 0; i < 4; i++)
+    pthread_rwlock_t *wls[3] = { &(ksurface->proc_info.struct_lock),  &(ksurface->host_info.struct_lock), &(ksurface->tty_info.struct_lock) };
+    for(unsigned char i = 0; i < 3; i++)
     {
         klog_log("ksurface:kinit:kinfo", "initilizing lock @ %p", wls[i]);
         if(pthread_rwlock_init(wls[i], NULL) != 0)

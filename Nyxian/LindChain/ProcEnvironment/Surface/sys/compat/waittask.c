@@ -90,14 +90,11 @@ DEFINE_SYSCALL_HANDLER(waittask)
     kvo_unlock(target);
     
     /* looking if state is already set */
-    task_rdlock();
     if(target->task != MACH_PORT_NULL)
     {
-        task_unlock();
         kvo_release(target);
         sys_return;
     }
-    task_unlock();
     
     /* creating payload */
     waittask_payload_t *payload = malloc(sizeof(waittask_payload_t));

@@ -79,17 +79,6 @@ kern_return_t proc_task_for_proc(ksurface_proc_t *proc,
             return KERN_INVALID_ARGUMENT;
     }
     
-    /*
-     * this is to protect against a task port
-     * confusion race window where a task may
-     * be received while a task port is being
-     * destroyed in deinitilization of a process
-     * which would lead to a privelege escalation
-     * if the task port added is the task port
-     * of a ksurface root process.
-     */
-    task_rdlock();
-    
     /* temporary task port to not leak port value on failure */
     task_t tmp_task = proc->task;
     
@@ -106,7 +95,6 @@ kern_return_t proc_task_for_proc(ksurface_proc_t *proc,
          * failed to lookup mach ipc port type
          * cannot validate type.
          */
-        task_unlock();
         return KERN_INVALID_NAME;
     }
     
@@ -156,8 +144,6 @@ kern_return_t proc_task_for_proc(ksurface_proc_t *proc,
             kr = KERN_INVALID_RIGHT;
             break;
     }
-    
-    task_unlock();
     
     /* what happened ?? :3 */
     if(kr != KERN_SUCCESS)

@@ -81,9 +81,6 @@ typedef struct {
         /* rwlock securing structures */
         pthread_rwlock_t struct_lock;
         
-        /* rwlock securing structures */
-        pthread_rwlock_t task_lock;
-        
         /*
          * count of processes currently running
          * inside of nyxian.

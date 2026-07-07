@@ -70,8 +70,4 @@
 #define host_wrlock() PTHREAD_RWLOCK_DEBUG_IMP_WRLOCK(&(ksurface->host_info.struct_lock))
 #define host_unlock() PTHREAD_RWLOCK_DEBUG_IMP_UNLOCK(&(ksurface->host_info.struct_lock))
 
-#define task_rdlock() PTHREAD_RWLOCK_DEBUG_IMP_RDLOCK(&(ksurface->proc_info.task_lock))
-#define task_wrlock() PTHREAD_RWLOCK_DEBUG_IMP_WRLOCK(&(ksurface->proc_info.task_lock))
-#define task_unlock() PTHREAD_RWLOCK_DEBUG_IMP_UNLOCK(&(ksurface->proc_info.task_lock))
-
 #endif /* PROCENVIRONMENT_LOCK_H */
