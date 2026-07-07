@@ -57,28 +57,14 @@
 
 - (BOOL)connect
 {
-    if(self.connection)
+    if(_connection != NULL && _connection.processIdentifier != 0)
     {
         return YES;
     }
     
-    __weak typeof(self) weakSelf = self;
-    _connection = nil;
     PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
-    
-    if(serviceRegistry != nil)
-    {
-        _connection = [serviceRegistry connectToService:@"com.cr4zy.installd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
-        _connection.invalidationHandler = ^{
-            __strong typeof(self) strongSelf = weakSelf;
-            if(!strongSelf) return;
-            strongSelf.connection = nil;
-        };
-        
-        return _connection != nil;
-    }
-    
-    return NO;
+    _connection = [serviceRegistry connectToService:@"com.cr4zy.installd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
+    return _connection != nil;
 }
 
 - (void)ping
