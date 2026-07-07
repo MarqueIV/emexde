@@ -96,9 +96,6 @@
     return applicationWorkspaceSingleton;
 }
 
-/*
- Action
- */
 - (BOOL)doWeTrustThatBundle:(NSBundle*)bundle
 {
     /*
@@ -142,6 +139,11 @@
     
     /* code signature check */
     LCMachO *machO = LCMapMachO([bundle.executablePath UTF8String], true);
+    if(machO == nil)
+    {
+        return NO;
+    }
+    
     bool cs_valid = LCCheckCodeSignature(machO);
     LCUnmapMachO(machO);
     if(!cs_valid)
@@ -513,7 +515,6 @@ create_home:
                withName:(NSString*)name
               withReply:(void (^)(NSString*,BOOL))reply;
 {
-    // Write out
     NSString *fastPath = [[[[LDEApplicationWorkspaceInternal shared] binaryURL] path] stringByAppendingPathComponent:name];
     [object writeOut:[[[[LDEApplicationWorkspaceInternal shared] binaryURL] path] stringByAppendingPathComponent:name]];
     void refreshFile(const char* path);
