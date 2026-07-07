@@ -43,6 +43,11 @@
      withKernelSurfaceProcess:(ksurface_proc_t*)proc
                   withSession:(NXWindowSessionApplication*)session
 {
+    if(proc == NULL)
+    {
+        proc = kernel_proc_;
+    }
+    
     if(!proc_count())
     {
         return nil;

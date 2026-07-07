@@ -237,9 +237,6 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         }
     }
     
-    ///
-    /// Function to cleanup the project from old build files
-    ///
     func clean() throws {
         // now remove what was find
         for file in LDEFilesFinder(
@@ -279,7 +276,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         }
     }
     
-    func install(buildType: Builder.BuildType, outPipe: Pipe?, inPipe: Pipe?) throws {
+    func install(buildType: Builder.BuildType, executablePathCallback: @escaping (String?) -> Void) throws {
         let spinnerStart = DispatchWorkItem { XCButton.startSpinning() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: spinnerStart)
         defer {
@@ -316,36 +313,6 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
                         return
                     }
                     
-                    DispatchQueue.main.async {
-                        var mapObject: FDMapObject? = nil
-                        
-                        if let inPipe = inPipe,
-                           let outPipe = outPipe {
-                            
-                            /*
-                             * creating empty mapobject and adding new pipes
-                             * to it we will need so we can receive prints
-                             * to for example the console of the IDE
-                             * workspace.
-                             */
-                            mapObject = FDMapObject.emptyMap()
-                            mapObject?.appendFileDescriptor(inPipe.fileHandleForReading.fileDescriptor, withMappingToLoc: STDIN_FILENO)
-                            mapObject?.appendFileDescriptor(outPipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDOUT_FILENO)
-                            mapObject?.appendFileDescriptor(outPipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDERR_FILENO)
-                            
-                            /*
-                             * shitty solution for now, but fixes the issue
-                             * where a process that prints debug text
-                             * gets terminated because someone has to hold
-                             * the receive pipes even if we close them.
-                             */
-                            mapObject?.appendFileDescriptor(inPipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: 100)
-                            mapObject?.appendFileDescriptor(outPipe.fileHandleForReading.fileDescriptor, withMappingToLoc: 101)
-                        }
-                        
-                        PEProcessManager.shared().spawnProcess(withBundleIdentifier: self.project.projectConfig.bundleid, withItems: (mapObject != nil) ? ["PEMapObject":mapObject!] : [:], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
-                    }
-                    
                     semaphore.signal()
                 }
                 semaphore.wait()
@@ -361,14 +328,11 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
                 MachOObject.signBinary(atPath: self.project.machoURL.path)
                 macho_after_sign(self.project.machoURL.path, self.project.entitlementsConfig.entitlement)
                 
-                if let path: String = LDEApplicationWorkspace.shared().fastpathUtility(self.project.machoURL.path) {
-                    DispatchQueue.main.sync {
-                        let TerminalSession: NXWindowSessionTerminal = NXWindowSessionTerminal(utilityPath: path)
-                        NXWindowServer.shared().openWindow(with: TerminalSession, withCompletion: nil)
-                    }
-                } else {
+                let path: String? = LDEApplicationWorkspace.shared().fastpathUtility(self.project.machoURL.path)
+                if path == nil {
                     throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to fastpath install utility"])
                 }
+                executablePathCallback(path)
             }
         } else {
             macho_after_sign(self.project.machoURL.path, self.project.entitlementsConfig.entitlement)
@@ -390,12 +354,12 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
     
     static func buildProject(withProject project: NXProject,
                              buildType: Builder.BuildType,
-                             outPipe: Pipe?,
-                             inPipe: Pipe?,
-                             completion: @escaping (Bool) -> Void) {
+                             completion: @escaping (Bool,String?) -> Void) {
         project.projectConfig.reloadData()
         
         XCButton.resetProgress()
+        
+        var execPath: String?
         
         MDKPthreadDispatch {
             NXBootstrap.shared().waitTillDone()
@@ -404,7 +368,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
             guard let builder: Builder = Builder(
                 project: project
             ) else {
-                completion(false)
+                completion(false,nil)
                 return
             }
             
@@ -429,12 +393,15 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
             
             do {
                 // prepare
+                
                 let flow: [(String?,Double?,() throws -> Void)] = [
                     (nil,nil,{ try builder.headsup(buildType: buildType) }),
                     (nil,nil,{ try builder.clean() }),
                     (nil,nil,{ try builder.prepare() }),
                     (nil,nil,{ try builder.executeRunner() }),
-                    ("arrow.down.app.fill",nil,{try builder.install(buildType: buildType, outPipe: outPipe, inPipe: inPipe) })
+                    ("arrow.down.app.fill",nil,{try builder.install(buildType: buildType, executablePathCallback: { path in
+                        execPath = path
+                    }) })
                 ];
                 
                 // doit
@@ -447,7 +414,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
             
             builder.database.saveDatabase(toPath: project.cacheURL.appendingPathComponent("debug.json").path)
             
-            completion(result)
+            completion(result, execPath)
         }
     }
 }
@@ -455,9 +422,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
 func buildProjectWithArgumentUI(targetViewController: UIViewController,
                                 project: NXProject,
                                 buildType: Builder.BuildType,
-                                outPipe: Pipe? = nil,
-                                inPipe: Pipe? = nil,
-                                completion: @escaping () -> Void = {}) {
+                                completion: @escaping (Bool,String?) -> Void = { _,_ in }) {
     autoreleasepool {
         targetViewController.navigationItem.titleView?.isUserInteractionEnabled = false
         XCButton.switchImageSync(withSystemName: "hammer.fill", animated: false)
@@ -471,7 +436,7 @@ func buildProjectWithArgumentUI(targetViewController: UIViewController,
         
         NXDocumentManager.shared().saveAll {
             NXDocumentManager.shared().changeAllLockState(toBoolean: true)
-            Builder.buildProject(withProject: project, buildType: buildType, outPipe: outPipe, inPipe: inPipe) { result in
+            Builder.buildProject(withProject: project, buildType: buildType) { result, fastPath in
                 NXDocumentManager.shared().changeAllLockState(toBoolean: false)
                 DispatchQueue.main.async {
                     targetViewController.navigationItem.setRightBarButtonItems(oldBarButtons, animated: true)
@@ -489,7 +454,7 @@ func buildProjectWithArgumentUI(targetViewController: UIViewController,
                         share(url: project.packageURL, remove: true)
                     }
                     
-                    completion()
+                    completion(result, fastPath)
                 }
             }
         }
