@@ -220,19 +220,14 @@ class SplitScreenDetailViewController: UIViewController {
                     vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
                 ]
                 
-                //vc.view.layer.borderWidth = 0.5
-                //vc.view.layer.borderColor = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
-                
-                let hairline = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
-                
                 let leftEdge = UIView()
                 leftEdge.translatesAutoresizingMaskIntoConstraints = false
-                leftEdge.backgroundColor = UIColor(cgColor: hairline)
+                leftEdge.backgroundColor = currentTheme?.gutterHairlineColor ?? UIColor.white.withAlphaComponent(0.2)
                 vc.view.addSubview(leftEdge)
                 
                 let bottomEdge = UIView()
                 bottomEdge.translatesAutoresizingMaskIntoConstraints = false
-                bottomEdge.backgroundColor = UIColor(cgColor: hairline)
+                bottomEdge.backgroundColor = currentTheme?.gutterHairlineColor ?? UIColor.white.withAlphaComponent(0.2)
                 vc.view.addSubview(bottomEdge)
                 
                 NSLayoutConstraint.activate([
