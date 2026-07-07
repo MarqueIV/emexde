@@ -189,3 +189,11 @@ kern_return_t proc_parent_for_proc(ksurface_proc_t *child,
     
     return KERN_NO_ACCESS;
 }
+
+kern_return_t proc_exists_for_pid(pid_t pid)
+{
+    proc_table_rdlock();
+    ksurface_proc_t *proc_entry = radix_lookup(&(ksurface->proc_info.tree), pid);
+    proc_table_unlock();
+    return proc_entry == NULL ? KERN_NOT_FOUND : KERN_SUCCESS;
+}
