@@ -37,7 +37,7 @@ kern_return_t proc_for_pid(pid_t pid,
     if(found == NULL)
     {
         proc_table_unlock();
-        return KERN_NO_ACCESS;
+        return KERN_NOT_FOUND;
     }
     
     /*
