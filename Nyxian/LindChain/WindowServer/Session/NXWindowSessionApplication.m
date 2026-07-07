@@ -48,6 +48,7 @@ void UIKitFixesInit(void)
 {
     /* FIXME: iOS 27.x keyboard is entirely broken on guest apps */
     /* fix physical keyboard focus on iOS 17+ */
+    /* will be replaced with Duy Tran's new knowledge soon anyways, thanks to Duy Tran for his Frontboard knowledge */
     if(@available(iOS 17.0, *))
     {
         method_exchangeImplementations(class_getClassMethod(RBSTarget.class, @selector(targetWithPid:environmentIdentifier:)), class_getClassMethod(RBSTarget.class, @selector(hook_targetWithPid:environmentIdentifier:)));
