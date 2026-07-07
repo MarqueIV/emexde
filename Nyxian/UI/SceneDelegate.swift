@@ -50,7 +50,7 @@ struct UIOnboardingHelper {
                       : UIColor(red: 0.30, green: 0.58, blue: 0.88, alpha: 1.0)
                   },
                   title: "Development",
-                  description: "A full fledged Xcode alternative supporting Swift, C, C++, Objective-C and Objective-C++ that runs on any iOS 16.0+ iPhone or iPad."),
+                  description: "A full fledged Xcode alternative supporting Swift, C, C++, Objective-C and Objective-C++ that runs on any iOS 18.0+ iPhone or iPad."),
             
                 .init(icon: UIImage(systemName: "swift")!,
                       iconTint: UIColor { trait in
