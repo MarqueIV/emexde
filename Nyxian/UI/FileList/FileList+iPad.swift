@@ -21,6 +21,16 @@
 
 import UIKit
 
+class UIHitTestExtendedView: UIView {
+    var hitTestInsets = UIEdgeInsets(top: -15, left: 0, bottom: -15, right: 0)
+
+    override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
+        // Too big fingers!!!
+        let largerArea = bounds.inset(by: hitTestInsets)
+        return largerArea.contains(point)
+    }
+}
+
 class MainSplitViewController: UISplitViewController, UISplitViewControllerDelegate {
     let project: NXProject
     var masterVC: FileListViewController?
@@ -107,7 +117,12 @@ class SplitScreenDetailViewController: UIViewController {
     var logView: LogTextView?
     var logViewHeightConstraint: NSLayoutConstraint?
     var logViewHeight: CGFloat = 300
-    let resizeHandle = UIView()
+    let resizeHandle = {
+        let logTopBorder = UIHitTestExtendedView()
+        logTopBorder.translatesAutoresizingMaskIntoConstraints = false
+        logTopBorder.backgroundColor = currentTheme?.gutterHairlineColor ?? UIColor.white.withAlphaComponent(0.2)
+        return logTopBorder
+    }()
     
     let emptyEditorVC: UIViewController = {
         let emptyEditorVC: UIViewController = UIViewController()
@@ -225,21 +240,11 @@ class SplitScreenDetailViewController: UIViewController {
                 leftEdge.backgroundColor = currentTheme?.gutterHairlineColor ?? UIColor.white.withAlphaComponent(0.2)
                 vc.view.addSubview(leftEdge)
                 
-                let bottomEdge = UIView()
-                bottomEdge.translatesAutoresizingMaskIntoConstraints = false
-                bottomEdge.backgroundColor = currentTheme?.gutterHairlineColor ?? UIColor.white.withAlphaComponent(0.2)
-                vc.view.addSubview(bottomEdge)
-                
                 NSLayoutConstraint.activate([
                     leftEdge.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor),
                     leftEdge.topAnchor.constraint(equalTo: vc.view.topAnchor),
                     leftEdge.bottomAnchor.constraint(equalTo: vc.view.bottomAnchor),
                     leftEdge.widthAnchor.constraint(equalToConstant: 0.5),
-                    
-                    bottomEdge.leadingAnchor.constraint(equalTo: vc.view.leadingAnchor),
-                    bottomEdge.trailingAnchor.constraint(equalTo: vc.view.trailingAnchor),
-                    bottomEdge.bottomAnchor.constraint(equalTo: vc.view.bottomAnchor),
-                    bottomEdge.heightAnchor.constraint(equalToConstant: 0.5),
                 ])
             }
             else
@@ -271,6 +276,8 @@ class SplitScreenDetailViewController: UIViewController {
             UIView.animate(withDuration: 0.3) {
                 vc.view.alpha = 1
             }
+            
+            self.view.bringSubviewToFront(self.resizeHandle)
         }
     }
     var childButton: UIButtonTab?
@@ -432,28 +439,12 @@ class SplitScreenDetailViewController: UIViewController {
                     logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
                 ])
                 
-                resizeHandle.translatesAutoresizingMaskIntoConstraints = false
-                self.view.addSubview(resizeHandle)
-                NSLayoutConstraint.activate([
-                    resizeHandle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-                    resizeHandle.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                    resizeHandle.bottomAnchor.constraint(equalTo: logView!.topAnchor),
-                    resizeHandle.heightAnchor.constraint(equalToConstant: 24)
-                ])
+                self.resizeHandle.backgroundColor = .clear
             } else {
                 NSLayoutConstraint.activate([
                     logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
                     logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
                     logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-                ])
-                
-                resizeHandle.translatesAutoresizingMaskIntoConstraints = false
-                self.view.addSubview(resizeHandle)
-                NSLayoutConstraint.activate([
-                    resizeHandle.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-                    resizeHandle.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-                    resizeHandle.bottomAnchor.constraint(equalTo: logView!.topAnchor),
-                    resizeHandle.heightAnchor.constraint(equalToConstant: 24)
                 ])
                 
                 let logLeftBorder = UIView()
@@ -468,6 +459,15 @@ class SplitScreenDetailViewController: UIViewController {
                     logLeftBorder.widthAnchor.constraint(equalToConstant: 0.5)
                 ])
             }
+            
+            self.view.addSubview(self.resizeHandle)
+            
+            NSLayoutConstraint.activate([
+                self.resizeHandle.topAnchor.constraint(equalTo: logView!.topAnchor),
+                self.resizeHandle.leadingAnchor.constraint(equalTo: logView!.leadingAnchor),
+                self.resizeHandle.trailingAnchor.constraint(equalTo: logView!.trailingAnchor),
+                self.resizeHandle.heightAnchor.constraint(equalToConstant: 0.5)
+            ])
             
             let pan = UIPanGestureRecognizer(target: self, action: #selector(handleResizePan(_:)))
             resizeHandle.addGestureRecognizer(pan)
