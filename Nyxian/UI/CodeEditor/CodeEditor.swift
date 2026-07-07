@@ -183,12 +183,16 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
         self.textView.autocorrectionType = .no
         self.textView.autocapitalizationType = .none
         
-        if #available(iOS 26.0, *),
-           UIDevice.current.userInterfaceIdiom == .pad {
-            self.textView.textContainerInset = UIEdgeInsets(top: 20, left: 2, bottom: 20, right: 0)
-            self.textView.gutterLeadingPadding = 10
-        } else {
+        if #available(iOS 27.0, *) {
             self.textView.textContainerInset = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 0)
+        } else {
+            if #available(iOS 26.0, *),
+               UIDevice.current.userInterfaceIdiom == .pad {
+                self.textView.textContainerInset = UIEdgeInsets(top: 20, left: 2, bottom: 20, right: 0)
+                self.textView.gutterLeadingPadding = 10
+            } else {
+                self.textView.textContainerInset = UIEdgeInsets(top: 2, left: 2, bottom: 2, right: 0)
+            }
         }
         self.textView.isEditable = !self.isReadOnly
         
