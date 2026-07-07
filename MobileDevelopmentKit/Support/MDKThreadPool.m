@@ -164,7 +164,7 @@ static void *MDKWorkerThreadMain(void *arg)
     MDKWorkerThread *worker = &_workers[workerIndex];
     dispatch_semaphore_t sem = self.semaphore;
     pthread_mutex_lock(&worker->mutex);
-    worker->currentBlock = code;
+    worker->currentBlock = [code copy];
     worker->completionBlock = ^{
         if (completion) completion();
         pthread_mutex_lock(&self->_freeStackMutex);
