@@ -59,17 +59,15 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
         self.tableView.rowHeight = UITableView.automaticDimension
         
         if UIDevice.current.userInterfaceIdiom == .phone {
-            if #available(iOS 16.0, *) {
-                if let sheet = self.navigationController?.sheetPresentationController {
-                    DispatchQueue.main.async {
-                        sheet.animateChanges {
-                            sheet.detents = [
-                                .custom { context in
-                                    let contentHeight = self.tableView.contentSize.height + 50
-                                    return contentHeight
-                                }
-                            ]
-                        }
+            if let sheet = self.navigationController?.sheetPresentationController {
+                DispatchQueue.main.async {
+                    sheet.animateChanges {
+                        sheet.detents = [
+                            .custom { context in
+                                let contentHeight = self.tableView.contentSize.height + 50
+                                return contentHeight
+                            }
+                        ]
                     }
                 }
             }

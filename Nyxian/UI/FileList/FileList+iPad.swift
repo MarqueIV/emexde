@@ -52,13 +52,9 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
             self.viewControllers = [masterNav,detailNav]
         }
 
-        if #available(iOS 14.5, *) {
-            self.displayModeButtonVisibility = .never
-        }
+        self.displayModeButtonVisibility = .never
         
-        if #available(iOS 16.0, *),
-           self.project.projectConfig.schemeKind == .app
-        {
+        if self.project.projectConfig.schemeKind == .app {
             NXWindowSessionApplication.bringSessionToFront(withBundleIdentifier: self.project.projectConfig.bundleid)
         }
     }
@@ -77,9 +73,7 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
         let closeCommand = UIKeyCommand(title: "Close", action: #selector(self.detailVC?.closeCurrentTab), input: "W", modifierFlags: [.command])
         let runCommand = UIKeyCommand(title: "Run", action: #selector(self.invokeBuild), input: "R", modifierFlags: [.command])
         
-        if #available(iOS 15.0, *) {
-            closeCommand.wantsPriorityOverSystemBehavior = true
-        }
+        closeCommand.wantsPriorityOverSystemBehavior = true
         
         return [closeCommand, runCommand]
     }

@@ -91,11 +91,7 @@ class FileIcon: UIView {
             case "dylib":
                 configureImageIcon(name: "building.columns.fill")
             default:
-                if #unavailable(iOS 18.0) {
-                    configureImageIcon(name: "text.alignleft")
-                } else {
-                    configureImageIcon(name: "text.page.fill")
-                }
+                configureImageIcon(name: "text.alignleft")
             }
         } else {
             configureImageIcon(name: "folder.fill")

@@ -49,13 +49,7 @@ class SettingsViewController: UIThemedTableViewController {
 
         switch indexPath.row {
         case 0:
-            cell.imageView?.image = UIImage(systemName: {
-                if #available(iOS 16.0, *) {
-                    return "wrench.adjustable.fill"
-                } else {
-                    return "gearshape.2.fill"
-                }
-            }())
+            cell.imageView?.image = UIImage(systemName: "wrench.adjustable.fill")
             cell.textLabel?.text = "Toolchain"
             break
         case 1:
@@ -67,13 +61,7 @@ class SettingsViewController: UIThemedTableViewController {
             cell.textLabel?.text = "Customization"
             break
         case 3:
-            cell.imageView?.image = UIImage(systemName: {
-                if #available(iOS 18.0, *) {
-                    return "checkmark.seal.text.page.fill"
-                } else {
-                    return "checkmark.seal.fill"
-                }
-            }())
+            cell.imageView?.image = UIImage(systemName: "checkmark.seal.text.page.fill")
             cell.textLabel?.text = "Certificate"
             break
 #if DEBUG

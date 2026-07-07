@@ -87,9 +87,7 @@ import UIKit
             }
         )
         
-        if #available(iOS 16.4, *) {
-            _ = view.presentationBackground(Color(uiColor: currentTheme!.backgroundColor))
-        }
+        _ = view.presentationBackground(Color(uiColor: currentTheme!.backgroundColor))
 
         let hostingController = UIHostingController(rootView: view)
         hostingController.modalPresentationStyle = .pageSheet

@@ -171,9 +171,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
         self.textView.lineSelectionDisplayType = .line
         
         self.textView.showsHorizontalScrollIndicator = false;
-        if #available(iOS 17.4, *) {
-            self.textView.bouncesHorizontally = false
-        }
+        self.textView.bouncesHorizontally = false
         
         self.textView.lineHeightMultiplier = 1.3
         self.textView.keyboardType = .asciiCapable
@@ -515,17 +513,11 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
             let toolbar = UIToolbar()
             toolbar.sizeToFit()
             
-            if #available(iOS 15.0, *) {
-                let appearance = UIToolbarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = theme.gutterBackgroundColor
-                toolbar.standardAppearance = appearance
-                toolbar.scrollEdgeAppearance = appearance
-            } else {
-                toolbar.barTintColor = theme.gutterBackgroundColor
-                toolbar.backgroundColor = theme.gutterBackgroundColor
-                toolbar.isTranslucent = false
-            }
+            let appearance = UIToolbarAppearance()
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = theme.gutterBackgroundColor
+            toolbar.standardAppearance = appearance
+            toolbar.scrollEdgeAppearance = appearance
             
             toolbar.items = items
             textView.inputAccessoryView = toolbar

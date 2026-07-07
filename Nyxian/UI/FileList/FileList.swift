@@ -313,11 +313,7 @@ import UniformTypeIdentifiers
             }
             
             rootMenuChildren.append({
-                if #available(iOS 17.0, *) {
-                    return UIMenu(title: "Project", options: [.displayAsPalette, .displayInline], children: projectMenuElements.reversed())
-                } else {
-                    return UIMenu(title: "Project", options: [.displayInline], children: projectMenuElements)
-                }
+                return UIMenu(title: "Project", options: [.displayAsPalette, .displayInline], children: projectMenuElements.reversed())
             }())
         }
         
@@ -377,13 +373,7 @@ import UniformTypeIdentifiers
                 self.createEntry(mode: .dir)
             }))
             fileMenuElements.append(UIMenu(title: "New", image: UIImage(systemName: "plus.circle.fill"), children: createMenuElements))
-            fileMenuElements.append(UIAction(title: "Paste", image: UIImage(systemName: {
-                if #available(iOS 16.0, *) {
-                    return "list.bullet.clipboard.fill"
-                } else {
-                    return "doc.on.doc.fill"
-                }
-            }()), handler: { [weak self] _ in
+            fileMenuElements.append(UIAction(title: "Paste", image: UIImage(systemName: "list.bullet.clipboard.fill"), handler: { [weak self] _ in
                 guard let self = self else { return }
                 PasteBoardServices.paste(path: self.path) { file in
                     self.addFile(destination: file)
@@ -429,13 +419,7 @@ import UniformTypeIdentifiers
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] suggestedActions in
             guard let self = self else { return UIMenu() }
             
-            let copyAction = UIAction(title: "Copy", image: UIImage(systemName: {
-                if #available(iOS 18.0, *) {
-                    return "document.on.clipboard"
-                } else {
-                    return "doc.on.doc.fill"
-                }
-            }())) { action in
+            let copyAction = UIAction(title: "Copy", image: UIImage(systemName: "document.on.clipboard")) { action in
                 PasteBoardServices.copy(mode: .copy, paths: [self.entries[indexPath.row].path])
             }
             let moveAction = UIAction(title: "Move", image: UIImage(systemName: "arrow.right")) { [weak self] action in

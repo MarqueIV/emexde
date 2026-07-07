@@ -69,18 +69,16 @@ class CertificateController: UITableViewController {
         
         // dynamic size
         if UIDevice.current.userInterfaceIdiom == .phone {
-            if #available(iOS 16.0, *) {
-                if let sheet = importSettings.sheetPresentationController {
-                    sheet.animateChanges {
-                        sheet.detents = [
-                            .custom { _ in
-                                return 200
-                            }
-                        ]
-                    }
-                    
-                    sheet.prefersGrabberVisible = true
+            if let sheet = importSettings.sheetPresentationController {
+                sheet.animateChanges {
+                    sheet.detents = [
+                        .custom { _ in
+                            return 200
+                        }
+                    ]
                 }
+                    
+                sheet.prefersGrabberVisible = true
             }
         }
         
