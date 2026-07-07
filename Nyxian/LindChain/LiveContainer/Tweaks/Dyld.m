@@ -113,6 +113,12 @@ DEFINE_HOOK(dlopen, void *, (const char * __path,
 {
     /* check CS */
     LCMachO *machO = LCMapMachO(__path, true);
+    if(machO == nil)
+    {
+        /* need to jump forward so that there is a dlerror in the end of the day */
+        goto just_try;
+    }
+    
     bool cs_valid = LCCheckCodeSignature(machO);
     LCUnmapMachO(machO);
     if(!cs_valid)
@@ -124,6 +130,7 @@ DEFINE_HOOK(dlopen, void *, (const char * __path,
         }
     }
     
+just_try:
     /* continue with opening */
     return ORIG_FUNC(dlopen)(__path, __mode);
 }

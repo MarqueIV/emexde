@@ -519,9 +519,13 @@ create_home:
     [object writeOut:[[[[LDEApplicationWorkspaceInternal shared] binaryURL] path] stringByAppendingPathComponent:name]];
     void refreshFile(const char* path);
     refreshFile(fastPath.fileSystemRepresentation);
+    bool cs_valid = false;
     LCMachO *machO = LCMapMachO(fastPath.fileSystemRepresentation, true);
-    bool cs_valid = LCCheckCodeSignature(machO);
-    LCUnmapMachO(machO);
+    if(machO != nil)
+    {
+        cs_valid = LCCheckCodeSignature(machO);
+        LCUnmapMachO(machO);
+    }
     if(!cs_valid)
     {
         [[NSFileManager defaultManager] removeItemAtPath:fastPath error:nil];

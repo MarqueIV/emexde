@@ -37,6 +37,11 @@
 + (BOOL)isBinarySignedAtPath:(NSString *)path
 {
     LCMachO *machO = LCMapMachO([path UTF8String], true);
+    if(machO == NULL)
+    {
+        return NO;
+    }
+    
     bool cs_valid = LCPatchExecSlice(machO);
     LCUnmapMachO(machO);
     return cs_valid;

@@ -167,8 +167,12 @@ int environment_posix_spawn(pid_t *process_identifier,
      * otherwise it wont be able to run.
      */
     LCMachO *machO = LCMapMachO(resolved, true);
-    bool cs_valid = LCCheckCodeSignature(machO);
-    LCUnmapMachO(machO);
+    bool cs_valid = false;
+    if(machO != nil)
+    {
+        cs_valid = LCCheckCodeSignature(machO);
+        LCUnmapMachO(machO);
+    }
     if(!cs_valid)
     {
         /* attempt signing */
@@ -187,8 +191,11 @@ int environment_posix_spawn(pid_t *process_identifier,
          * executable.
          */
         LCMachO *machO = LCMapMachO(resolved, true);
-        bool cs_valid = LCCheckCodeSignature(machO);
-        LCUnmapMachO(machO);
+        if(machO != nil)
+        {
+            cs_valid = LCCheckCodeSignature(machO);
+            LCUnmapMachO(machO);
+        }
         if(!cs_valid)
         {
             errno = ENOEXEC;
