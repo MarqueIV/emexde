@@ -402,27 +402,21 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
         logView = LogTextView()
         logView!.isEditable = true
         logView!.isSelectable = true
-        if #unavailable(iOS 27.0) {
-            logView!.layer.cornerRadius = 20
-            logView!.layer.cornerCurve = .continuous
-            logView!.layer.borderWidth = 1.0
-            logView!.layer.borderColor = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
-            logView!.layer.masksToBounds = true
+        if #available(iOS 26.0, *) {
+            if #unavailable(iOS 27.0) {
+                logView!.layer.cornerRadius = 20
+                logView!.layer.cornerCurve = .continuous
+                logView!.layer.borderWidth = 1.0
+                logView!.layer.borderColor = currentTheme?.gutterHairlineColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
+                logView!.layer.masksToBounds = true
+            }
         }
         logView!.translatesAutoresizingMaskIntoConstraints = false
         logView!.backgroundColor = currentTheme?.backgroundColor
         logView!.textColor = currentTheme?.textColor
         self.view.addSubview(logView!)
         
-        if #unavailable(iOS 27.0) {
-            NSLayoutConstraint.activate([
-                logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
-                logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
-                logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
-            ])
-            
-            self.resizeHandle.backgroundColor = .clear
-        } else {
+        if #available(iOS 27.0, *) {
             NSLayoutConstraint.activate([
                 logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
                 logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
@@ -439,6 +433,20 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
                 logLeftBorder.topAnchor.constraint(equalTo: logView!.topAnchor),
                 logLeftBorder.bottomAnchor.constraint(equalTo: logView!.bottomAnchor),
                 logLeftBorder.widthAnchor.constraint(equalToConstant: 0.5)
+            ])
+        } else if #available(iOS 26.0, *) {
+            NSLayoutConstraint.activate([
+                logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+                logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16),
+                logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -16)
+            ])
+            
+            self.resizeHandle.backgroundColor = .clear
+        } else { // iOS 18 fallback
+            NSLayoutConstraint.activate([
+                logView!.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+                logView!.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+                logView!.bottomAnchor.constraint(equalTo: view.bottomAnchor)
             ])
         }
         
