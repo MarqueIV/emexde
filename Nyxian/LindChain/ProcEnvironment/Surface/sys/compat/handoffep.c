@@ -30,27 +30,23 @@ DEFINE_SYSCALL_HANDLER(handoffep)
 {
     sys_need_in_ports(1, MACH_MSG_TYPE_MOVE_RECEIVE);
     
-    /* sanity check */
     if(sys_proc_->task != MACH_PORT_NULL)
     {
-        /* task port already set */
+        /* Task port's can only be initialized once per process lifecycle. */
         sys_return_failure(EPERM);
     }
     
+    /* Consuming the exception port so it won't be released by the send_reply symbol. */
     mach_port_t exceptionPort = sys_in_ports[0];
-    
-    /*
-     * zero out receive in port
-     * so destroying the mach message
-     * wont release it.
-     */
     sys_in_ports[0] = MACH_PORT_NULL;
     
-    /* send reply so we can safely do the work */
+    /*
+     * Reply to the guest process so that it can trigger the
+     * pseudo exception using __builtin_trap.
+     */
     send_reply((mach_msg_header_t*)*recv_buffer, 0, *out_ports, *out_ports_cnt, true);
-    *recv_buffer = NULL;    /* so it won't send reply later in the syscall server */
+    *recv_buffer = NULL;    /* Consuming the mach message header the syscall server uses so it won't attempt to reply. */
     
-    /* now back to the scene ^^ */
     kvo_wrlock(sys_proc_);
     task_t returnedTask = ktfp(exceptionPort);
     if(returnedTask == MACH_PORT_NULL)
@@ -59,7 +55,7 @@ DEFINE_SYSCALL_HANDLER(handoffep)
         sys_return;
     }
     
-    /* checking if pid matches up */
+    /* Validating the identity of the task behind the port. */
     pid_t pid;
     kern_return_t kr = pid_for_task(returnedTask, &pid);
     if(kr != KERN_SUCCESS || pid != proc_getpid(sys_proc_snapshot_))

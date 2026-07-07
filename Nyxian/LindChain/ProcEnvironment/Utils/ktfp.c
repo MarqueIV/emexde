@@ -172,7 +172,6 @@ out_dealloc:
     
 out_destroy_request:
     mach_msg_destroy(&(request.Head));
-    mach_port_mod_refs(mach_task_self(), exceptionPort, MACH_PORT_RIGHT_RECEIVE, -1);
     return exportedTask;
 #endif /* HOST_ENV */
 }
