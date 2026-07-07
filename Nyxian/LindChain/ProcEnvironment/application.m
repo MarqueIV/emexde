@@ -31,63 +31,66 @@
 
 #pragma mark - Initilizer
 
-void environment_signal_child_handler(int code)
-{
-    UIApplication *sharedApplication = [PrivClass(UIApplication) sharedApplication];
-    
-    if(sharedApplication)
-    {
-        if(code == SIGUSR1)
-        {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                // TODO: Shall be done by the runLoop and not by the handler, this could lead to some strange behaviour
-                
-                /* finding active scene */
-                UIWindowScene *activeScene = nil;
-                for(UIWindowScene *scene in sharedApplication.connectedScenes)
-                {
-                    if(scene.activationState == UISceneActivationStateForegroundActive)
-                    {
-                        activeScene = scene;
-                        break;
-                    }
-                }
-
-                /* null pointer check */
-                if(!activeScene)
-                {
-                    return;
-                }
-                
-                /* getting view we wanna capture with our own eyes ^^ */
-                UIWindow *rootWindow = activeScene.keyWindow;
-                UIViewController *topVC = rootWindow.rootViewController;
-                UIView *viewToCapture = topVC.view ?: rootWindow;
-                
-                /* preparing format for renderer */
-                CGFloat scale = [UIScreen mainScreen].scale;
-                UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
-                format.scale = scale;
-                format.opaque = viewToCapture.isOpaque;
-                
-                /* creating renderer */
-                UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:viewToCapture.bounds.size format:format];
-                
-                /* and snapshotting... */
-                UIImage *snapshot = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
-                    /* crafting screenshot */
-                    [viewToCapture drawViewHierarchyInRect:viewToCapture.bounds afterScreenUpdates:YES];
-                }];
-                
-                /* sending to host */
-                environment_proxy_set_snapshot(snapshot);
-            });
-        }
-        return;
-    }
-}
+static dispatch_source_t global_signal_source = nil;
 
 void environment_application_init(void)
 {
-    signal(SIGUSR1, environment_signal_child_handler);
+    signal(SIGUSR1, SIG_IGN);
+    global_signal_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGUSR1, 0, dispatch_get_main_queue());
+    if(global_signal_source)
+    {
+        dispatch_source_set_event_handler(global_signal_source, ^{
+            UIApplication *sharedApplication = [PrivClass(UIApplication) sharedApplication];
+            
+            if(sharedApplication)
+            {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // TODO: Shall be done by the runLoop and not by the handler, this could lead to some strange behaviour
+                    
+                    /* finding active scene */
+                    UIWindowScene *activeScene = nil;
+                    for(UIWindowScene *scene in sharedApplication.connectedScenes)
+                    {
+                        if(scene.activationState == UISceneActivationStateForegroundActive)
+                        {
+                            activeScene = scene;
+                            break;
+                        }
+                    }
+                    
+                    /* null pointer check */
+                    if(!activeScene)
+                    {
+                        return;
+                    }
+                    
+                    /* getting view we wanna capture with our own eyes ^^ */
+                    UIWindow *rootWindow = activeScene.keyWindow;
+                    UIViewController *topVC = rootWindow.rootViewController;
+                    UIView *viewToCapture = topVC.view ?: rootWindow;
+                    
+                    /* preparing format for renderer */
+                    CGFloat scale = [UIScreen mainScreen].scale;
+                    UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
+                    format.scale = scale;
+                    format.opaque = viewToCapture.isOpaque;
+                    
+                    /* creating renderer */
+                    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:viewToCapture.bounds.size format:format];
+                    
+                    /* and snapshotting... */
+                    UIImage *snapshot = [renderer imageWithActions:^(UIGraphicsImageRendererContext * _Nonnull rendererContext) {
+                        /* crafting screenshot */
+                        [viewToCapture drawViewHierarchyInRect:viewToCapture.bounds afterScreenUpdates:YES];
+                    }];
+                    
+                    /* sending to host */
+                    environment_proxy_set_snapshot(snapshot);
+                });
+                return;
+            }
+        });
+        
+        dispatch_resume(global_signal_source);
+    }
 }
