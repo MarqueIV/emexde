@@ -53,30 +53,14 @@
 
 - (BOOL)connect
 {
-    if (self.connection)
-        return YES;
-
-    __weak typeof(self) weakSelf = self;
-    _connection = nil;
-    PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
-
-    if (serviceRegistry != nil)
+    if(_connection != NULL && _connection.processIdentifier != 0)
     {
-        _connection = [serviceRegistry connectToService:@"com.cr4zy.containerd"
-                                               protocol:@protocol(PEContainerProtocol)
-                                               observer:nil
-                                       observerProtocol:nil];
-        _connection.invalidationHandler = ^{
-            __strong typeof(self) strongSelf = weakSelf;
-            if (!strongSelf) return;
-            strongSelf.connection = nil;
-            [strongSelf connect];
-        };
-
-        return _connection != nil;
+        return YES;
     }
-
-    return NO;
+    
+    PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
+    _connection = [serviceRegistry connectToService:@"com.cr4zy.containerd" protocol:@protocol(PEContainerProtocol) observer:self observerProtocol:nil];
+    return _connection != nil;
 }
 
 - (nullable NSArray<NSURL *> *)contentsOfDirectoryAtURL:(NSURL *)url
