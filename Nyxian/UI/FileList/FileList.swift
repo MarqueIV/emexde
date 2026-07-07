@@ -295,7 +295,16 @@ import UniformTypeIdentifiers
             var projectMenuElements: [UIMenuElement] = []
             projectMenuElements.append(UIAction(title: "Run", image: UIImage(systemName: "play.fill"), handler: { [weak self] _ in
                 guard let self = self else { return }
-                buildProjectWithArgumentUI(targetViewController: self, project: project, buildType: .RunningApp)
+                buildProjectWithArgumentUI(targetViewController: self, project: project, buildType: .RunningApp) { result, execPath in
+                    if result {
+                        if project.projectConfig.schemeKind == .app {
+                            PEProcessManager.shared().spawnProcess(withBundleIdentifier: project.projectConfig.bundleid, withItems: [:], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
+                        } else if project.projectConfig.schemeKind == .utility, let execPath = execPath {
+                            let terminalSession: NXWindowSessionTerminal = NXWindowSessionTerminal(utilityPath: execPath)
+                            NXWindowServer.shared().openWindow(with: terminalSession, withCompletion: nil)
+                        }
+                    }
+                }
             }))
             if project.projectConfig.schemeKind == .app {
                 projectMenuElements.append(UIAction(title: "Export", image: UIImage(systemName: "archivebox.fill"), handler: { [weak self] _ in
@@ -483,13 +492,7 @@ import UniformTypeIdentifiers
                 }
             }
             
-            if self.isReadOnly {
-                return UIMenu(children: [UIMenu(options: .displayInline, children: [copyAction]),
-                                         UIMenu(options: .displayInline, children: [shareAction])])
-            } else {
-                return UIMenu(children: [UIMenu(options: .displayInline, children: [copyAction, moveAction, renameAction]),
-                                         UIMenu(options: .displayInline, children: [shareAction, deleteAction])])
-            }
+            return UIMenu(children: [UIMenu(options: .displayInline, children: self.isReadOnly ? [copyAction] : [copyAction, moveAction, renameAction]), UIMenu(options: .displayInline, children: [shareAction])])
         }
     }
     
