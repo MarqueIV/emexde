@@ -389,10 +389,7 @@ class SplitScreenDetailViewController: UIViewController {
             updateTabSelection(selectedTab: childButton)
         }
     }
-    
-    /*
-     Initial Class
-     */
+
     init(project: NXProject) {
         self.project = project
         super.init(nibName: nil, bundle: nil)
@@ -700,4 +697,3 @@ extension UIColor {
         return UIColor(hue: hue, saturation: saturation, brightness: newBrightness, alpha: alpha)
     }
 }
-

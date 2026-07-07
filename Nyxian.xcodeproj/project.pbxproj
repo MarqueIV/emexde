@@ -13,15 +13,7 @@
 		793FCD242E6730740011B3F5 /* libarchive.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 79BF9A8E2E62BA7D00C60D4C /* libarchive.tbd */; };
 		795227872F45B52000D1C3CC /* LiveProcess.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79BF97F72E6291EE00C60D4C /* LiveProcess.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		79AA11C72F7FFF46002FEAF2 /* libarchive.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 79AA11C32F7FFEE4002FEAF2 /* libarchive.tbd */; };
-		79AF51182F1CBD110055004A /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 79AF51102F1CBD110055004A /* Runestone */; settings = {ATTRIBUTES = (Required, ); }; };
-		79AF511A2F1CBD110055004A /* TreeSitterObjc in Frameworks */ = {isa = PBXBuildFile; productRef = 79AF510C2F1CBD110055004A /* TreeSitterObjc */; };
-		79AF511B2F1CBD110055004A /* libarchive.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 79BF9A8E2E62BA7D00C60D4C /* libarchive.tbd */; };
-		79AF511C2F1CBD110055004A /* TreeSitterC in Frameworks */ = {isa = PBXBuildFile; productRef = 79AF510E2F1CBD110055004A /* TreeSitterC */; };
-		79AF511D2F1CBD110055004A /* TreeSitterXML in Frameworks */ = {isa = PBXBuildFile; productRef = 79AF51122F1CBD110055004A /* TreeSitterXML */; };
-		79AF511E2F1CBD110055004A /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 79AF51142F1CBD110055004A /* SwiftTerm */; };
-		79AF51222F1CBD110055004A /* Shared in Resources */ = {isa = PBXBuildFile; fileRef = AF99171F2DC8EA3C00DDF895 /* Shared */; };
 		79B708BC2F73157F000F38E7 /* TreeSitterCPP in Frameworks */ = {isa = PBXBuildFile; productRef = 79B708BB2F73157F000F38E7 /* TreeSitterCPP */; };
-		79B708BE2F731590000F38E7 /* TreeSitterCPP in Frameworks */ = {isa = PBXBuildFile; productRef = 79B708BD2F731590000F38E7 /* TreeSitterCPP */; };
 		79B70C1C2F73223A000F38E7 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 79B70C1B2F73223A000F38E7 /* Runestone */; };
 		79B70C1F2F732364000F38E7 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 79B70C1E2F732364000F38E7 /* Runestone */; };
 		79BF9A8F2E62BA8700C60D4C /* libarchive.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 79BF9A8E2E62BA7D00C60D4C /* libarchive.tbd */; };
@@ -29,17 +21,11 @@
 		860D917D2FAE1F95000D321B /* MobileDevelopmentKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */; };
 		860D917E2FAE1F95000D321B /* MobileDevelopmentKit.framework in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		860D91832FAE1F9C000D321B /* CoreCompiler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */; platformFilter = ios; };
-		860D91882FAE1FC5000D321B /* MobileDevelopmentKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */; };
-		860D91892FAE1FC5000D321B /* MobileDevelopmentKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		860D91E02FAE2E4C000D321B /* CoreCompiler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */; };
 		860D91E12FAE2E4C000D321B /* CoreCompiler.framework in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		860D91E42FAE2ED7000D321B /* CoreCompiler.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */; };
-		860D91E52FAE2ED7000D321B /* CoreCompiler.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8630CBB52FABE19200C6EE6D /* UIOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 8630CBB42FABE19200C6EE6D /* UIOnboarding */; };
-		8630CBB72FABE19E00C6EE6D /* UIOnboarding in Frameworks */ = {isa = PBXBuildFile; productRef = 8630CBB62FABE19E00C6EE6D /* UIOnboarding */; };
 		86DCC30A2FA521A600973169 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 86DCC3082FA5219900973169 /* libz.tbd */; };
 		86E4D4F72FB8CF63008BFE4D /* TreeSitterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 86E4D4F62FB8CF63008BFE4D /* TreeSitterSwift */; };
-		86E4D4F92FB8CF70008BFE4D /* TreeSitterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 86E4D4F82FB8CF70008BFE4D /* TreeSitterSwift */; };
 		8F4D96E62FFBF8FB006CAF3C /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8F4D96E52FFBF8FB006CAF3C /* Runestone */; };
 		8F4D96E92FFBFDCA006CAF3C /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8F4D96E82FFBFDCA006CAF3C /* Runestone */; };
 		AF9919582DC9175A00DDF895 /* TreeSitterObjc in Frameworks */ = {isa = PBXBuildFile; productRef = AF9919572DC9175A00DDF895 /* TreeSitterObjc */; };
@@ -70,21 +56,7 @@
 			remoteGlobalIDString = 86DCC2592FA5209600973169;
 			remoteInfo = CoreCompiler;
 		};
-		860D918A2FAE1FC5000D321B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 860D91742FAE1F95000D321B;
-			remoteInfo = MobileDevelopmentKit;
-		};
 		860D91E22FAE2E4C000D321B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 86DCC2592FA5209600973169;
-			remoteInfo = CoreCompiler;
-		};
-		860D91E62FAE2ED7000D321B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
 			proxyType = 1;
@@ -113,18 +85,6 @@
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 1;
-		};
-		79FDA8862F3F257900692496 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				860D91892FAE1FC5000D321B /* MobileDevelopmentKit.framework in Embed Frameworks */,
-				860D91E52FAE2ED7000D321B /* CoreCompiler.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		86DCC2922FA520EE00973169 /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -159,7 +119,6 @@
 		79AA11BC2F7FFE24002FEAF2 /* nxtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nxtool; sourceTree = BUILT_PRODUCTS_DIR; };
 		79AA11C32F7FFEE4002FEAF2 /* libarchive.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libarchive.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/usr/lib/libarchive.tbd; sourceTree = DEVELOPER_DIR; };
 		79AA11C42F7FFEFF002FEAF2 /* libarchive.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libarchive.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib/libarchive.tbd; sourceTree = DEVELOPER_DIR; };
-		79AF512B2F1CBD110055004A /* emexDEForJB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = emexDEForJB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		79BF97F72E6291EE00C60D4C /* LiveProcess.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LiveProcess.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		79BF9A8E2E62BA7D00C60D4C /* libarchive.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libarchive.tbd; path = usr/lib/libarchive.tbd; sourceTree = SDKROOT; };
 		860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = MobileDevelopmentKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -173,8 +132,6 @@
 		798BBD332F1D265200CBB23F /* Exceptions for "Nyxian" folder in "emexDE" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				LindChain/JBSupport/Shell.m,
-				LindChain/JBSupport/tshelper,
 				LindChain/LiveContainer/LCBootstrap.m,
 				LindChain/LiveContainer/Tweaks/Dead10ccFix.m,
 				LindChain/LiveContainer/Tweaks/Dyld.m,
@@ -202,101 +159,6 @@
 				LindChain/Utils/Zip.m,
 			);
 			target = 79AA11BB2F7FFE24002FEAF2 /* nxtool */;
-		};
-		79AF512C2F1CBD110055004A /* Exceptions for "Nyxian" folder in "emexDEForJB" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				LindChain/Debugger/Utils.c,
-				LindChain/litehook/litehook.c,
-				LindChain/LiveContainer/LCBootstrap.m,
-				LindChain/LiveContainer/LCMachOUtils.m,
-				LindChain/LiveContainer/LCUtils.m,
-				LindChain/LiveContainer/Tweaks/Dead10ccFix.m,
-				LindChain/LiveContainer/Tweaks/Dyld.m,
-				"LindChain/LiveContainer/Tweaks/NSFileManager+GuestHooks.m",
-				LindChain/LiveContainer/Tweaks/NSUserDefaults.m,
-				LindChain/LiveContainer/Tweaks/SecItem.m,
-				"LindChain/LiveContainer/Tweaks/UIKit+GuestHooksInit.m",
-				LindChain/LiveContainer/utils.m,
-				LindChain/Private/mach/fileport.m,
-				LindChain/ProcEnvironment/application.m,
-				LindChain/ProcEnvironment/cred.c,
-				LindChain/ProcEnvironment/environment.m,
-				LindChain/ProcEnvironment/ioctl.c,
-				LindChain/ProcEnvironment/kbdportal.m,
-				LindChain/ProcEnvironment/libproc.m,
-				LindChain/ProcEnvironment/Object/ArchiveObject.m,
-				LindChain/ProcEnvironment/Object/FDMapObject.m,
-				LindChain/ProcEnvironment/Object/FDObject.m,
-				LindChain/ProcEnvironment/Object/MachOObject.m,
-				LindChain/ProcEnvironment/Object/PEMachPort.m,
-				LindChain/ProcEnvironment/Object/PEObject.m,
-				LindChain/ProcEnvironment/panic.m,
-				LindChain/ProcEnvironment/posix_spawn.m,
-				LindChain/ProcEnvironment/Process/PEBootstrapRegistry.m,
-				LindChain/ProcEnvironment/Process/PEExtension.m,
-				LindChain/ProcEnvironment/Process/PELaunchService.m,
-				LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.m,
-				LindChain/ProcEnvironment/proxy.m,
-				LindChain/ProcEnvironment/Server/Server.m,
-				LindChain/ProcEnvironment/Server/ServerSession.m,
-				LindChain/ProcEnvironment/Surface/entitlement.c,
-				LindChain/ProcEnvironment/Surface/key.c,
-				LindChain/ProcEnvironment/Surface/obj/alloc.c,
-				LindChain/ProcEnvironment/Surface/obj/event.c,
-				LindChain/ProcEnvironment/Surface/obj/reference.c,
-				LindChain/ProcEnvironment/Surface/permit.c,
-				LindChain/ProcEnvironment/Surface/proc/counter.c,
-				LindChain/ProcEnvironment/Surface/proc/fork.m,
-				LindChain/ProcEnvironment/Surface/proc/insert.c,
-				LindChain/ProcEnvironment/Surface/proc/list.c,
-				LindChain/ProcEnvironment/Surface/proc/lookup.c,
-				LindChain/ProcEnvironment/Surface/proc/proc.c,
-				LindChain/ProcEnvironment/Surface/proc/remove.c,
-				LindChain/ProcEnvironment/Surface/radix/radix.c,
-				LindChain/ProcEnvironment/Surface/surface.m,
-				LindChain/ProcEnvironment/Surface/sys/compat/getent.c,
-				LindChain/ProcEnvironment/Surface/sys/compat/gettask.c,
-				LindChain/ProcEnvironment/Surface/sys/compat/handoffep.c,
-				LindChain/ProcEnvironment/Surface/sys/compat/kbdctl.m,
-				LindChain/ProcEnvironment/Surface/sys/compat/pectl.m,
-				LindChain/ProcEnvironment/Surface/sys/compat/procpath.c,
-				LindChain/ProcEnvironment/Surface/sys/compat/setent.c,
-				LindChain/ProcEnvironment/Surface/sys/compat/waittask.c,
-				LindChain/ProcEnvironment/Surface/sys/cred/getgid.c,
-				LindChain/ProcEnvironment/Surface/sys/cred/getsid.c,
-				LindChain/ProcEnvironment/Surface/sys/cred/getuid.c,
-				LindChain/ProcEnvironment/Surface/sys/cred/setgid.c,
-				LindChain/ProcEnvironment/Surface/sys/cred/setsid.c,
-				LindChain/ProcEnvironment/Surface/sys/cred/setuid.c,
-				LindChain/ProcEnvironment/Surface/sys/host/ioctl.c,
-				LindChain/ProcEnvironment/Surface/sys/host/sysctl.m,
-				LindChain/ProcEnvironment/Surface/sys/proc/kill.m,
-				LindChain/ProcEnvironment/Surface/sys/proc/wait4.c,
-				LindChain/ProcEnvironment/Surface/sys/syscall.c,
-				LindChain/ProcEnvironment/Surface/trust.c,
-				LindChain/ProcEnvironment/Surface/tty/attach.c,
-				LindChain/ProcEnvironment/Surface/tty/lookup.c,
-				LindChain/ProcEnvironment/Surface/tty/tty.m,
-				LindChain/ProcEnvironment/Surface/tty/utils.c,
-				LindChain/ProcEnvironment/syscall.c,
-				LindChain/ProcEnvironment/Syscall/mach_syscall_client.c,
-				LindChain/ProcEnvironment/Syscall/mach_syscall_server.c,
-				LindChain/ProcEnvironment/Syscall/payload.c,
-				LindChain/ProcEnvironment/sysctl.c,
-				LindChain/ProcEnvironment/tfp.c,
-				LindChain/ProcEnvironment/Utils/fd.c,
-				LindChain/ProcEnvironment/Utils/klog.m,
-				LindChain/ProcEnvironment/Utils/ktfp.c,
-				LindChain/ProcEnvironment/vfork.c,
-				LindChain/Utils/CFTools.c,
-				LindChain/WindowServer/Session/NXWindowSessionTerminal.m,
-				UI/Settings/CertificateManagement.swift,
-				UI/Settings/CertificateViewController.swift,
-				UI/Settings/KernelLogViewController.swift,
-				UI/Settings/MachOPatcherViewController.swift,
-			);
-			target = 79AF51072F1CBD110055004A /* emexDEForJB */;
 		};
 		79BF983D2E62930600C60D4C /* Exceptions for "LiveProcess" folder in "LiveProcess" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -435,16 +297,6 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		7960686E2F3F357400CE34D7 /* Exceptions for "Nyxian" folder in "Embed Frameworks" phase from "emexDEForJB" target */ = {
-			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
-			attributesByRelativePath = {
-				LindChain/OpenSSL.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
-			};
-			buildPhase = 79FDA8862F3F257900692496 /* Embed Frameworks */;
-			membershipExceptions = (
-				LindChain/OpenSSL.xcframework,
-			);
-		};
 		86DCC2932FA520EF00973169 /* Exceptions for "CoreCompiler" folder in "Embed Libraries" phase from "CoreCompiler" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
@@ -528,8 +380,6 @@
 			exceptions = (
 				798BBD332F1D265200CBB23F /* Exceptions for "Nyxian" folder in "emexDE" target */,
 				AFF4DBDB2DCA5DEA00B1B5F9 /* Exceptions for "Nyxian" folder in "Embed Libraries" phase from "emexDE" target */,
-				79AF512C2F1CBD110055004A /* Exceptions for "Nyxian" folder in "emexDEForJB" target */,
-				7960686E2F3F357400CE34D7 /* Exceptions for "Nyxian" folder in "Embed Frameworks" phase from "emexDEForJB" target */,
 				79BF9A972E62BB6900C60D4C /* Exceptions for "Nyxian" folder in "LiveProcess" target */,
 				79AA11C62F7FFF12002FEAF2 /* Exceptions for "Nyxian" folder in "nxtool" target */,
 			);
@@ -544,24 +394,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				79AA11C72F7FFF46002FEAF2 /* libarchive.tbd in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		79AF51172F1CBD110055004A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				79AF51182F1CBD110055004A /* Runestone in Frameworks */,
-				860D91882FAE1FC5000D321B /* MobileDevelopmentKit.framework in Frameworks */,
-				860D91E42FAE2ED7000D321B /* CoreCompiler.framework in Frameworks */,
-				79AF511A2F1CBD110055004A /* TreeSitterObjc in Frameworks */,
-				8630CBB72FABE19E00C6EE6D /* UIOnboarding in Frameworks */,
-				79AF511B2F1CBD110055004A /* libarchive.tbd in Frameworks */,
-				79AF511C2F1CBD110055004A /* TreeSitterC in Frameworks */,
-				86E4D4F92FB8CF70008BFE4D /* TreeSitterSwift in Frameworks */,
-				79B708BE2F731590000F38E7 /* TreeSitterCPP in Frameworks */,
-				79AF511D2F1CBD110055004A /* TreeSitterXML in Frameworks */,
-				79AF511E2F1CBD110055004A /* SwiftTerm in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -644,7 +476,6 @@
 				7944B5662DEC74FC00834134 /* Frameworks */,
 				79BF97F72E6291EE00C60D4C /* LiveProcess.appex */,
 				7944B5652DEC74EA00834134 /* emexDE.app */,
-				79AF512B2F1CBD110055004A /* emexDEForJB.app */,
 				79AA11BC2F7FFE24002FEAF2 /* nxtool */,
 				86DCC25A2FA5209600973169 /* CoreCompiler.framework */,
 				860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */,
@@ -692,39 +523,6 @@
 			productName = nxtool;
 			productReference = 79AA11BC2F7FFE24002FEAF2 /* nxtool */;
 			productType = "com.apple.product-type.tool";
-		};
-		79AF51072F1CBD110055004A /* emexDEForJB */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 79AF51282F1CBD110055004A /* Build configuration list for PBXNativeTarget "emexDEForJB" */;
-			buildPhases = (
-				79AF51162F1CBD110055004A /* Sources */,
-				79AF51172F1CBD110055004A /* Frameworks */,
-				79AF511F2F1CBD110055004A /* Resources */,
-				79FDA8862F3F257900692496 /* Embed Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				860D918B2FAE1FC5000D321B /* PBXTargetDependency */,
-				860D91E72FAE2ED7000D321B /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				AF9916DB2DC8C42200DDF895 /* Nyxian */,
-			);
-			name = emexDEForJB;
-			packageProductDependencies = (
-				79AF510C2F1CBD110055004A /* TreeSitterObjc */,
-				79AF510E2F1CBD110055004A /* TreeSitterC */,
-				79AF51102F1CBD110055004A /* Runestone */,
-				79AF51122F1CBD110055004A /* TreeSitterXML */,
-				79AF51142F1CBD110055004A /* SwiftTerm */,
-				79B708BD2F731590000F38E7 /* TreeSitterCPP */,
-				8630CBB62FABE19E00C6EE6D /* UIOnboarding */,
-				86E4D4F82FB8CF70008BFE4D /* TreeSitterSwift */,
-			);
-			productName = LindDE;
-			productReference = 79AF512B2F1CBD110055004A /* emexDEForJB.app */;
-			productType = "com.apple.product-type.application";
 		};
 		79BF97F62E6291EE00C60D4C /* LiveProcess */ = {
 			isa = PBXNativeTarget;
@@ -888,7 +686,6 @@
 			projectRoot = "";
 			targets = (
 				AF9916D82DC8C42200DDF895 /* emexDE */,
-				79AF51072F1CBD110055004A /* emexDEForJB */,
 				79BF97F62E6291EE00C60D4C /* LiveProcess */,
 				860D91742FAE1F95000D321B /* MobileDevelopmentKit */,
 				86DCC2592FA5209600973169 /* CoreCompiler */,
@@ -898,14 +695,6 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		79AF511F2F1CBD110055004A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				79AF51222F1CBD110055004A /* Shared in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		79BF97F52E6291EE00C60D4C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -939,13 +728,6 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		79AA11B82F7FFE24002FEAF2 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		79AF51162F1CBD110055004A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -999,20 +781,10 @@
 			target = 86DCC2592FA5209600973169 /* CoreCompiler */;
 			targetProxy = 860D91852FAE1F9C000D321B /* PBXContainerItemProxy */;
 		};
-		860D918B2FAE1FC5000D321B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 860D91742FAE1F95000D321B /* MobileDevelopmentKit */;
-			targetProxy = 860D918A2FAE1FC5000D321B /* PBXContainerItemProxy */;
-		};
 		860D91E32FAE2E4C000D321B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 86DCC2592FA5209600973169 /* CoreCompiler */;
 			targetProxy = 860D91E22FAE2E4C000D321B /* PBXContainerItemProxy */;
-		};
-		860D91E72FAE2ED7000D321B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 86DCC2592FA5209600973169 /* CoreCompiler */;
-			targetProxy = 860D91E62FAE2ED7000D321B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1038,245 +810,6 @@
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
-			};
-			name = Release;
-		};
-		79AF51292F1CBD110055004A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 79277DC02EE8752800F18B30 /* Config.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon Legacy Drawn Nyxcat Nyxcat2 Nyxcat3";
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Nyxian/Nyxian.entitlements;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
-				DEVELOPMENT_ASSET_PATHS = "\"Nyxian/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_PREVIEWS = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Nyxian/LindChain",
-					"$(PROJECT_DIR)/Nyxian/LindChain/Private/Frameworks",
-				);
-				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = Nyxian/;
-				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = emexDE;
-				INFOPLIST_KEY_GCSupportsControllerUserInteraction = NO;
-				INFOPLIST_KEY_GCSupportsGameMode = NO;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NFCReaderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSAppleMusicUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSCalendarsUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSContactsUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFallDetectionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFileProviderPresenceUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFocusStatusUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSGKFriendListUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHomeKitUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSIdentityUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSMotionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSNearbyInteractionAllowOnceUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSNearbyInteractionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSNetworkVolumesUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSRemindersUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSRemovableVolumesUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSensorKitPrivacyPolicyURL = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSensorKitUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSiriUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSystemAdministrationUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSVideoSubscriberAccountUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSVoIPUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_OSBundleUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = NO;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = "";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_UISupportsDocumentBrowser = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Nyxian",
-					"$(PROJECT_DIR)/Nyxian/LindChain/Synpush",
-					"$(PROJECT_DIR)/Nyxian/LindChain",
-					"$(PROJECT_DIR)/Nyxian/LindChain/JBSupport",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs/CoreCompilerSupportLibs",
-					"$(PROJECT_DIR)/CoreCompiler/CoreCompilerSupportLibs",
-				);
-				MARKETING_VERSION = "$(VERSION)";
-				OTHER_CFLAGS = (
-					"-DHOST_ENV",
-					"-DJAILBREAK_ENV",
-				);
-				OTHER_CODE_SIGN_FLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_SWIFT_FLAGS = "-DJAILBREAK_ENV";
-				PRODUCT_BUNDLE_IDENTIFIER = com.cr4zy.nyxian;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Nyxian/bridge-jb.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "emexDE-Swift.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		79AF512A2F1CBD110055004A /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 79277DC02EE8752800F18B30 /* Config.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon Legacy Drawn Nyxcat Nyxcat2 Nyxcat3";
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = Nyxian/Nyxian.entitlements;
-				CODE_SIGN_IDENTITY = "";
-				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
-				DEVELOPMENT_ASSET_PATHS = "\"Nyxian/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
-				ENABLE_PREVIEWS = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Nyxian/LindChain",
-					"$(PROJECT_DIR)/Nyxian/LindChain/Private/Frameworks",
-				);
-				GCC_OPTIMIZATION_LEVEL = 3;
-				GENERATE_INFOPLIST_FILE = YES;
-				HEADER_SEARCH_PATHS = Nyxian/;
-				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = emexDE;
-				INFOPLIST_KEY_GCSupportsControllerUserInteraction = NO;
-				INFOPLIST_KEY_GCSupportsGameMode = NO;
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
-				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
-				INFOPLIST_KEY_NFCReaderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSAppleEventsUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSAppleMusicUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSCalendarsUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSCameraUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSContactsUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSDesktopFolderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSDownloadsFolderUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFaceIDUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFallDetectionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFileProviderDomainUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFileProviderPresenceUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSFocusStatusUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSGKFriendListUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHealthClinicalHealthRecordsShareUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHealthShareUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSHomeKitUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSIdentityUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationAlwaysUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationTemporaryUsageDescriptionDictionary = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSMotionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSNearbyInteractionAllowOnceUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSNearbyInteractionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSNetworkVolumesUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSRemindersUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSRemovableVolumesUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSensorKitPrivacyPolicyURL = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSensorKitUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSiriUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSystemAdministrationUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSSystemExtensionUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSUserTrackingUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSVideoSubscriberAccountUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_NSVoIPUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_OSBundleUsageDescription = "The guest app is requesting for this permission.";
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = NO;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = "";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
-				INFOPLIST_KEY_UISupportsDocumentBrowser = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Nyxian",
-					"$(PROJECT_DIR)/Nyxian/LindChain/Synpush",
-					"$(PROJECT_DIR)/Nyxian/LindChain",
-					"$(PROJECT_DIR)/Nyxian/LindChain/JBSupport",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs/CoreCompilerSupportLibs",
-					"$(PROJECT_DIR)/CoreCompiler/CoreCompilerSupportLibs",
-				);
-				MARKETING_VERSION = "$(VERSION)";
-				OTHER_CFLAGS = (
-					"-DHOST_ENV",
-					"-DJAILBREAK_ENV",
-				);
-				OTHER_CODE_SIGN_FLAGS = "";
-				OTHER_LDFLAGS = "";
-				OTHER_SWIFT_FLAGS = "-DJAILBREAK_ENV";
-				PRODUCT_BUNDLE_IDENTIFIER = com.cr4zy.nyxian;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "Nyxian/bridge-jb.h";
-				SWIFT_OBJC_INTERFACE_HEADER_NAME = "emexDE-Swift.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1754,7 +1287,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1873,7 +1406,7 @@
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UISupportsDocumentBrowser = NO;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1914,15 +1447,6 @@
 			buildConfigurations = (
 				79AA11C12F7FFE24002FEAF2 /* Debug */,
 				79AA11C22F7FFE24002FEAF2 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		79AF51282F1CBD110055004A /* Build configuration list for PBXNativeTarget "emexDEForJB" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				79AF51292F1CBD110055004A /* Debug */,
-				79AF512A2F1CBD110055004A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1981,46 +1505,6 @@
 			requirement = {
 				kind = exactVersion;
 				version = 1.13.0;
-			};
-		};
-		79AF510D2F1CBD110055004A /* XCRemoteSwiftPackageReference "tree-sitter-objc" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tree-sitter-grammars/tree-sitter-objc.git";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-		79AF510F2F1CBD110055004A /* XCRemoteSwiftPackageReference "tree-sitter-c" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tree-sitter/tree-sitter-c.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.16.1;
-			};
-		};
-		79AF51112F1CBD110055004A /* XCRemoteSwiftPackageReference "Runestone" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/simonbs/Runestone.git";
-			requirement = {
-				branch = main;
-				kind = branch;
-			};
-		};
-		79AF51132F1CBD110055004A /* XCRemoteSwiftPackageReference "tree-sitter-xml" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/tree-sitter-grammars/tree-sitter-xml.git";
-			requirement = {
-				branch = master;
-				kind = branch;
-			};
-		};
-		79AF51152F1CBD110055004A /* XCRemoteSwiftPackageReference "SwiftTerm" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/migueldeicaza/SwiftTerm";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.5.0;
 			};
 		};
 		79B708BA2F73157F000F38E7 /* XCRemoteSwiftPackageReference "tree-sitter-cpp" */ = {
@@ -2095,37 +1579,7 @@
 			package = 793A7E4E2EB599690044418E /* XCRemoteSwiftPackageReference "SwiftTerm" */;
 			productName = SwiftTerm;
 		};
-		79AF510C2F1CBD110055004A /* TreeSitterObjc */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 79AF510D2F1CBD110055004A /* XCRemoteSwiftPackageReference "tree-sitter-objc" */;
-			productName = TreeSitterObjc;
-		};
-		79AF510E2F1CBD110055004A /* TreeSitterC */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 79AF510F2F1CBD110055004A /* XCRemoteSwiftPackageReference "tree-sitter-c" */;
-			productName = TreeSitterC;
-		};
-		79AF51102F1CBD110055004A /* Runestone */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 79AF51112F1CBD110055004A /* XCRemoteSwiftPackageReference "Runestone" */;
-			productName = Runestone;
-		};
-		79AF51122F1CBD110055004A /* TreeSitterXML */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 79AF51132F1CBD110055004A /* XCRemoteSwiftPackageReference "tree-sitter-xml" */;
-			productName = TreeSitterXML;
-		};
-		79AF51142F1CBD110055004A /* SwiftTerm */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 79AF51152F1CBD110055004A /* XCRemoteSwiftPackageReference "SwiftTerm" */;
-			productName = SwiftTerm;
-		};
 		79B708BB2F73157F000F38E7 /* TreeSitterCPP */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 79B708BA2F73157F000F38E7 /* XCRemoteSwiftPackageReference "tree-sitter-cpp" */;
-			productName = TreeSitterCPP;
-		};
-		79B708BD2F731590000F38E7 /* TreeSitterCPP */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 79B708BA2F73157F000F38E7 /* XCRemoteSwiftPackageReference "tree-sitter-cpp" */;
 			productName = TreeSitterCPP;
@@ -2147,17 +1601,7 @@
 			package = 8630CBB32FABE19200C6EE6D /* XCRemoteSwiftPackageReference "UIOnboarding" */;
 			productName = UIOnboarding;
 		};
-		8630CBB62FABE19E00C6EE6D /* UIOnboarding */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 8630CBB32FABE19200C6EE6D /* XCRemoteSwiftPackageReference "UIOnboarding" */;
-			productName = UIOnboarding;
-		};
 		86E4D4F62FB8CF63008BFE4D /* TreeSitterSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 86E4D4F52FB8CF63008BFE4D /* XCRemoteSwiftPackageReference "tree-sitter-swift" */;
-			productName = TreeSitterSwift;
-		};
-		86E4D4F82FB8CF70008BFE4D /* TreeSitterSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 86E4D4F52FB8CF63008BFE4D /* XCRemoteSwiftPackageReference "tree-sitter-swift" */;
 			productName = TreeSitterSwift;

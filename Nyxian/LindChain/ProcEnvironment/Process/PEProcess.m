@@ -25,7 +25,6 @@
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 
-#if !JAILBREAK_ENV
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/Process/PEExtension.h>
@@ -33,17 +32,12 @@
 #import <LindChain/ProcEnvironment/Object/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Surface/proc/counter.h>
-#else
-#import <LindChain/JBSupport/Shell.h>
-#endif /* !JAILBREAK_ENV */
 
 @implementation PEProcess {
     dispatch_once_t _notifyWindowManagerOnce;
 }
 
 @dynamic pid;
-
-#if !JAILBREAK_ENV
 
 - (instancetype)initWithItems:(NSDictionary*)items
      withKernelSurfaceProcess:(ksurface_proc_t*)proc
@@ -171,11 +165,8 @@
     return self;
 }
 
-#endif /* !JAILBREAK_ENV */
-
 - (void)sendSignal:(int)signal
 {
-#if !JAILBREAK_ENV
     /*
      * those signals are not supported at all
      * (for now atleast).
@@ -222,9 +213,6 @@
         kvo_unlock(_proc);
         proc_state_change(_proc, W_STOPCODE(signal));
     }
-#else
-    kill(self.pid, signal);
-#endif /* !JAILBREAK_ENV */
 }
 
 - (BOOL)terminate
@@ -266,7 +254,6 @@
         
 - (void)processDidExit:(FBProcess *)arg1
 {
-#if !JAILBREAK_ENV
     if(self.proc != NULL)
     {
         /* yep writing official wait4 code~~ */
@@ -277,7 +264,6 @@
             klog_log("LDEProcess", "failed to remove pid %d", self.pid);
         }
     }
-#endif /* !JAILBREAK_ENV */
     
     if(self.exitingCallback) self.exitingCallback();
     
@@ -332,8 +318,6 @@
     return [super forwardingTargetForSelector:sel];
 }
 
-#if !JAILBREAK_ENV
-
 - (void)dealloc
 {
     if(_proc != NULL)
@@ -342,7 +326,5 @@
     }
     proc_uncount();
 }
-
-#endif /* !JAILBREAK_ENV */
 
 @end
