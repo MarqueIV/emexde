@@ -152,10 +152,6 @@ class FlagsEditViewController: UIThemedTableViewController {
         Section(rawValue: indexPath.section) == .flags
     }
 
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        Section(rawValue: section) == .flags ? flagType.title : nil
-    }
-
     private func presentAddAlert() {
         presentFlagAlert(title: "Add Flag", existingValue: nil) { [weak self] value in
             guard let self else { return }

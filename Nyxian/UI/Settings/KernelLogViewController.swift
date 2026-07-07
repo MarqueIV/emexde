@@ -24,7 +24,6 @@ import UIKit
 #if DEBUG
 
 class KernelLogViewController: UIViewController {
-
     private let scrollView: UIScrollView = {
         let sv = UIScrollView()
         sv.translatesAutoresizingMaskIntoConstraints = false
