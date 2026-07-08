@@ -30,13 +30,14 @@ struct ProjectTemplateSelectionView: View {
     private var hairlineColor: Color { Color(uiColor: currentTheme!.gutterHairlineColor) }
     
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 0) {
             templateRow(
                 title: "App",
                 subtitle: "UI app for iPhone & iPad",
                 systemImage: "appstore.app.fill",
                 schemeKind: .app,
-                scale: .large
+                scale: .large,
+                isFirst: true
             )
             
             templateRow(
@@ -51,7 +52,8 @@ struct ProjectTemplateSelectionView: View {
                 subtitle: "Library project",
                 systemImage: "building.columns.fill",
                 schemeKind: .library,
-                isEnabled: false
+                isEnabled: false,
+                isLast: true
             )
         }
         .padding(.top, 2)
@@ -65,8 +67,15 @@ struct ProjectTemplateSelectionView: View {
                              systemImage: String,
                              schemeKind: NXProjectSchemeKind,
                              scale: UIImage.SymbolScale = .default,
-                             isEnabled: Bool = true) -> some View {
+                             isEnabled: Bool = true,
+                             isFirst: Bool = false,
+                             isLast: Bool = false) -> some View {
         let isSelected = model.schemeKind == schemeKind
+        
+        let clipTop: CGFloat = isFirst ? 16 : 0
+        let clipBottom: CGFloat = isLast ? 16 : 0
+        let strokeTop: CGFloat = isFirst ? 16 : 4
+        let strokeBottom: CGFloat = isLast ? 16 : 4
         
         return Button {
             model.selectProjectType(schemeKind)
@@ -99,11 +108,25 @@ struct ProjectTemplateSelectionView: View {
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(textColor.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .overlay {
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .clipShape(
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: clipTop,
+                        bottomLeadingRadius: clipBottom,
+                        bottomTrailingRadius: clipBottom,
+                        topTrailingRadius: clipTop,
+                        style: .continuous
+                    )
+                )
+                .overlay {
+                    UnevenRoundedRectangle(
+                        topLeadingRadius: strokeTop,
+                        bottomLeadingRadius: strokeBottom,
+                        bottomTrailingRadius: strokeBottom,
+                        topTrailingRadius: strokeTop,
+                        style: .continuous
+                    )
                     .stroke(isSelected ? textColor : hairlineColor.opacity(0.0), lineWidth: 1.5)
-            }
+                }
         }
         .buttonStyle(.plain)
         .disabled(!isEnabled)
