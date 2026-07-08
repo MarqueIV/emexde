@@ -229,7 +229,7 @@
         if(strongSelf != NULL)
         {
             /* process still alive? */
-            [self sendSignal:SIGKILL];
+            [strongSelf sendSignal:SIGKILL];
         }
     });
     return YES;
