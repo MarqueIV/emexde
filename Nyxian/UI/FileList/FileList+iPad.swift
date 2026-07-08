@@ -101,6 +101,11 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                 self.detailVC?.logView?.clearConsole()
                 
                 buildProjectWithArgumentUI(targetViewController: detailVC, project: project, buildType: .RunningApp) { [weak self] result, execPath in
+                    if let process = detailVC.process {
+                        process.removeObserver(detailVC)
+                        detailVC.process = nil
+                    }
+                    
                     guard let self = self else { return }
                     masterVC.navigationItem.leftBarButtonItem?.isEnabled = true
                     os_unfair_lock_unlock(&self.lock)
@@ -141,6 +146,7 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                         if processIdentifier > 0,
                            let process: PEProcess = PEProcessManager.shared().process(forProcessIdentifier: processIdentifier) {
                             process.process.addObserver(detailVC)
+                            detailVC.process = process.process
                         } else {
                             if let logView = detailVC.logView {
                                 logView.writeMessage(toConsole: "failed to spawn process")
@@ -157,6 +163,7 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
     let project: NXProject
     
     var lock: os_unfair_lock = os_unfair_lock()
+    var process: FBProcess? = nil
     
     var logView: LogTextView?
     var logViewHeightConstraint: NSLayoutConstraint?
