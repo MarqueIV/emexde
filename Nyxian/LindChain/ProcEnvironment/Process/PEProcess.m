@@ -222,7 +222,16 @@
 
 - (BOOL)terminate
 {
-    [self sendSignal:SIGKILL];
+    [self sendSignal:SIGTERM];
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        __strong typeof(self) strongSelf = weakSelf;
+        if(strongSelf != NULL)
+        {
+            /* process still alive? */
+            [self sendSignal:SIGKILL];
+        }
+    });
     return YES;
 }
 
