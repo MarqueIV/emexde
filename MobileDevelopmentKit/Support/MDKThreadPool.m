@@ -72,12 +72,12 @@ static void *MDKWorkerThreadMain(void *arg)
         }
         
         /* setting blocks up  */
-        void (^code)(void) = worker->currentBlock;
-        void (^completion)(void) = worker->completionBlock;
+        void (^code)(void) = (__bridge_transfer void (^)(void))worker->currentBlock;
+        void (^completion)(void) = (__bridge_transfer void (^)(void))worker->completionBlock;
         
         /* clear worker references to allow ARC to release captured objects */
-        worker->currentBlock = nil;
-        worker->completionBlock = nil;
+        worker->currentBlock = NULL;
+        worker->completionBlock = NULL;
         
         /* storing that we are working on API request rawrrr x3 */
         atomic_store(&worker->hasWork, false);
@@ -164,8 +164,8 @@ static void *MDKWorkerThreadMain(void *arg)
     MDKWorkerThread *worker = &_workers[workerIndex];
     dispatch_semaphore_t sem = self.semaphore;
     pthread_mutex_lock(&worker->mutex);
-    worker->currentBlock = [code copy];
-    worker->completionBlock = ^{
+    worker->currentBlock = (__bridge_retained void *)code;
+    worker->completionBlock = (__bridge_retained void *)^{
         if (completion) completion();
         pthread_mutex_lock(&self->_freeStackMutex);
         self->_freeStack[self->_freeTop++] = workerIndex;

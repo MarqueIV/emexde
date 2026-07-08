@@ -35,8 +35,8 @@ typedef struct {
     pthread_t thread;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
-    void (^__strong currentBlock)(void);
-    void (^__strong completionBlock)(void);
+    void *currentBlock;
+    void *completionBlock;
     int cpuIndex;
     _Atomic(bool) shouldExit;
     _Atomic(bool) hasWork;
