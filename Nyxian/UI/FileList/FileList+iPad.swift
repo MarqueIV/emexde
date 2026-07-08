@@ -378,7 +378,7 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
                     vc.view.topAnchor.constraint(equalTo: isIOS27 ? view.topAnchor : view.safeAreaLayoutGuide.topAnchor),
                     vc.view.bottomAnchor.constraint(equalTo: logView!.topAnchor, constant: isIOS26 ? -16 : 0),
                     vc.view.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: isIOS26 ? 16 : 0),
-                    vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: isIOS26 ? 16 : 0),
+                    vc.view.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: isIOS26 ? -16 : 0),
                     hconstrains
                 ]
             }()
