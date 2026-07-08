@@ -153,7 +153,7 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
     if(error != nil || identifier == nil)
     {
         [extension _kill:SIGKILL];
-        return false;
+        return nil;
     }
     
     pid_t pid = [extension pidForRequestIdentifier:identifier];
@@ -165,7 +165,7 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
     if(pid < 0)
     {
         [extension _kill:SIGKILL];
-        return false;
+        return nil;
     }
     
     /* next step is creation of FBProcess */
