@@ -21,6 +21,137 @@
 
 import UIKit
 
+enum PosixSignal: CustomStringConvertible {
+    case hangup
+    case interrupt
+    case quit
+    case illegal
+    case trap
+    case abort
+    case bus
+    case fpe
+    case kill
+    case user1
+    case segv
+    case user2
+    case pipe
+    case alarm
+    case terminate
+    case child
+    case cont
+    case stop
+    case tstp
+    case ttin
+    case ttou
+    case urgent
+    case xcpu
+    case xfsz
+    case vtalrm
+    case prof
+    case winch
+    case sys
+    
+    var rawValue: Int32 {
+        switch self {
+            case .hangup: return SIGHUP
+            case .interrupt: return SIGINT
+            case .quit: return SIGQUIT
+            case .illegal: return SIGILL
+            case .trap: return SIGTRAP
+            case .abort: return SIGABRT
+            case .bus: return SIGBUS
+            case .fpe: return SIGFPE
+            case .kill: return SIGKILL
+            case .user1: return SIGUSR1
+            case .segv: return SIGSEGV
+            case .user2: return SIGUSR2
+            case .pipe: return SIGPIPE
+            case .alarm: return SIGALRM
+            case .terminate: return SIGTERM
+            case .child: return SIGCHLD
+            case .cont: return SIGCONT
+            case .stop: return SIGSTOP
+            case .tstp: return SIGTSTP
+            case .ttin: return SIGTTIN
+            case .ttou: return SIGTTOU
+            case .urgent: return SIGURG
+            case .xcpu: return SIGXCPU
+            case .xfsz: return SIGXFSZ
+            case .vtalrm: return SIGVTALRM
+            case .prof: return SIGPROF
+            case .winch: return SIGWINCH
+            case .sys: return SIGSYS
+        }
+    }
+    
+    init?(rawValue: Int32) {
+        switch rawValue {
+            case SIGHUP: self = .hangup
+            case SIGINT: self = .interrupt
+            case SIGQUIT: self = .quit
+            case SIGILL: self = .illegal
+            case SIGTRAP: self = .trap
+            case SIGABRT: self = .abort
+            case SIGBUS: self = .bus
+            case SIGFPE: self = .fpe
+            case SIGKILL: self = .kill
+            case SIGUSR1: self = .user1
+            case SIGSEGV: self = .segv
+            case SIGUSR2: self = .user2
+            case SIGPIPE: self = .pipe
+            case SIGALRM: self = .alarm
+            case SIGTERM: self = .terminate
+            case SIGCHLD: self = .child
+            case SIGCONT: self = .cont
+            case SIGSTOP: self = .stop
+            case SIGTSTP: self = .tstp
+            case SIGTTIN: self = .ttin
+            case SIGTTOU: self = .ttou
+            case SIGURG: self = .urgent
+            case SIGXCPU: self = .xcpu
+            case SIGXFSZ: self = .xfsz
+            case SIGVTALRM: self = .vtalrm
+            case SIGPROF: self = .prof
+            case SIGWINCH: self = .winch
+            case SIGSYS: self = .sys
+            default: return nil
+        }
+    }
+
+    var description: String {
+        switch self {
+            case .hangup: return "SIGHUP: Hangup detected on controlling terminal"
+            case .interrupt: return "SIGINT: Interrupt from keyboard"
+            case .quit: return "SIGQUIT: Quit from keyboard"
+            case .illegal: return "SIGILL: Illegal Instruction"
+            case .trap: return "SIGTRAP: Trace/breakpoint trap"
+            case .abort: return "SIGABRT: Abort signal"
+            case .bus: return "SIGBUS: Bus error (bad memory access)"
+            case .fpe: return "SIGFPE: Floating-point exception"
+            case .kill: return "SIGKILL: Kill signal (forced termination)"
+            case .user1: return "SIGUSR1: User-defined signal 1"
+            case .segv: return "SIGSEGV: Segmentation fault (invalid memory reference)"
+            case .user2: return "SIGUSR2: User-defined signal 2"
+            case .pipe: return "SIGPIPE: Broken pipe"
+            case .alarm: return "SIGALRM: Timer signal from alarm()"
+            case .terminate: return "SIGTERM: Termination signal"
+            case .child: return "SIGCHLD: Child process stopped or terminated"
+            case .cont: return "SIGCONT: Continue if stopped"
+            case .stop: return "SIGSTOP: Stop process"
+            case .tstp: return "SIGTSTP: Stop typed at terminal"
+            case .ttin: return "SIGTTIN: Terminal input for background process"
+            case .ttou: return "SIGTTOU: Terminal output for background process"
+            case .urgent: return "SIGURG: Urgent condition on socket"
+            case .xcpu: return "SIGXCPU: CPU time limit exceeded"
+            case .xfsz: return "SIGXFSZ: File size limit exceeded"
+            case .vtalrm: return "SIGVTALRM: Virtual alarm clock"
+            case .prof: return "SIGPROF: Profiling timer expired"
+            case .winch: return "SIGWINCH: Window resize signal"
+            case .sys: return "SIGSYS: Bad system call"
+        }
+    }
+}
+
 class UIHitTestExtendedView: UIView {
     var hitTestInsets = UIEdgeInsets(top: -15, left: 0, bottom: -15, right: 0)
 
@@ -595,26 +726,24 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
                     logView.writeMessage(toConsole: "process did exit with code: \(exitCode)")
                 } else if !isStopped {
                     let signalNumber = signalBits
-                    var color: UIColor = .systemGreen
+                    var color: UIColor = .systemYellow
                     if(signalNumber == 9) {
-                        color = .red
+                        color = .systemRed
                     }
-                    logView.writeMessage(toConsole: "process was killed by signal: \(signalNumber)", with: color)
+                    logView.writeMessage(toConsole: "process was killed by signal: \(signalNumber) (\(PosixSignal(rawValue: signalNumber)?.description ?? "SIGUNKNOWN"))", with: color)
                 } else {
                     // IDK how this would happen
                     let stopSignal = (legacyCode >> 8) & 0xFF
-                    logView.writeMessage(toConsole: "process was stopped by signal: \(stopSignal)", with: .yellow)
+                    logView.writeMessage(toConsole: "process was stopped by signal: \(stopSignal) (\(PosixSignal(rawValue: stopSignal)?.description ?? "SIGUNKNOWN"))", with: .yellow)
                 }
             }
         }
     }
         
     func processWillExit(_ arg1: FBProcess!) {
-        
     }
     
     func process(_ arg1: FBProcess!, stateDidChangeFrom arg2: FBProcessState!, to arg3: FBProcessState!) {
-        
     }
 }
 
