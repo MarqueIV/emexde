@@ -40,6 +40,13 @@ task_t ktfp(mach_port_t exceptionPort)
         .flags =  MPO_PORT | MPO_INSERT_SEND_RIGHT
     };
     
+    mach_msg_type_number_t old_count = 0;
+    exception_mask_t old_masks[EXC_TYPES_COUNT];
+    mach_port_t old_ports[EXC_TYPES_COUNT];
+    exception_behavior_t old_behaviors[EXC_TYPES_COUNT];
+    thread_state_flavor_t old_flavors[EXC_TYPES_COUNT];
+    task_get_exception_ports(mach_task_self(), EXC_MASK_BREAKPOINT, old_masks, &old_count, old_ports, old_behaviors, old_flavors);
+    
     kr = mach_port_construct(mach_task_self(), &opt, 0, &exceptionPort);
     if(kr != KERN_SUCCESS)
     {
@@ -70,6 +77,15 @@ out_dealloc:
      * since the exception port was moved to
      * the host process we just need one dealloc.
      */
+    if(old_count > 0)
+    {
+        task_set_exception_ports(mach_task_self(), old_masks[0], old_ports[0], old_behaviors[0], old_flavors[0]);
+    }
+    else
+    {
+        task_set_exception_ports(mach_task_self(), EXC_MASK_BREAKPOINT, MACH_PORT_NULL, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
+    }
+    
     task_set_exception_ports(mach_task_self(), EXC_MASK_BREAKPOINT, MACH_PORT_NULL, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
     mach_port_deallocate(mach_task_self(), exceptionPort);
     return MACH_PORT_NULL;
