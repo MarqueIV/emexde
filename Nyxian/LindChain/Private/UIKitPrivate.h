@@ -154,7 +154,7 @@
 
 // FrontBoard
 
-@class RBSProcessIdentity, FBProcessExecutableSlice, UIMutableApplicationSceneClientSettings, UIMutableScenePresentationContext, UIScenePresentationManager, _UIScenePresenter;
+@class RBSProcessIdentity, FBProcessExecutableSlice, UIMutableApplicationSceneClientSettings, UIMutableScenePresentationContext, UIScenePresentationManager, _UIScenePresenter, _UISceneEventDeferringHostComponent;
 
 @interface FBApplicationProcessLaunchTransaction : BSTransaction
 - (instancetype) initWithProcessIdentity:(RBSProcessIdentity *)identity executionContextProvider:(id)providerBlock;
@@ -887,8 +887,6 @@
 - (void)viewDidMoveToWindow:(UIWindow *)window shouldAppearOrDisappear:(BOOL)appear;
 @end
 
-NS_ASSUME_NONNULL_BEGIN
-
 @interface SFSCoreGlyphsBundle: NSObject
 @property (nonatomic, class, readonly) NSBundle *private;
 @end
@@ -904,4 +902,36 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-NS_ASSUME_NONNULL_END
+API_AVAILABLE(ios(17.4))
+@interface _UISceneHostingControllerAdvancedConfiguration : NSObject
+@property(retain, nonatomic) UIApplicationSceneSpecification *sceneSpecification;
+@property(retain, nonatomic) NSOrderedSet *additionalExtensions;
+- (instancetype)initWithProcessIdentity:(RBSProcessIdentity *)identity;
+@end
+
+API_AVAILABLE(ios(17.0))
+@interface _UISceneHostingView : UIView
+- (id)_remoteSheetProvider;
+- (_UIScenePresenter *)_scenePresenter;
+- (void)_applyOverridesToHostedSceneSettings:(UIMutableApplicationSceneSettings *)settings;
+- (void)applyViewGeometryToSettings:(UIMutableApplicationSceneSettings *)settings API_AVAILABLE(ios(19.0));
+@end
+API_AVAILABLE(ios(17.0))
+@interface _UISceneHostingController : NSObject
+- (instancetype)initWithAdvancedConfiguration:(_UISceneHostingControllerAdvancedConfiguration *)config API_AVAILABLE(ios(17.4));
+//- (instancetype)initWithProcessIdentity:(RBSProcessIdentity *)identity sceneSpecification:(FBSSceneSpecification *)spec API_AVAILABLE(ios(17.0));
+- (_UISceneEventDeferringHostComponent *)_eventDeferringComponent API_AVAILABLE(ios(17.4));
+- (_UISceneHostingView *)sceneView API_AVAILABLE(ios(17.0));
+- (UIViewController *)sceneViewController; // API_AVAILABLE(ios(17.0))
+- (void)invalidate; // API_AVAILABLE(ios(17.0))
+@end
+
+API_AVAILABLE(ios(17.4)) // 17.0
+// iOS 17.0-26.x the class was named _UISceneHostingEventDeferringHostComponent
+@interface _UISceneEventDeferringHostComponent : NSObject
+@property(nonatomic) NSInteger grantBehavior API_AVAILABLE(ios(27.0));
+@property(nonatomic) NSInteger selectionRequestBehavior API_AVAILABLE(ios(27.0));
+//@property(nonatomic) BOOL maintainHostFirstResponderWhenClientWantsKeyboard;
+//@property(nonatomic) BOOL requestEventDeferralForAllFirstResponderChanges;
+- (void)setFirstResponderTrackingSelectionPath:(UIViewController *)path API_AVAILABLE(ios(27.0));
+@end
