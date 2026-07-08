@@ -20,8 +20,61 @@
 */
 
 #import <LindChain/Debugger/Logger.h>
+#import <emexDE-Swift.h>
 
 static const CGFloat kAutoScrollThreshold = 20.0;
+
+static NSString *const IDEFullLineHighlightAttributeName = @"IDEFullLineHighlightAttributeName";
+
+@interface IDEConsoleLayoutManager : NSLayoutManager
+@end
+
+@implementation IDEConsoleLayoutManager
+
+- (void)drawBackgroundForGlyphRange:(NSRange)glyphsToShow
+                            atPoint:(CGPoint)origin
+{
+    [self enumerateLineFragmentsForGlyphRange:glyphsToShow usingBlock:^(CGRect rect, CGRect usedRect, NSTextContainer *textContainer, NSRange glyphRange, BOOL *stop) {
+        NSRange charRange = [self characterRangeForGlyphRange:glyphRange actualGlyphRange:NULL];
+        UIColor *highlightColor = [self.textStorage attribute:IDEFullLineHighlightAttributeName atIndex:charRange.location longestEffectiveRange:NULL inRange:charRange];
+        
+        if(highlightColor)
+        {
+            UIColor *gutterHairlineColor = [[LDETheme current] gutterHairlineColor];
+            
+            CGContextRef context = UIGraphicsGetCurrentContext();
+            CGContextSaveGState(context);
+            
+            CGRect fullWidthRect = CGRectMake(0, rect.origin.y + origin.y, textContainer.size.width + (textContainer.lineFragmentPadding * 2), rect.size.height);
+            
+            [highlightColor setFill];
+            CGContextFillRect(context, fullWidthRect);
+            
+            CGFloat hairlineThickness = 0.5;
+            UIColor *hairlineColor = gutterHairlineColor;
+            [hairlineColor setStroke];
+            CGContextSetLineWidth(context, hairlineThickness);
+            
+            CGFloat topY = CGRectGetMinY(fullWidthRect) + (hairlineThickness / 2.0);
+            CGContextBeginPath(context);
+            CGContextMoveToPoint(context, CGRectGetMinX(fullWidthRect), topY);
+            CGContextAddLineToPoint(context, CGRectGetMaxX(fullWidthRect), topY);
+            CGContextStrokePath(context);
+            
+            CGFloat bottomY = CGRectGetMaxY(fullWidthRect) - (hairlineThickness / 2.0);
+            CGContextBeginPath(context);
+            CGContextMoveToPoint(context, CGRectGetMinX(fullWidthRect), bottomY);
+            CGContextAddLineToPoint(context, CGRectGetMaxX(fullWidthRect), bottomY);
+            CGContextStrokePath(context);
+            
+            CGContextRestoreGState(context);
+        }
+    }];
+    
+    [super drawBackgroundForGlyphRange:glyphsToShow atPoint:origin];
+}
+
+@end
 
 @implementation LogTextView {
     BOOL _followTail;
@@ -31,12 +84,23 @@ static const CGFloat kAutoScrollThreshold = 20.0;
 
 - (instancetype)init
 {
-    self = [super init];
+    NSTextStorage *textStorage = [[NSTextStorage alloc] init];
+    IDEConsoleLayoutManager *layoutManager = [[IDEConsoleLayoutManager alloc] init];
+    [textStorage addLayoutManager:layoutManager];
+    
+    NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:CGSizeZero];
+    textContainer.widthTracksTextView = YES;
+    textContainer.heightTracksTextView = YES;
+    [layoutManager addTextContainer:textContainer];
+    
+    self = [super initWithFrame:CGRectZero textContainer:textContainer];
+    self.textContainerInset = UIEdgeInsetsZero;
     _pipe = [NSPipe pipe];
     _stdinPipe = [NSPipe pipe];
     _followTail = YES;
     _inputStartLocation = 0;
-    _isAppendingOutput = NO;
+    _isAppendingOutput = NO;    
+    self.textLayoutManager.delegate = self;
 
     self.font = [UIFont monospacedSystemFontOfSize:12 weight:UIFontWeightRegular];
     self.backgroundColor = [UIColor systemGray6Color];
@@ -139,6 +203,42 @@ static const CGFloat kAutoScrollThreshold = 20.0;
     
     _isAppendingOutput = NO;
     
+    if(_followTail)
+    {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self scrollToBottom];
+        });
+    }
+}
+
+- (void)appendAttributedOutput:(NSAttributedString *)attributedOutput
+{
+    _isAppendingOutput = YES;
+    NSString *currentInput = @"";
+    if(_inputStartLocation < self.text.length)
+    {
+        currentInput = [self.text substringFromIndex:_inputStartLocation];
+        NSRange inputRange = NSMakeRange(_inputStartLocation, self.text.length - _inputStartLocation);
+        [self.textStorage deleteCharactersInRange:inputRange];
+    }
+    
+    [self.textStorage appendAttributedString:attributedOutput];
+    
+    _inputStartLocation = self.text.length;
+    
+    if(currentInput.length > 0)
+    {
+        NSDictionary *inputAttributes = @{
+            NSFontAttributeName: [UIFont monospacedSystemFontOfSize:12 weight:UIFontWeightRegular],
+            NSForegroundColorAttributeName: [UIColor systemGreenColor]
+        };
+        NSAttributedString *inputAttr = [[NSAttributedString alloc] initWithString:currentInput attributes:inputAttributes];
+        [self.textStorage appendAttributedString:inputAttr];
+    }
+    
+    [self.layoutManager ensureLayoutForTextContainer:self.textContainer];
+    self.selectedRange = NSMakeRange(self.text.length, 0);
+    _isAppendingOutput = NO;
     if(_followTail)
     {
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -274,8 +374,27 @@ static const CGFloat kAutoScrollThreshold = 20.0;
 }
 
 - (void)writeMessageToConsole:(NSString*)message
+                    withColor:(UIColor*)color
 {
-    [self appendOutput:[NSString stringWithFormat:@"[emexDE] %@\n", message]];
+    color = [color colorWithAlphaComponent:0.15];
+    NSString *fullMessage = [NSString stringWithFormat:@"%@\n", message];
+    
+    NSDictionary *attributes = @{
+        NSFontAttributeName: [UIFont monospacedSystemFontOfSize:12 weight:UIFontWeightRegular],
+        NSForegroundColorAttributeName: [UIColor labelColor],
+        IDEFullLineHighlightAttributeName: color
+    };
+    
+    NSAttributedString *attributedMessage = [[NSAttributedString alloc] initWithString:fullMessage attributes:attributes];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self appendAttributedOutput:attributedMessage];
+    });
+}
+
+- (void)writeMessageToConsole:(NSString*)message
+{
+    [self writeMessageToConsole:message withColor:[UIColor systemGreenColor]];
 }
 
 @end

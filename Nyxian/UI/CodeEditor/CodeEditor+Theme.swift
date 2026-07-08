@@ -157,62 +157,62 @@ func ldeThemeColorGen(colorEntry: Any) -> UIColor {
     return .clear
 }
 
-class LDETheme: Theme {
-    var fontSize: CGFloat {
+@objc class LDETheme: NSObject, Theme {
+    @objc var fontSize: CGFloat {
         return UserDefaults.standard.object(forKey: "LDEFontSize") == nil ? 12.0 : CGFloat(UserDefaults.standard.integer(forKey: "LDEFontSize"))
     }
     
-    var font: UIFont {
+    @objc var font: UIFont {
         return UIFont.monospacedSystemFont(ofSize: fontSize, weight: .semibold)
     }
     
-    var lineNumberFont: UIFont {
+    @objc var lineNumberFont: UIFont {
         return UIFont.monospacedSystemFont(ofSize: fontSize * 0.85, weight: .medium)
     }
     
-    let name: String
-    let textColor: UIColor
-    let backgroundColor: UIColor
+    @objc let name: String
+    @objc let textColor: UIColor
+    @objc let backgroundColor: UIColor
     
-    let gutterBackgroundColor: UIColor
-    let gutterHairlineColor: UIColor
+    @objc let gutterBackgroundColor: UIColor
+    @objc let gutterHairlineColor: UIColor
     
-    let lineNumberColor: UIColor
+    @objc let lineNumberColor: UIColor
     
-    let selectedLineBackgroundColor: UIColor
-    let selectedLinesLineNumberColor: UIColor
-    let selectedLinesGutterBackgroundColor: UIColor
+    @objc let selectedLineBackgroundColor: UIColor
+    @objc let selectedLinesLineNumberColor: UIColor
+    @objc let selectedLinesGutterBackgroundColor: UIColor
     
-    var invisibleCharactersColor: UIColor {
+    @objc var invisibleCharactersColor: UIColor {
         return textColor.withAlphaComponent(0.25)
     }
     
-    let pageGuideHairlineColor: UIColor
-    let pageGuideBackgroundColor: UIColor
+    @objc let pageGuideHairlineColor: UIColor
+    @objc let pageGuideBackgroundColor: UIColor
     
-    let markedTextBackgroundColor: UIColor
-    let colorKeyword: UIColor
-    let colorComment: UIColor
-    let colorString: UIColor
-    let colorNumber: UIColor
-    let colorRegex: UIColor
-    let colorFunction: UIColor
-    let colorOperator: UIColor
-    let colorProperty: UIColor
-    let colorPunctuation: UIColor
-    let colorDirective: UIColor
-    let colorType: UIColor
-    let colorConstantBuiltin: UIColor
-    let colorMethod: UIColor
-    let colorVariable: UIColor
-    let colorParameter: UIColor
-    let colorNamespace: UIColor
-    let colorAttribute: UIColor
-    let colorInclude: UIColor
+    @objc let markedTextBackgroundColor: UIColor
+    @objc let colorKeyword: UIColor
+    @objc let colorComment: UIColor
+    @objc let colorString: UIColor
+    @objc let colorNumber: UIColor
+    @objc let colorRegex: UIColor
+    @objc let colorFunction: UIColor
+    @objc let colorOperator: UIColor
+    @objc let colorProperty: UIColor
+    @objc let colorPunctuation: UIColor
+    @objc let colorDirective: UIColor
+    @objc let colorType: UIColor
+    @objc let colorConstantBuiltin: UIColor
+    @objc let colorMethod: UIColor
+    @objc let colorVariable: UIColor
+    @objc let colorParameter: UIColor
+    @objc let colorNamespace: UIColor
+    @objc let colorAttribute: UIColor
+    @objc let colorInclude: UIColor
     
-    let appLabel: UIColor
-    let appTableView: UIColor
-    let appTableCell: UIColor
+    @objc let appLabel: UIColor
+    @objc let appTableView: UIColor
+    @objc let appTableCell: UIColor
     
     init?(plistPath: String) {
         // Gaining plist access
@@ -307,6 +307,12 @@ class LDETheme: Theme {
             return colorPunctuation
         case .tag:
             return colorString
+        }
+    }
+    
+    @objc static var current: LDETheme? {
+        get {
+            return currentTheme
         }
     }
 }

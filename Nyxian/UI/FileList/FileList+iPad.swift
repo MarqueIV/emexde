@@ -588,11 +588,15 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
                     logView.writeMessage(toConsole: "process did exit with code: \(exitCode)")
                 } else if !isStopped {
                     let signalNumber = signalBits
-                    logView.writeMessage(toConsole: "process was killed by signal: \(signalNumber)")
+                    var color: UIColor = .systemGreen
+                    if(signalNumber == 9) {
+                        color = .red
+                    }
+                    logView.writeMessage(toConsole: "process was killed by signal: \(signalNumber)", with: color)
                 } else {
                     // IDK how this would happen
                     let stopSignal = (legacyCode >> 8) & 0xFF
-                    logView.writeMessage(toConsole: "process was stopped by signal: \(stopSignal)")
+                    logView.writeMessage(toConsole: "process was stopped by signal: \(stopSignal)", with: .yellow)
                 }
             }
         }
