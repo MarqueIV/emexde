@@ -23,6 +23,12 @@
 import SwiftUI
 
 struct ProjectTemplateSelectionView: View {
+    enum templateRowFlavour {
+        case last
+        case first
+        case generic
+    }
+    
     @ObservedObject var model: ProjectTemplateOptionsModel
     
     private var textColor: Color { Color(uiColor: currentTheme!.textColor) }
@@ -31,30 +37,9 @@ struct ProjectTemplateSelectionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            templateRow(
-                title: "App",
-                subtitle: "UI app for iPhone & iPad",
-                systemImage: "appstore.app.fill",
-                schemeKind: .app,
-                scale: .large,
-                isFirst: true
-            )
-            
-            templateRow(
-                title: "Command Line Tool",
-                subtitle: "Headless iOS app",
-                systemImage: "terminal.fill",
-                schemeKind: .utility
-            )
-            
-            templateRow(
-                title: "Library",
-                subtitle: "Library project",
-                systemImage: "building.columns.fill",
-                schemeKind: .library,
-                isEnabled: false,
-                isLast: true
-            )
+            templateRow(title: "App", subtitle: "UI app for iPhone & iPad", systemImage: "appstore.app.fill", schemeKind: .app, scale: .large, flavour: .first)
+            templateRow(title: "Command Line Tool", subtitle: "Headless iOS app", systemImage: "terminal.fill", schemeKind: .utility)
+            templateRow(title: "Library", subtitle: "Library project", systemImage: "building.columns.fill", schemeKind: .library, isEnabled: false, flavour: .last)
         }
         .padding(.top, 2)
         .padding(.horizontal, 18)
@@ -68,14 +53,13 @@ struct ProjectTemplateSelectionView: View {
                              schemeKind: NXProjectSchemeKind,
                              scale: UIImage.SymbolScale = .default,
                              isEnabled: Bool = true,
-                             isFirst: Bool = false,
-                             isLast: Bool = false) -> some View {
+                             flavour: templateRowFlavour = .generic) -> some View {
         let isSelected = model.schemeKind == schemeKind
         
-        let clipTop: CGFloat = isFirst ? 16 : 0
-        let clipBottom: CGFloat = isLast ? 16 : 0
-        let strokeTop: CGFloat = isFirst ? 16 : 4
-        let strokeBottom: CGFloat = isLast ? 16 : 4
+        let clipTop: CGFloat = flavour == .first ? 16 : 0
+        let clipBottom: CGFloat = flavour == .last ? 16 : 0
+        let strokeTop: CGFloat = flavour == .first ? 16 : 4
+        let strokeBottom: CGFloat = flavour == .last ? 16 : 4
         
         return Button {
             model.selectProjectType(schemeKind)
@@ -109,22 +93,10 @@ struct ProjectTemplateSelectionView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(textColor.opacity(0.05))
             .clipShape(
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: clipTop,
-                        bottomLeadingRadius: clipBottom,
-                        bottomTrailingRadius: clipBottom,
-                        topTrailingRadius: clipTop,
-                        style: .continuous
-                    )
+                    UnevenRoundedRectangle(topLeadingRadius: clipTop, bottomLeadingRadius: clipBottom, bottomTrailingRadius: clipBottom, topTrailingRadius: clipTop, style: .continuous)
                 )
                 .overlay {
-                    UnevenRoundedRectangle(
-                        topLeadingRadius: strokeTop,
-                        bottomLeadingRadius: strokeBottom,
-                        bottomTrailingRadius: strokeBottom,
-                        topTrailingRadius: strokeTop,
-                        style: .continuous
-                    )
+                    UnevenRoundedRectangle(topLeadingRadius: strokeTop, bottomLeadingRadius: strokeBottom, bottomTrailingRadius: strokeBottom, topTrailingRadius: strokeTop, style: .continuous)
                     .stroke(isSelected ? textColor : hairlineColor.opacity(0.0), lineWidth: 1.5)
                 }
         }

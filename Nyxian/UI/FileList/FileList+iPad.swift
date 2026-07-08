@@ -114,14 +114,16 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                             fdMapObject.appendFileDescriptor(logView.stdinPipe.fileHandleForReading.fileDescriptor, withMappingToLoc: STDIN_FILENO)
                         }
                         
+                        var processIdentifier: pid_t = -1
+                        
                         if project.projectConfig.schemeKind == .app {
-                            PEProcessManager.shared().spawnProcess(withBundleIdentifier: project.projectConfig.bundleid, withItems: ["PEMapObject":fdMapObject], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
+                            processIdentifier = PEProcessManager.shared().spawnProcess(withBundleIdentifier: project.projectConfig.bundleid, withItems: ["PEMapObject":fdMapObject], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
                         } else if project.projectConfig.schemeKind == .utility, let execPath = execPath {
                             guard let homePath: String = LDEApplicationWorkspace.shared().utilityHomePath() else {
                                 return
                             }
                             
-                            PEProcessManager.shared().spawnProcess(withItems: [
+                            processIdentifier = PEProcessManager.shared().spawnProcess(withItems: [
                                 "PEExecutablePath": execPath,
                                 "PEArguments": [
                                     execPath
@@ -134,6 +136,15 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                                 "PEWorkingDirectory": homePath,
                                 "PEMapObject": fdMapObject,
                             ], withKernelSurfaceProcess: nil)
+                        }
+                        
+                        if processIdentifier > 0,
+                           let process: PEProcess = PEProcessManager.shared().process(forProcessIdentifier: processIdentifier) {
+                            process.process.addObserver(detailVC)
+                        } else {
+                            if let logView = detailVC.logView {
+                                logView.writeMessage(toConsole: "failed to spawn process")
+                            }
                         }
                     }
                 }
@@ -561,6 +572,38 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
             vc.view.layer.borderColor = currentTheme?.backgroundColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
         }
         logView?.layer.borderColor = currentTheme?.backgroundColor.cgColor ?? UIColor.white.withAlphaComponent(0.2).cgColor
+    }
+    
+    func processDidExit(_ arg1: FBProcess!) {
+        DispatchQueue.main.sync {
+            if let logView = self.logView,
+               let exitContext: FBProcessExitContext = arg1.exitContext as? FBProcessExitContext {
+                let legacyCode: Int32 = exitContext.underlyingContext.legacyCode
+                
+                let signalBits = legacyCode & 0x7F
+                let isStopped = signalBits == 0x7F
+                
+                if signalBits == 0 {
+                    let exitCode = (legacyCode >> 8) & 0xFF
+                    logView.writeMessage(toConsole: "process did exit with code: \(exitCode)")
+                } else if !isStopped {
+                    let signalNumber = signalBits
+                    logView.writeMessage(toConsole: "process was killed by signal: \(signalNumber)")
+                } else {
+                    // IDK how this would happen
+                    let stopSignal = (legacyCode >> 8) & 0xFF
+                    logView.writeMessage(toConsole: "process was stopped by signal: \(stopSignal)")
+                }
+            }
+        }
+    }
+        
+    func processWillExit(_ arg1: FBProcess!) {
+        
+    }
+    
+    func process(_ arg1: FBProcess!, stateDidChangeFrom arg2: FBProcessState!, to arg3: FBProcessState!) {
+        
     }
 }
 

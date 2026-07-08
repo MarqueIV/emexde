@@ -32,6 +32,7 @@
 
 - (instancetype)init;
 - (void)clearConsole;
+- (void)writeMessageToConsole:(NSString*)message;
 
 @end
 

@@ -273,4 +273,9 @@ static const CGFloat kAutoScrollThreshold = 20.0;
     }
 }
 
+- (void)writeMessageToConsole:(NSString*)message
+{
+    [self appendOutput:[NSString stringWithFormat:@"[emexDE] %@\n", message]];
+}
+
 @end
