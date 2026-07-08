@@ -721,7 +721,7 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
                 
                 if signalBits == 0 {
                     let exitCode = (legacyCode >> 8) & 0xFF
-                    logView.writeMessage(toConsole: "process did exit with code: \(exitCode)")
+                    logView.writeMessage(toConsole: "process did exit with code: \(exitCode)", with: exitCode == 0 ? .systemGreen : .systemRed)
                 } else if !isStopped {
                     let signalNumber = signalBits
                     var color: UIColor = .systemYellow
