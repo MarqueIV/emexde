@@ -22,7 +22,6 @@
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/WindowServer/NXAppTile.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
-#import <LindChain/WindowServer/NXKeyboardPortal.h>
 
 @interface NXWindowLayerView : UIView
 @end
@@ -45,7 +44,6 @@
     UIScrollView *_runningAppsScrollView;
     
     NXWindowLayerView *_windowLayer;
-    NXKeyboardPortal *_activePortal;
 }
 
 - (instancetype)initWithWindowScene:(UIWindowScene *)windowScene
@@ -282,8 +280,6 @@
                    withCompletion:(void (^)(BOOL))completion
 {
     assert([NSThread isMainThread]);
-    
-    [self unregisterKeyboardPortalWithWindowIdentifier:identifier];
     
     if(_activeWindowIdentifier == identifier)
     {
@@ -993,37 +989,6 @@
             }
         }
         return;
-    }
-}
-
-- (void)registerKeyboardPortalWithFileDescriptor:(int)fd
-                                windowIdentifier:(id_t)wid
-{
-    assert([NSThread isMainThread]);
-    
-    if(_activePortal)
-    {
-        [_activePortal resignFirstResponder];
-        [_activePortal removeFromSuperview];
-    }
-    
-    _activePortal = [[NXKeyboardPortal alloc] initWithFrame:CGRectMake(0, 0, 1, 1) fileDescriptor:fd windowIdentifier:wid];
-    _activePortal.alpha = 0.01;
-    _activePortal.hidden = NO;
-    
-    [self addSubview:_activePortal];
-    [_activePortal becomeFirstResponder];
-}
-
-- (void)unregisterKeyboardPortalWithWindowIdentifier:(id_t)wid
-{
-    assert([NSThread isMainThread]);
-    
-    if(_activePortal.clientWid == wid)
-    {
-        [_activePortal resignFirstResponder];
-        [_activePortal removeFromSuperview];
-        _activePortal = nil;
     }
 }
 

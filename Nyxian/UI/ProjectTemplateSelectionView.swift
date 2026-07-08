@@ -70,7 +70,7 @@ struct ProjectTemplateSelectionView: View {
                         .fill(isSelected ? textColor : textColor.opacity(0.08))
                     
                     let base = UIImage(systemName: systemImage) ?? UIImage(privateSystemName: systemImage)
-                    let configuredBase: UIImage? = base.applyingSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold, scale: scale))
+                    let configuredBase: UIImage? = base!.applyingSymbolConfiguration(UIImage.SymbolConfiguration(pointSize: 22, weight: .semibold, scale: scale))
                     let img = configuredBase?.withRenderingMode(.alwaysTemplate) ?? UIImage()
                     
                     Image(uiImage: img)

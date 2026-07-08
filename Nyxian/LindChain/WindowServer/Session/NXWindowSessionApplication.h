@@ -28,6 +28,7 @@
 
 @interface NXWindowSessionApplication : NXWindowSession <_UISceneSettingsDiffAction>
 
+@property(nonatomic) _UISceneHostingController *hostingController;
 @property (nonatomic, strong) PEProcess *process;
 @property (nonatomic) _UIScenePresenter *presenter;
 @property (nonatomic, strong) NSTimer *backgroundEnforcementTimer;

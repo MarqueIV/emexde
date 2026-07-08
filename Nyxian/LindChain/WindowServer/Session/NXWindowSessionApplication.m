@@ -30,31 +30,6 @@
 #import <objc/runtime.h>
 #import <os/lock.h>
 
-@implementation RBSTarget(hook)
-
-+ (instancetype)hook_targetWithPid:(pid_t)pid environmentIdentifier:(NSString *)environmentIdentifier
-{
-    if([environmentIdentifier containsString:@"LiveProcess"])
-    {
-        environmentIdentifier = [NSString stringWithFormat:@"LiveProcess:%d", pid];
-    }
-    return [self hook_targetWithPid:pid environmentIdentifier:environmentIdentifier];
-}
-
-@end
-
-__attribute__((constructor))
-void UIKitFixesInit(void)
-{
-    /* FIXME: iOS 27.x keyboard is entirely broken on guest apps */
-    /* fix physical keyboard focus on iOS 17+ */
-    /* will be replaced with Duy Tran's new knowledge soon anyways, thanks to Duy Tran for his Frontboard knowledge */
-    if(@available(iOS 17.0, *))
-    {
-        method_exchangeImplementations(class_getClassMethod(RBSTarget.class, @selector(targetWithPid:environmentIdentifier:)), class_getClassMethod(RBSTarget.class, @selector(hook_targetWithPid:environmentIdentifier:)));
-    }
-}
-
 @implementation NXWindowSessionApplication
 
 - (instancetype)initWithProcess:(PEProcess*)process;
@@ -94,8 +69,60 @@ void UIKitFixesInit(void)
         return NO;
     }
     
+    /* create a new window using the new lifecycle */
+    RBSProcessPredicate* predicate = self.process.process.processPredicate;
+    RBSProcessHandle* processHandle = self.process.process.rbsHandle;
+    
+    void (^updateSceneSettings)(id) = ^void(UIMutableApplicationSceneSettings *settings) {
+        settings.canShowAlerts = YES;
+        settings.cornerRadiusConfiguration = [[PrivClass(BSCornerRadiusConfiguration) alloc] initWithTopLeft:self.view.layer.cornerRadius bottomLeft:self.view.layer.cornerRadius bottomRight:self.view.layer.cornerRadius topRight:self.view.layer.cornerRadius];
+        settings.displayConfiguration = UIScreen.mainScreen.displayConfiguration;
+        settings.foreground = YES;
+        settings.level = 1;
+        settings.persistenceIdentifier = self.process.scene.identifier;
+        settings.statusBarDisabled = true;
+    };
+    void (^updateSceneClientSettings)(id) = ^void(UIMutableApplicationSceneClientSettings *clientSettings) {
+        clientSettings.interfaceOrientation = UIInterfaceOrientationPortrait;
+        clientSettings.statusBarStyle = 0;
+    };
+    
+    _UISceneHostingControllerAdvancedConfiguration *config = [[_UISceneHostingControllerAdvancedConfiguration alloc] initWithProcessIdentity:processHandle.identity];
+    config.sceneSpecification = [UIApplicationSceneSpecification specification];
+    if (@available(iOS 27.0, *)) {} else {
+        // on 27 manually adding this is not need, also setAdditionalExtensions: doesn't exist for some reason
+        config.additionalExtensions = [NSOrderedSet orderedSetWithArray:@[
+            PrivClass(_UISceneHostingEventDeferringExtension),
+        ]];
+    }
+    self.hostingController = [[_UISceneHostingController alloc] initWithAdvancedConfiguration:config];
+    UIView *view = self.hostingController.sceneViewController.view;
+    view.clipsToBounds = NO;
+    self.presenter = [view valueForKey:@"_scenePresenter"];
+    FBScene *scene = self.presenter.scene;
+    [scene configureParameters:^(FBSMutableSceneParameters *parameters) {
+        [parameters updateSettingsWithBlock:updateSceneSettings];
+        [parameters updateClientSettingsWithBlock:updateSceneClientSettings];
+    }];
+    
+    _UISceneEventDeferringHostComponent *deferringComponent = self.hostingController._eventDeferringComponent;
+    NSAssert(deferringComponent, @"Unexpectedly nil _UISceneEventDeferringHostComponent");
+    if (@available(iOS 27.0, *)) { // _UIKeyboardArbiterUsesDeferringGraph()
+        /// UIKitCore`__85-[_UIRemoteViewControllerSceneHostingImpl _viewServiceHostSessionDidConnectToClient:]_block_invoke
+        /// iOS 27 requires setting up _UISceneEventDeferringHostComponent for keyboard focus to work
+        
+        /// Replicate these methods since they are made private
+        /// -[_UISceneEventDeferringHostComponent setFirstResponderTrackingSelectionPath:]:
+        [deferringComponent setValue:self forKey:@"_firstResponderTrackingSelectionPath"];
+        // if (!deferringComponent->_flags.clientIsInChain) return;
+        /// -[_UISceneEventDeferringHostComponent becomeFirstResponderIfNecessary]:
+        // if (deferringComponent->_flags.maintainHostFirstResponderWhenClientWantsKeyboard)
+        
+        deferringComponent.grantBehavior = 2;
+        deferringComponent.selectionRequestBehavior = 2;
+    }
+    
     @try {
-        self.presenter = [self.process.scene.uiPresentationManager createPresenterWithIdentifier:self.process.scene.identifier];
         [self.presenter modifyPresentationContext:^(UIMutableScenePresentationContext *context) {
             context.appearanceStyle = 2;
         }];
@@ -105,7 +132,7 @@ void UIKitFixesInit(void)
     }
     
     /* ready to show the presenter :3 */
-    [self.view addSubview:self.presenter.presentationView];
+    [self.view addSubview:view];
     [self.windowScene _registerSettingsDiffActionArray:@[self] forKey:self.process.scene.identifier];
     
     return YES;

@@ -36,23 +36,18 @@
 @property (nonatomic) ksurface_proc_t *proc;
 
 @property (nonatomic,weak) NXWindowSessionApplication *session;
+@property(nonatomic) _UISceneHostingController *hostingController;
 @property (nonatomic,strong) FBProcess *process;
 @property (nonatomic,strong) FBScene *scene;
 @property (nonatomic,strong) UIImage *snapshot;
 
-// Process properties
 @property (nonatomic,strong) NSString *bundleIdentifier;
 @property (nonatomic,strong) NSString *displayName;
 @property (nonatomic,strong) NSString *executablePath;
-
-// Info properties
 @property (nonatomic) pid_t pid;
 @property (nonatomic) id_t wid;
 
-// Other boolean flags
 @property (nonatomic) BOOL isSuspended;
-
-// Callback
 @property (nonatomic, copy) void (^exitingCallback)(void);
 
 - (instancetype)initWithItems:(NSDictionary*)items withKernelSurfaceProcess:(ksurface_proc_t*)proc withSession:(NXWindowSessionApplication*)session;

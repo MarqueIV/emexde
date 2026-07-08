@@ -413,6 +413,8 @@
 - (UIScenePresentationManager *)uiPresentationManager;
 - (void)updateSettings:(UIMutableApplicationSceneSettings *)settings withTransitionContext:(id)context completion:(id)completion;
 - (void)updateSettingsWithBlock:(void(^)(UIMutableApplicationSceneSettings *settings))arg1;
+- (void)configureParameters:(void(^)(FBSMutableSceneParameters *parameters))parametersBlock;
+- (void)addObserver:(id)arg1;
 
 @end
 
@@ -785,7 +787,8 @@
 
 @interface FBSSceneParameters(Multitask)
 + (instancetype)parametersForSpecification:(FBSSceneSpecification *)spec;
-//- (void)updateSettingsWithBlock:(id)block;
+- (void)updateClientSettingsWithBlock:(void(^)(UIMutableApplicationSceneClientSettings *clientSettings))block;
+- (void)updateSettingsWithBlock:(void(^)(UIMutableApplicationSceneSettings *settings))block;
 @end
 
 @interface FBSMutableSceneDefinition : NSObject
@@ -848,6 +851,7 @@
 @interface _UIScenePresenter : NSObject
 @property (nonatomic, assign, readonly) _UIScenePresentationView *presentationView;
 @property(nonatomic, assign, readonly) FBScene *scene;
+@property (nonatomic, copy, readonly) NSString *identifier;
 - (instancetype)initWithOwner:(_UIScenePresenterOwner *)manager identifier:(NSString *)scene sortContext:(NSNumber *)context;
 - (void)modifyPresentationContext:(void(^)(UIMutableScenePresentationContext *context))block;
 - (void)activate;
