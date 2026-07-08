@@ -33,15 +33,15 @@ struct ProjectTemplateSelectionView: View {
         VStack(spacing: 8) {
             templateRow(
                 title: "App",
-                subtitle: "Application project",
+                subtitle: "UI app for iPhone & iPad",
                 systemImage: "appstore.app.fill",
                 schemeKind: .app,
                 scale: .large
             )
             
             templateRow(
-                title: "Utility",
-                subtitle: "Command line tool project",
+                title: "Command Line Tool",
+                subtitle: "Headless iOS app",
                 systemImage: "terminal.fill",
                 schemeKind: .utility
             )
