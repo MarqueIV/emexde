@@ -242,20 +242,18 @@ int UIApplicationMain(int argc, char * argv[], NSString * principalClassName, NS
     exit(LiveProcessMain(argc, argv));
 }
 
-/* NSExtensionMain will load UIKit and call UIApplicationMain, so we need to redirect it to our fake one */
-DEFINE_HOOK(dlopen, void*, (void* dyldApiInstancePtr, const char* path, int mode))
+/* literally redirecting UIApplicationMain to our own one */
+DEFINE_HOOK(dlsym, void*, (void* dyldApiInstancePtr, void* handle, const char* symbol))
 {
-    if(path && !strcmp(path, "/System/Library/Frameworks/UIKit.framework/UIKit"))
+    /* checking if process is looking for it */
+    if(symbol && !strcmp(symbol, "UIApplicationMain"))
     {
-        /* switch back to original dlopen */
-        performHookDyldApi("dlopen", 2, (void**)&orig_dlopen, orig_dlopen);
-        /* FIXME: may be incompatible with jailbreak tweaks? */
-        return RTLD_MAIN_ONLY;
+        performHookDyldApi("dlsym", 2, (void**)&orig_dlsym, orig_dlsym);
+        return (void*)&UIApplicationMain;   /* should not break jailbreak compatibility */
     }
-    else
-    {
-        __attribute__((musttail)) return orig_dlopen(dyldApiInstancePtr, path, mode);
-    }
+    
+    /* pass it to the real one */
+    __attribute__((musttail)) return orig_dlsym(dyldApiInstancePtr, handle, symbol);
 }
 
 /* Extension entry point */
@@ -269,7 +267,7 @@ int NSExtensionMain(int argc, char * argv[])
      * into thinking that our UIApplicationMain is the real
      * legitimate one
      */
-    performHookDyldApi("dlopen", 2, (void**)&orig_dlopen, hook_dlopen);
+    performHookDyldApi("dlsym", 2, (void**)&ORIG_FUNC(dlsym), HOOK_FUNC(dlsym));
     
     /*
      * call the real NSExtensionMain, which calls
