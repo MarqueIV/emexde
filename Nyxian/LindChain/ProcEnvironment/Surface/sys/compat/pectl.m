@@ -257,22 +257,23 @@ DEFINE_SYSCALL_HANDLER(pectl)
         {
             __block errno_t err = 0;
             
-            __block NXWindowServer *sharedWindowServer = [NXWindowServer shared];
-            if(sharedWindowServer == nil)
-            {
-                /* window server is not running yet */
-                sys_return_failure(EAGAIN);
-            }
-            
-            __block PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(sys_proc_snapshot_)];
-            if(process == NULL)
-            {
-                /* process must exist in Process Manager */
-                err = ESRCH;
-                sys_return_failure(ESRCH);
-            }
-            
             dispatch_sync(dispatch_get_main_queue(), ^{
+                NXWindowServer *sharedWindowServer = [NXWindowServer shared];
+                if(sharedWindowServer == nil)
+                {
+                    /* window server is not running yet */
+                    err = EAGAIN;
+                    return;
+                }
+                
+                PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(sys_proc_snapshot_)];
+                if(process == NULL)
+                {
+                    /* process must exist in Process Manager */
+                    err = ESRCH;
+                    return;
+                }
+                
                 if(process.wid < 0)
                 {
                     /* window can only be opened once */
@@ -282,8 +283,8 @@ DEFINE_SYSCALL_HANDLER(pectl)
                 
                 if(process.session == nil)
                 {
-                    __block NXWindowSessionApplication *session = [[NXWindowSessionApplication alloc] initWithProcess:process];
-                    [[NXWindowServer shared] openWindowWithSession:session withCompletion:^(BOOL windowOpened){
+                    NXWindowSessionApplication *session = [[NXWindowSessionApplication alloc] initWithProcess:process];
+                    [sharedWindowServer openWindowWithSession:session withCompletion:^(BOOL windowOpened){
                         if(windowOpened)
                         {
                             process.wid = session.windowIdentifier;
