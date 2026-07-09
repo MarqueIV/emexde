@@ -256,7 +256,6 @@ DEFINE_SYSCALL_HANDLER(pectl)
         case PECTL_PE_UIAPP_RUN:
         {
             __block errno_t err = 0;
-            
             dispatch_sync(dispatch_get_main_queue(), ^{
                 NXWindowServer *sharedWindowServer = [NXWindowServer shared];
                 if(sharedWindowServer == nil)
