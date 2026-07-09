@@ -151,16 +151,16 @@
     
     self.sceneHostingController = [[_UISceneHostingController alloc] initWithAdvancedConfiguration:config];
     
-    Class deferringExtensionClass = NSClassFromString(@"_UISceneEventDeferringExtension"); // Or equivalent internal extension class
-    if(deferringExtensionClass)
-    {
-        /* need to add extension, otherwise the instance can make caboom */
-        [self.sceneHostingController addExtension:deferringExtensionClass];
-    }
-    [self.sceneHostingController configureScene];
-    
     if(@available(iOS 27.0, *))
     {
+        Class deferringExtensionClass = NSClassFromString(@"_UISceneEventDeferringExtension"); // Or equivalent internal extension class
+        if(deferringExtensionClass)
+        {
+            /* need to add extension, otherwise the instance can make caboom */
+            [self.sceneHostingController addExtension:deferringExtensionClass];
+        }
+        [self.sceneHostingController configureScene];
+        
         _UISceneEventDeferringHostComponent *deferringComponent = [self.sceneHostingController performSelector:@selector(_eventDeferringComponent)];
         if(deferringComponent)
         {
