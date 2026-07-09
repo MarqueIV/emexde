@@ -257,16 +257,22 @@ DEFINE_SYSCALL_HANDLER(pectl)
         {
             __block errno_t err = 0;
             
-            kvo_wrlock(sys_proc_);
+            __block NXWindowServer *sharedWindowServer = [NXWindowServer shared];
+            if(sharedWindowServer == nil)
+            {
+                /* window server is not running yet */
+                sys_return_failure(EAGAIN);
+            }
+            
+            __block PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(sys_proc_snapshot_)];
+            if(process == NULL)
+            {
+                /* process must exist in Process Manager */
+                err = ESRCH;
+                sys_return_failure(ESRCH);
+            }
+            
             dispatch_sync(dispatch_get_main_queue(), ^{
-                PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(sys_proc_)];
-                if(process == NULL)
-                {
-                    /* process must exist in Process Manager */
-                    err = ESRCH;
-                    return;
-                }
-                
                 if(process.wid < 0)
                 {
                     /* window can only be opened once */
@@ -294,8 +300,6 @@ DEFINE_SYSCALL_HANDLER(pectl)
                     }
                 }
             });
-            
-            kvo_unlock(sys_proc_);
             sys_return_failure(err);
         }
         default:
