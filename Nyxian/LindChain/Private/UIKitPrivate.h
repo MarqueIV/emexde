@@ -936,6 +936,8 @@ API_AVAILABLE(ios(17.0))
 - (_UISceneHostingView *)sceneView API_AVAILABLE(ios(17.0));
 - (UIViewController *)sceneViewController; // API_AVAILABLE(ios(17.0))
 - (void)invalidate; // API_AVAILABLE(ios(17.0))
+- (void)addExtension:(id)extension;
+- (void)configureScene;
 @end
 
 API_AVAILABLE(ios(17.4)) // 17.0

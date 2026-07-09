@@ -150,38 +150,34 @@
     }
     
     self.sceneHostingController = [[_UISceneHostingController alloc] initWithAdvancedConfiguration:config];
+    
+    Class deferringExtensionClass = NSClassFromString(@"_UISceneEventDeferringExtension"); // Or equivalent internal extension class
+    if(deferringExtensionClass)
+    {
+        /* need to add extension, otherwise the instance can make caboom */
+        [self.sceneHostingController addExtension:deferringExtensionClass];
+    }
+    [self.sceneHostingController configureScene];
+    
+    if(@available(iOS 27.0, *))
+    {
+        _UISceneEventDeferringHostComponent *deferringComponent = [self.sceneHostingController performSelector:@selector(_eventDeferringComponent)];
+        if(deferringComponent)
+        {
+            [deferringComponent setValue:self forKey:@"_firstResponderTrackingSelectionPath"];
+            [deferringComponent setGrantBehavior:2];
+            [deferringComponent setSelectionRequestBehavior:2];
+        }
+        else
+        {
+            klog_log("NXWindowSessionApplication", "Unexpectedly nil _UISceneEventDeferringHostComponent");
+        }
+    }
+    
     self.contentView = self.sceneHostingController.sceneViewController.view;
     self.contentView.clipsToBounds = NO;
     self.scenePresenter = [self.contentView valueForKey:@"_scenePresenter"];
     self.scene = self.scenePresenter.scene;
-    NSLog(@"Scene: %@ binds in", self.scene);
-    
-    /* FIXME: unsafe to call private API */
-    //_UISceneEventDeferringHostComponent *deferringComponent = self.sceneHostingController._eventDeferringComponent;
-    //NSAssert(deferringComponent, @"Unexpectedly nil _UISceneEventDeferringHostComponent");
-    /*if (@available(iOS 27.0, *)) { // _UIKeyboardArbiterUsesDeferringGraph()
-        /// UIKitCore`__85-[_UIRemoteViewControllerSceneHostingImpl _viewServiceHostSessionDidConnectToClient:]_block_invoke
-        /// iOS 27 requires setting up _UISceneEventDeferringHostComponent for keyboard focus to work
-        
-        /// Replicate these methods since they are made private
-        /// -[_UISceneEventDeferringHostComponent setFirstResponderTrackingSelectionPath:]:
-        [deferringComponent setValue:self forKey:@"_firstResponderTrackingSelectionPath"];
-        // if (!deferringComponent->_flags.clientIsInChain) return;
-        /// -[_UISceneEventDeferringHostComponent becomeFirstResponderIfNecessary]:
-        // if (deferringComponent->_flags.maintainHostFirstResponderWhenClientWantsKeyboard)
-        
-        deferringComponent.grantBehavior = 2;
-        deferringComponent.selectionRequestBehavior = 2;
-    }*/
-    
-    /*@try {
-        [self.scenePresenter modifyPresentationContext:^(UIMutableScenePresentationContext *context) {
-            context.appearanceStyle = 2;
-        }];
-    } @catch (NSException *exception) {
-        klog_log("LDEWindowSessionApplication", "presenter creation failed: %s", [exception.reason UTF8String]);
-        return NO;
-    }*/
     
     /* register that shit */
     [self.windowScene _registerSettingsDiffActionArray:@[self] forKey:self.scene.identifier];
