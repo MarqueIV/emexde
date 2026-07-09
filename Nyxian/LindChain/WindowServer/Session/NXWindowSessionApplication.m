@@ -134,19 +134,21 @@
             PrivClass(_UISceneHostingEventDeferringExtension),
         ]];
     }
-    
-    SEL settingsSelector = NSSelectorFromString(@"setInitialSettingsUpdater:");
-    if([config respondsToSelector:settingsSelector])
+    else
     {
-        void (*sendSettings)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
-        sendSettings(config, settingsSelector, updateSceneSettings);
-    }
-
-    SEL clientSettingsSelector = NSSelectorFromString(@"setInitialClientSettingsUpdater:");
-    if([config respondsToSelector:clientSettingsSelector])
-    {
-        void (*sendClientSettings)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
-        sendClientSettings(config, clientSettingsSelector, updateSceneClientSettings);
+        SEL settingsSelector = NSSelectorFromString(@"setInitialSettingsUpdater:");
+        if([config respondsToSelector:settingsSelector])
+        {
+            void (*sendSettings)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
+            sendSettings(config, settingsSelector, updateSceneSettings);
+        }
+        
+        SEL clientSettingsSelector = NSSelectorFromString(@"setInitialClientSettingsUpdater:");
+        if([config respondsToSelector:clientSettingsSelector])
+        {
+            void (*sendClientSettings)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
+            sendClientSettings(config, clientSettingsSelector, updateSceneClientSettings);
+        }
     }
     
     self.sceneHostingController = [[_UISceneHostingController alloc] initWithAdvancedConfiguration:config];
@@ -179,8 +181,16 @@
     self.scenePresenter = [self.contentView valueForKey:@"_scenePresenter"];
     self.scene = self.scenePresenter.scene;
     
+    /* gosh apple changed the behaviour of this API to death ;w; */
+    if(!@available(iOS 27.0, *))
+    {
+        [self.scene updateSettingsWithBlock:updateSceneSettings];
+    }
+    
     /* register that shit */
     [self.windowScene _registerSettingsDiffActionArray:@[self] forKey:self.scene.identifier];
+    
+    /* FIXME: no way to update client settings so far */
     
     return YES;
 }
