@@ -33,8 +33,22 @@
 
 static dispatch_source_t global_signal_source = nil;
 
+
+@implementation UIApplication (ProcEnvironment)
+
+- (void)hook_run
+{
+    /* Tell host app to let our process appear */
+    environment_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
+    [self hook_run];
+}
+
+@end
+
 void environment_application_init(void)
 {
+    swizzle_objc_method(@selector(_run), [UIApplication class], @selector(hook_run), nil);
+    
     signal(SIGUSR1, SIG_IGN);
     global_signal_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGUSR1, 0, dispatch_get_main_queue());
     if(global_signal_source)

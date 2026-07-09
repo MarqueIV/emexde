@@ -31,14 +31,12 @@
 
 @class NXWindowSessionApplication;
 
-@interface PEProcess : NSObject <FBProcessObserver,FBProcessManagerObserver,FBSceneDelegate>
+@interface PEProcess : NSObject <FBProcessObserver,FBProcessManagerObserver>
 
 @property (nonatomic) ksurface_proc_t *proc;
 
 @property (nonatomic,weak) NXWindowSessionApplication *session;
-@property(nonatomic) _UISceneHostingController *hostingController;
 @property (nonatomic,strong) FBProcess *process;
-@property (nonatomic,strong) FBScene *scene;
 @property (nonatomic,strong) UIImage *snapshot;
 
 @property (nonatomic,strong) NSString *bundleIdentifier;

@@ -28,10 +28,13 @@
 
 @interface NXWindowSessionApplication : NXWindowSession <_UISceneSettingsDiffAction>
 
-@property(nonatomic) _UISceneHostingController *hostingController;
 @property (nonatomic, strong) PEProcess *process;
-@property (nonatomic) _UIScenePresenter *presenter;
 @property (nonatomic, strong) NSTimer *backgroundEnforcementTimer;
+@property (nonatomic, strong) FBScene *scene;
+
+@property (nonatomic) _UISceneHostingController *sceneHostingController;
+@property (nonatomic) _UIScenePresenter *scenePresenter;
+@property (nonatomic) UIView *contentView;
 
 - (instancetype)initWithProcess:(PEProcess*)process;
 

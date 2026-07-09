@@ -27,6 +27,8 @@
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <Foundation/Foundation.h>
 #import <LindChain/Services/containerd/PEContainer.h>
+#import <LindChain/WindowServer/NXWindowServer.h>
+#import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 
 extern mach_port_t xpc_endpoint_copy_listener_port_4sim(NSObject<OS_xpc_object>*);
 extern NSObject<OS_xpc_object> *xpc_endpoint_create_mach_port_4sim(mach_port_t port);
@@ -250,6 +252,51 @@ DEFINE_SYSCALL_HANDLER(pectl)
             }
             
             sys_return;
+        }
+        case PECTL_PE_UIAPP_RUN:
+        {
+            __block errno_t err = 0;
+            
+            kvo_wrlock(sys_proc_);
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(sys_proc_)];
+                if(process == NULL)
+                {
+                    /* process must exist in Process Manager */
+                    err = ESRCH;
+                    return;
+                }
+                
+                if(process.wid < 0)
+                {
+                    /* window can only be opened once */
+                    err = EPERM;
+                    return;
+                }
+                
+                if(process.session == nil)
+                {
+                    __block NXWindowSessionApplication *session = [[NXWindowSessionApplication alloc] initWithProcess:process];
+                    [[NXWindowServer shared] openWindowWithSession:session withCompletion:^(BOOL windowOpened){
+                        if(windowOpened)
+                        {
+                            process.wid = session.windowIdentifier;
+                            process.session = session;
+                        }
+                    }];
+                }
+                else
+                {
+                    if([process.session injectProcess:process])
+                    {
+                        process.wid = process.session.windowIdentifier;
+                        [process.session activateWindow];
+                    }
+                }
+            });
+            
+            kvo_unlock(sys_proc_);
+            sys_return_failure(err);
         }
         default:
             sys_return_failure(ENOSYS);

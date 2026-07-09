@@ -908,9 +908,17 @@
 
 API_AVAILABLE(ios(17.4))
 @interface _UISceneHostingControllerAdvancedConfiguration : NSObject
+
 @property(retain, nonatomic) UIApplicationSceneSpecification *sceneSpecification;
 @property(retain, nonatomic) NSOrderedSet *additionalExtensions;
 - (instancetype)initWithProcessIdentity:(RBSProcessIdentity *)identity;
+
+- (void)setInitialClientSettingsUpdater:(id /* block */)arg1;
+- (void)setInitialSettingsUpdater:(id /* block */)arg1;
+- (void)setSceneIdentifier:(id)arg1;
+- (void)setSceneSpecification:(id)arg1;
+- (void)setSceneWorkspace:(id)arg1;
+
 @end
 
 API_AVAILABLE(ios(17.0))

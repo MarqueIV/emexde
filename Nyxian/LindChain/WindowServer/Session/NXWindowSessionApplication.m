@@ -29,14 +29,44 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <objc/runtime.h>
 #import <os/lock.h>
+#import <objc/message.h>
 
-@implementation NXWindowSessionApplication
+@implementation NXWindowSessionApplication {
+    UIView *_contentView;
+}
+
+@dynamic contentView;
 
 - (instancetype)initWithProcess:(PEProcess*)process;
 {
+    if(process == nil)
+    {
+        return nil;
+    }
+    
     self = [super init];
-    _process = process;
+    if(self)
+    {
+        _process = process;
+    }
     return self;
+}
+
+- (UIView*)contentView
+{
+    assert([NSThread isMainThread]);
+    return _contentView;
+}
+
+- (void)setContentView:(UIView *)contentView
+{
+    assert([NSThread isMainThread]);
+    if(_contentView != nil)
+    {
+        [_contentView removeFromSuperview];
+    }
+    _contentView = contentView;
+    [self.view addSubview:contentView];
 }
 
 + (void)bringSessionToFrontWithBundleIdentifier:(NSString*)bundleIdentifier
@@ -62,24 +92,32 @@
     });
 }
 
-- (BOOL)openWindow
+- (BOOL)bindInApplicationWindow
 {
-    if(![super openWindow])
+    assert([NSThread isMainThread]);
+    
+    /* destroy existing window if there is one already */
+    if(_scene != nil)
     {
-        return NO;
+        [self.windowScene _unregisterSettingsDiffActionArrayForKey:_scene.identifier];
+    }
+    if(self.scenePresenter)
+    {
+        [self.scenePresenter invalidate];
+    }
+    if(self.scene)
+    {
+        [[PrivClass(FBSceneManager) sharedInstance] destroyScene:self.scene withTransitionContext:nil];
     }
     
     /* create a new window using the new lifecycle */
-    RBSProcessPredicate* predicate = self.process.process.processPredicate;
-    RBSProcessHandle* processHandle = self.process.process.rbsHandle;
-    
     void (^updateSceneSettings)(id) = ^void(UIMutableApplicationSceneSettings *settings) {
         settings.canShowAlerts = YES;
         settings.cornerRadiusConfiguration = [[PrivClass(BSCornerRadiusConfiguration) alloc] initWithTopLeft:self.view.layer.cornerRadius bottomLeft:self.view.layer.cornerRadius bottomRight:self.view.layer.cornerRadius topRight:self.view.layer.cornerRadius];
         settings.displayConfiguration = UIScreen.mainScreen.displayConfiguration;
-        settings.foreground = YES;
+        settings.foreground = NO;
         settings.level = 1;
-        settings.persistenceIdentifier = self.process.scene.identifier;
+        settings.persistenceIdentifier = [NSString stringWithFormat:@"sceneID:%@-%@", @"LiveProcess", [NSUUID.UUID UUIDString]];
         settings.statusBarDisabled = true;
     };
     void (^updateSceneClientSettings)(id) = ^void(UIMutableApplicationSceneClientSettings *clientSettings) {
@@ -87,27 +125,41 @@
         clientSettings.statusBarStyle = 0;
     };
     
-    _UISceneHostingControllerAdvancedConfiguration *config = [[_UISceneHostingControllerAdvancedConfiguration alloc] initWithProcessIdentity:processHandle.identity];
+    _UISceneHostingControllerAdvancedConfiguration *config = [[_UISceneHostingControllerAdvancedConfiguration alloc] initWithProcessIdentity:self.process.process.identity];
     config.sceneSpecification = [UIApplicationSceneSpecification specification];
-    if (@available(iOS 27.0, *)) {} else {
-        // on 27 manually adding this is not need, also setAdditionalExtensions: doesn't exist for some reason
+    if(!@available(iOS 27.0, *))
+    {
+        /* on 27 manually adding this is not need, also setAdditionalExtensions: doesn't exist for some reason */
         config.additionalExtensions = [NSOrderedSet orderedSetWithArray:@[
             PrivClass(_UISceneHostingEventDeferringExtension),
         ]];
     }
-    self.hostingController = [[_UISceneHostingController alloc] initWithAdvancedConfiguration:config];
-    UIView *view = self.hostingController.sceneViewController.view;
-    view.clipsToBounds = NO;
-    self.presenter = [view valueForKey:@"_scenePresenter"];
-    FBScene *scene = self.presenter.scene;
-    [scene configureParameters:^(FBSMutableSceneParameters *parameters) {
-        [parameters updateSettingsWithBlock:updateSceneSettings];
-        [parameters updateClientSettingsWithBlock:updateSceneClientSettings];
-    }];
     
-    _UISceneEventDeferringHostComponent *deferringComponent = self.hostingController._eventDeferringComponent;
-    NSAssert(deferringComponent, @"Unexpectedly nil _UISceneEventDeferringHostComponent");
-    if (@available(iOS 27.0, *)) { // _UIKeyboardArbiterUsesDeferringGraph()
+    SEL settingsSelector = NSSelectorFromString(@"setInitialSettingsUpdater:");
+    if([config respondsToSelector:settingsSelector])
+    {
+        void (*sendSettings)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
+        sendSettings(config, settingsSelector, updateSceneSettings);
+    }
+
+    SEL clientSettingsSelector = NSSelectorFromString(@"setInitialClientSettingsUpdater:");
+    if([config respondsToSelector:clientSettingsSelector])
+    {
+        void (*sendClientSettings)(id, SEL, id) = (void (*)(id, SEL, id))objc_msgSend;
+        sendClientSettings(config, clientSettingsSelector, updateSceneClientSettings);
+    }
+    
+    self.sceneHostingController = [[_UISceneHostingController alloc] initWithAdvancedConfiguration:config];
+    self.contentView = self.sceneHostingController.sceneViewController.view;
+    self.contentView.clipsToBounds = NO;
+    self.scenePresenter = [self.contentView valueForKey:@"_scenePresenter"];
+    self.scene = self.scenePresenter.scene;
+    NSLog(@"Scene: %@ binds in", self.scene);
+    
+    /* FIXME: unsafe to call private API */
+    //_UISceneEventDeferringHostComponent *deferringComponent = self.sceneHostingController._eventDeferringComponent;
+    //NSAssert(deferringComponent, @"Unexpectedly nil _UISceneEventDeferringHostComponent");
+    /*if (@available(iOS 27.0, *)) { // _UIKeyboardArbiterUsesDeferringGraph()
         /// UIKitCore`__85-[_UIRemoteViewControllerSceneHostingImpl _viewServiceHostSessionDidConnectToClient:]_block_invoke
         /// iOS 27 requires setting up _UISceneEventDeferringHostComponent for keyboard focus to work
         
@@ -120,31 +172,44 @@
         
         deferringComponent.grantBehavior = 2;
         deferringComponent.selectionRequestBehavior = 2;
-    }
+    }*/
     
-    @try {
-        [self.presenter modifyPresentationContext:^(UIMutableScenePresentationContext *context) {
+    /*@try {
+        [self.scenePresenter modifyPresentationContext:^(UIMutableScenePresentationContext *context) {
             context.appearanceStyle = 2;
         }];
     } @catch (NSException *exception) {
         klog_log("LDEWindowSessionApplication", "presenter creation failed: %s", [exception.reason UTF8String]);
         return NO;
-    }
+    }*/
     
-    /* ready to show the presenter :3 */
-    [self.view addSubview:view];
-    [self.windowScene _registerSettingsDiffActionArray:@[self] forKey:self.process.scene.identifier];
+    /* register that shit */
+    [self.windowScene _registerSettingsDiffActionArray:@[self] forKey:self.scene.identifier];
     
     return YES;
+}
+
+- (BOOL)openWindow
+{
+    if(![super openWindow])
+    {
+        return NO;
+    }
+    
+    return [self bindInApplicationWindow];
 }
 
 - (BOOL)closeWindow
 {
     [super closeWindow];
     
-    /* bye bye presenter */
-    [_presenter invalidate];
-    [self.windowScene _unregisterSettingsDiffActionArrayForKey:self.process.scene.identifier];
+    if(self.scene != nil)
+    {
+        /* bye bye presenter */
+        [_scenePresenter invalidate];
+        [self.windowScene _unregisterSettingsDiffActionArrayForKey:self.scene.identifier];
+        [[PrivClass(FBSceneManager) sharedInstance] destroyScene:self.scene withTransitionContext:nil];
+    }
     [_process terminate];
     
     return YES;
@@ -161,12 +226,12 @@
     assert([NSThread isMainThread]);
     
     /* set presenter to foreground */
-    [self.presenter.scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
+    [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
         settings.foreground = YES;
     }];
     
     /* re-activate presenter */
-    [self.presenter activate];
+    [_scenePresenter activate];
     
     return YES;
 }
@@ -176,15 +241,15 @@
     assert([NSThread isMainThread]);
     
     /* set presenter to background */
-    [self.presenter.scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
+    [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
         settings.foreground = NO;
     }];
  
     /* TODO: implement the jailbreak way of getting a snapshot of a iOS app */
-    [self.process sendSignal:SIGUSR1];
+    [_process sendSignal:SIGUSR1];
     
     /* deactivate the presenter */
-    [self.presenter deactivate];
+    [_scenePresenter deactivate];
     
     return YES;
 }
@@ -203,7 +268,7 @@
     }
     
     /* update window dimensions */
-    [self.presenter.scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
+    [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
 
         settings.deviceOrientation = UIDevice.currentDevice.orientation;
         settings.interfaceOrientation = self.view.window.windowScene.interfaceOrientation;
@@ -251,10 +316,10 @@
     UIApplicationSceneTransitionContext *newContext = [context copy];
     newContext.actions = nil;
     
-    UIMutableApplicationSceneSettings *newSettings = [self.presenter.scene.settings mutableCopy];
+    UIMutableApplicationSceneSettings *newSettings = [_scene.settings mutableCopy];
     newSettings.userInterfaceStyle = baseSettings.userInterfaceStyle;
     
-    [self.presenter.scene updateSettings:newSettings withTransitionContext:newContext completion:nil];
+    [_scene updateSettings:newSettings withTransitionContext:newContext completion:nil];
     
     [self windowRectChanged];
 }
@@ -277,7 +342,7 @@
     
     if(self.traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle)
     {
-        [self.presenter.scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
+        [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
             settings.userInterfaceStyle = self.traitCollection.userInterfaceStyle;
         }];
     }
@@ -298,58 +363,13 @@
 - (BOOL)injectProcess:(PEProcess*)process
 {
     assert([NSThread isMainThread]);
-    
-    /* keep reference to old presenter for animation */
-    UIView *oldPresentationView = self.presenter.presentationView;
-    _UIScenePresenter *oldPresenter = self.presenter;
-    
-    /* unregister old window */
-    [self.windowScene _unregisterSettingsDiffActionArrayForKey:self.process.scene.identifier];
-    
     self.process = process;
-    
-    @try {
-        self.presenter = [self.process.scene.uiPresentationManager createPresenterWithIdentifier:process.scene.identifier];
-        [self.presenter modifyPresentationContext:^(UIMutableScenePresentationContext *context) {
-            context.appearanceStyle = 2;
-        }];
-    } @catch (NSException *exception) {
-        klog_log("NXWindowSessionApplication", "presenter creation failed: %s", [exception.reason UTF8String]);
+    if(![self bindInApplicationWindow])
+    {
         return NO;
     }
-    
-    /* setup new presenter view with initial alpha */
-    UIView *newPresentationView = self.presenter.presentationView;
-    newPresentationView.alpha = 0.0;
-    
-    /* add new view below old view */
-    if(oldPresentationView)
-    {
-        [self.view insertSubview:newPresentationView belowSubview:oldPresentationView];
-    }
-    else
-    {
-        [self.view addSubview:newPresentationView];
-    }
-    
-    /* register new window */
-    [self.windowScene _registerSettingsDiffActionArray:@[self] forKey:process.scene.identifier];
-    
+    [self activateWindow];
     [self windowRectChanged];
-    
-    /* animate transition */
-    [UIView animateWithDuration:0.3 delay:0.0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-        newPresentationView.alpha = 1.0;
-        if(oldPresentationView)
-        {
-            oldPresentationView.alpha = 0.0;
-        }
-    } completion:^(BOOL finished) {
-        /* cleanup old presenter */
-        [oldPresentationView removeFromSuperview];
-        [oldPresenter invalidate];
-    }];
-    
     return YES;
 }
 

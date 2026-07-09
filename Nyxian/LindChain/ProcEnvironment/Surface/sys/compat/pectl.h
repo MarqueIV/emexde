@@ -36,6 +36,8 @@
 #define PECTL_CS_GET_PRVKEY     0b00000100  /* noop                                                                         */
 #define PECTL_CS_SIGN_PATH      0b00000101  /* signs executable at a specific path                                          */
 
+#define PECTL_PE_UIAPP_RUN      0b00000110
+
 DEFINE_SYSCALL_HANDLER(pectl);
 
 #endif /* SURFACE_SYS_PECTL_H */
