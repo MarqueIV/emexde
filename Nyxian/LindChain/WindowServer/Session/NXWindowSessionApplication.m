@@ -67,6 +67,15 @@
     }
     _contentView = contentView;
     [self.view addSubview:contentView];
+    
+    contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    
+    [NSLayoutConstraint activateConstraints:@[
+        [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+        [contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+        [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+        [contentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+    ]];
 }
 
 + (void)bringSessionToFrontWithBundleIdentifier:(NSString*)bundleIdentifier
@@ -275,11 +284,6 @@
     
     /* update window dimensions */
     [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
-
-        settings.deviceOrientation = UIDevice.currentDevice.orientation;
-        settings.interfaceOrientation = self.view.window.windowScene.interfaceOrientation;
-        settings.frame = UIInterfaceOrientationIsLandscape(settings.interfaceOrientation) ? CGRectMake(rect.origin.y, rect.origin.x, rect.size.height, rect.size.width) : rect;
-        
         UIEdgeInsets insets = (self.isFullscreen) ? NXWindowServer.shared.safeAreaInsets : UIEdgeInsetsZero;
         
         /* looks unnatural without */
