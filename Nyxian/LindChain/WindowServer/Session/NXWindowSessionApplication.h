@@ -34,7 +34,7 @@
 
 @property (nonatomic) _UISceneHostingController *sceneHostingController;
 @property (nonatomic) _UIScenePresenter *scenePresenter;
-@property (nonatomic) UIView *contentView;
+@property (nonatomic, readwrite) UIView *contentView;
 
 - (instancetype)initWithProcess:(PEProcess*)process;
 

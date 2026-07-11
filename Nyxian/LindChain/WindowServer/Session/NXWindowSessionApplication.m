@@ -65,9 +65,8 @@
     assert([NSThread isMainThread]);
     if(_contentView != nil)
     {
-        [_contentView removeFromSuperview];
+        contentView.alpha = 0.0;
     }
-    _contentView = contentView;
     [self.view addSubview:contentView];
     
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -78,6 +77,22 @@
         [contentView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
         [contentView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
     ]];
+    
+    if(_contentView != nil)
+    {
+        UIView *currentContentView = _contentView;
+        [UIView animateWithDuration:0.5 animations:^{
+            currentContentView.alpha = 0.0;
+            contentView.alpha = 1.0;
+        } completion:^(BOOL finished){
+            if(finished)
+            {
+                [currentContentView removeFromSuperview];
+            }
+        }];
+    }
+    
+    _contentView = contentView;
 }
 
 - (void)setScene:(FBScene *)scene
