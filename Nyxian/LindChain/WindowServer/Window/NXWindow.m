@@ -31,8 +31,6 @@
     UIView *_focusHitView;
     dispatch_once_t _viewDidAppearOnceDispatch;
     dispatch_once_t _closeOnce;
-    CADisplayLink *_resizeDisplayLink;
-    NSTimer *_resizeEndDebounceTimer;
     int _resizeEndDebounceRefCnt;
 }
 
@@ -276,7 +274,6 @@
         };
         
         completion = ^{
-            [self resizeActionEnd];
             self->_windowBar.maximizeButton.imageView.image = [UIImage systemImageNamed:@"arrow.up.left.and.arrow.down.right.circle.fill"];
         };
     }
@@ -303,12 +300,10 @@
         };
         
         completion = ^{
-            [self resizeActionEnd];
             self->_windowBar.maximizeButton.imageView.image = [UIImage systemImageNamed:@"arrow.down.right.and.arrow.up.left.circle.fill"];
         };
     }
     
-    [self resizeActionStart];
     if(animated)
     {
         [UIView animateWithDuration:0.35 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:changes completion:^(BOOL finished) {
@@ -367,7 +362,6 @@
     {
         case UIGestureRecognizerStateBegan:
             [self focusWindow];
-            [self resizeActionStart];
             [gesture setTranslation:CGPointZero inView:self.view.superview];
             break;
         case UIGestureRecognizerStateChanged:
@@ -400,7 +394,6 @@
         case UIGestureRecognizerStateEnded:
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
-            [self resizeActionEnd];
             [self updateOriginalFrame];
             break;
         default:
@@ -463,16 +456,9 @@
     
     dispatch_once(&_viewDidAppearOnceDispatch, ^{
         // MARK: Suppose to only run on phones
-        [self startLiveResizeWithSettingsBlock];
         if([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone)
         {
             [self maximizeWindow:NO];
-        }
-        else
-        {
-            // MARK: Triggering resize system at start to guarantee that it gets layouted
-            [self resizeActionStart];
-            [self resizeActionEnd];
         }
     });
 }
@@ -491,70 +477,17 @@
 - (void)changeWindowToRect:(CGRect)rect
                 completion:(void (^)(BOOL))completion
 {
-    [self resizeActionStart];
     [UIView animateWithDuration:0.35 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
         self.view.frame = rect;
     } completion:^(BOOL finished){
         if(finished)
         {
-            [self resizeActionEnd];
             if(completion != nil)
             {
                 completion(finished);
             }
         }
     }];
-}
-
-- (void)startLiveResizeWithSettingsBlock
-{
-    if(!_resizeDisplayLink)
-    {
-        _resizeDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateSceneFrame)];
-        [_resizeDisplayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-        _resizeDisplayLink.paused = YES;
-    }
-}
-
-- (void)updateSceneFrame
-{
-    [_session windowRectChanged];
-}
-
-- (void)resizeActionStart
-{
-    if(_resizeEndDebounceRefCnt == 0)
-    {
-        [_resizeEndDebounceTimer invalidate];
-        _resizeEndDebounceTimer = nil;
-        _resizeDisplayLink.paused = NO;
-    }
-    
-    _resizeEndDebounceRefCnt += 1;
-}
-
-- (void)resizeActionEnd
-{
-    if(_resizeEndDebounceRefCnt == 0)
-        return;
-    else
-        _resizeEndDebounceRefCnt -= 1;
-    
-    if(_resizeEndDebounceRefCnt == 0)
-    {
-        [self->_resizeEndDebounceTimer invalidate];
-        __weak typeof(self) weakSelf = self;
-        self->_resizeEndDebounceTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:NO block:^(NSTimer * _Nonnull timer) {
-            __strong typeof(self) innerSelf = weakSelf;
-            if(innerSelf == nil)
-            {
-                return;
-            }
-            
-            innerSelf->_resizeDisplayLink.paused = YES;
-            innerSelf->_resizeEndDebounceTimer = nil;
-        }];
-    }
 }
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
@@ -603,19 +536,6 @@
 - (void)deinit
 {
     dispatch_async(dispatch_get_main_queue(), ^{
-        /* ending live resizing */
-        if(self->_resizeEndDebounceTimer != nil)
-        {
-            [self->_resizeEndDebounceTimer invalidate];
-            self->_resizeEndDebounceTimer = nil;
-        }
-        
-        if(self->_resizeDisplayLink != nil)
-        {
-            [self->_resizeDisplayLink invalidate];
-            self->_resizeDisplayLink = nil;
-        }
-        
         /* destroying focus view */
         if(self->_focusHitView != nil)
         {

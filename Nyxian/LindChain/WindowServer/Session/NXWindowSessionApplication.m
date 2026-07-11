@@ -33,9 +33,11 @@
 
 @implementation NXWindowSessionApplication {
     UIView *_contentView;
+    FBScene *_scene;
 }
 
 @dynamic contentView;
+@dynamic scene;
 
 - (instancetype)initWithProcess:(PEProcess*)process;
 {
@@ -71,11 +73,44 @@
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
     
     [NSLayoutConstraint activateConstraints:@[
-        [contentView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-        [contentView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
-        [contentView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
-        [contentView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
+        [contentView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
+        [contentView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
+        [contentView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
+        [contentView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
     ]];
+}
+
+- (void)setScene:(FBScene *)scene
+{
+    _scene = scene;
+    
+    [scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
+        UIEdgeInsets insets = (self.isFullscreen) ? NXWindowServer.shared.safeAreaInsets : UIEdgeInsetsZero;
+        
+        insets.top = 10;
+        
+        switch(settings.interfaceOrientation)
+        {
+            case UIInterfaceOrientationPortrait:
+                settings.safeAreaInsetsPortrait = insets;
+                break;
+            case UIInterfaceOrientationPortraitUpsideDown:
+                settings.safeAreaInsetsPortraitUpsideDown = insets;
+                break;
+            case UIInterfaceOrientationLandscapeLeft:
+                settings.safeAreaInsetsLandscapeLeft = insets;
+                break;
+            case UIInterfaceOrientationLandscapeRight:
+                settings.safeAreaInsetsLandscapeRight = insets;
+            case UIInterfaceOrientationUnknown:
+                break;
+        }
+    }];
+}
+
+- (FBScene*)scene
+{
+    return _scene;
 }
 
 + (void)bringSessionToFrontWithBundleIdentifier:(NSString*)bundleIdentifier
@@ -269,45 +304,6 @@
     return YES;
 }
 
-- (void)windowRectChanged
-{
-    assert([NSThread isMainThread]);
-    
-    [super windowRectChanged];
-    
-    CGRect rect = self.view.frame;
-    
-    if(self.process.isSuspended)
-    {
-        return;
-    }
-    
-    /* update window dimensions */
-    [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
-        UIEdgeInsets insets = (self.isFullscreen) ? NXWindowServer.shared.safeAreaInsets : UIEdgeInsetsZero;
-        
-        /* looks unnatural without */
-        insets.top = 10;
-        
-        switch(settings.interfaceOrientation)
-        {
-            case UIInterfaceOrientationPortrait:
-                settings.safeAreaInsetsPortrait = insets;
-                break;
-            case UIInterfaceOrientationPortraitUpsideDown:
-                settings.safeAreaInsetsPortraitUpsideDown = insets;
-                break;
-            case UIInterfaceOrientationLandscapeLeft:
-                settings.safeAreaInsetsLandscapeLeft = insets;
-                break;
-            case UIInterfaceOrientationLandscapeRight:
-                settings.safeAreaInsetsLandscapeRight = insets;
-            case UIInterfaceOrientationUnknown:
-                break;
-        }
-    }];
-}
-
 - (void)_performActionsForUIScene:(UIScene *)scene
               withUpdatedFBSScene:(id)fbsScene
                      settingsDiff:(FBSSceneSettingsDiff *)diff
@@ -330,8 +326,6 @@
     newSettings.userInterfaceStyle = baseSettings.userInterfaceStyle;
     
     [_scene updateSettings:newSettings withTransitionContext:newContext completion:nil];
-    
-    [self windowRectChanged];
 }
 
 - (BOOL)shouldUpdateFocusInContext:(nonnull UIFocusUpdateContext *)context
@@ -379,7 +373,6 @@
         return NO;
     }
     [self activateWindow];
-    [self windowRectChanged];
     return YES;
 }
 

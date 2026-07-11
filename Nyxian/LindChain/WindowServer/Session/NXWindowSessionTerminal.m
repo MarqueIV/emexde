@@ -178,12 +178,9 @@
     _terminal.translatesAutoresizingMaskIntoConstraints = NO;
     [self.view addSubview:_terminal];
     
-    _heigthConstraint = [self.terminal.heightAnchor constraintEqualToConstant:100];
-    _widthConstraint = [self.terminal.widthAnchor constraintEqualToConstant:100];
-    
     [NSLayoutConstraint activateConstraints:@[
-        _heigthConstraint,
-        _widthConstraint
+        [self.terminal.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
+        [self.terminal.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
     ]];
     
     return YES;
@@ -226,19 +223,6 @@
     
     //[_process suspend];
     return YES;
-}
-
-- (void)windowRectChanged
-{
-    [super windowRectChanged];
-    
-    CGRect rect = self.view.frame;
-    
-    _heigthConstraint.constant = rect.size.height;
-    _widthConstraint.constant = rect.size.width;
-    
-    char *noop = "\0";
-    write(_tty->userspacefd[SLAVEFD], [[NSData dataWithBytes:noop length:1] bytes], 1);
 }
 
 - (NSString*)getWindowName

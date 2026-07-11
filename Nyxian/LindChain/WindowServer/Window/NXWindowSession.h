@@ -49,8 +49,6 @@
 - (BOOL)focusWindow;
 - (BOOL)unfocusWindow;
 
-- (void)windowRectChanged;
-
 - (UIImage*)snapshotWindow;
 
 - (void)movedWindowToScene:(UIWindowScene*)windowScene withIdentifier:(id_t)identifier;

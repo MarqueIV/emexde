@@ -65,11 +65,6 @@
     return snapshot;
 }
 
-- (void)windowRectChanged
-{
-    return;
-}
-
 - (NSString*)getWindowName
 {
     __strong NXWindow *window = self.window;

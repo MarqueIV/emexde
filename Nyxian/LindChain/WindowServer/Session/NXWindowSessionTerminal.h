@@ -29,9 +29,6 @@
 
 @property (nonatomic,strong) NSString *utilityPath;
 
-@property (nonatomic,strong) NSLayoutConstraint *heigthConstraint;
-@property (nonatomic,strong) NSLayoutConstraint *widthConstraint;
-
 @property (nonatomic,weak) PEProcess *process;
 
 - (instancetype)initWithUtilityPath:(NSString*)utilityPath;
