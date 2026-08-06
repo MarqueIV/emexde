@@ -54,6 +54,13 @@ static dispatch_source_t global_signal_source = nil;
 
 void environment_application_init(void)
 {
+    /*
+     * FIXME: so the app appears as a window, tho there is a bug this is way too slow and apps like CocoaTop crash immediately
+     * the only issue that i can reason of is that we do it too soon in the pipeline and we need a earlier
+     * method that indicates a UIApplication attempts to be executed. tho if we use the old proper method where we
+     * get a delegation callback called by FBS then it won't work with new scene life cycle, also other bugs like
+     * missing szizing on the first RootViewController that appears.
+     */
     swizzle_objc_method(@selector(_run), [UIApplication class], @selector(hook_run), nil);
     
     signal(SIGUSR1, SIG_IGN);
