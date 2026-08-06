@@ -3,7 +3,7 @@
   <p><i>IDE to develop native Swift, Objective-C, Objective-C++, C and C++ iOS apps and tools on unjailbroken iOS</i></p>
 </div>
 <h6 align="center">
-  <a target="_blank" href="https://discord.gg/Cbeg3gJzC7"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Fv9%2Finvites%2FCbeg3gJzC7&amp;query=profile.member_count&amp;suffix=%20Members&amp;style=for-the-badge&amp;logo=discord&amp;logoColor=fff&amp;label=emex%20lab%20Discord&amp;labelColor=000&amp;color=fff" alt="Discord invite"></a>
+  <a target="_blank" href="https://discord.gg/H96bhkAHjB"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscord.com%2Fapi%2Fv9%2Finvites%2FH96bhkAHjB&amp;query=profile.member_count&amp;suffix=%20Members&amp;style=for-the-badge&amp;logo=discord&amp;logoColor=fff&amp;label=emexLabs%20Discord&amp;labelColor=000&amp;color=fff" alt="Discord invite"></a>
   <a href="https://github.com/emexlab/emexDE/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/emexlab/emexDE/build.yml?style=for-the-badge&amp;logo=github&amp;label=Build%20iOS%20App&amp;labelColor=000&amp;color=fff" alt="Build iOS App"></a>
 </h6>
 <p align="center">
