@@ -178,6 +178,7 @@
         settings.level = 1;
         settings.persistenceIdentifier = [NSString stringWithFormat:@"sceneID:%@-%@", @"LiveProcess", [NSUUID.UUID UUIDString]];
         settings.statusBarDisabled = true;
+        settings.frame = self.view.frame;
     };
     void (^updateSceneClientSettings)(id) = ^void(UIMutableApplicationSceneClientSettings *clientSettings) {
         clientSettings.interfaceOrientation = UIInterfaceOrientationPortrait;
