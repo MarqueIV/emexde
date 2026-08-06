@@ -50,16 +50,7 @@ struct UIOnboardingHelper {
                       : UIColor(red: 0.30, green: 0.58, blue: 0.88, alpha: 1.0)
                   },
                   title: "Development",
-                  description: "A full fledged Xcode alternative supporting Swift, C, C++, Objective-C and Objective-C++ that runs on any iOS 18.0+ iPhone or iPad."),
-            
-                .init(icon: UIImage(systemName: "swift")!,
-                      iconTint: UIColor { trait in
-                          trait.userInterfaceStyle == .dark
-                          ? UIColor(red: 0.99, green: 0.70, blue: 0.55, alpha: 1.0)
-                          : UIColor(red: 0.92, green: 0.50, blue: 0.30, alpha: 1.0)
-                      },
-                      title: "Swift",
-                      description: "Write, compile, and run Swift code on-device with a full integrated Swift frontend."),
+                  description: "A full development environment supporting Swift, C, C++, Objective-C and Objective-C++ that runs on any iOS 18.4+ iPhone or iPad."),
             
                 .init(icon: UIImage(systemName: "wrench.and.screwdriver.fill")!,
                       iconTint: UIColor { trait in
@@ -68,7 +59,7 @@ struct UIOnboardingHelper {
                           : UIColor(red: 0.55, green: 0.45, blue: 0.85, alpha: 1.0)
                       },
                       title: "MobileDevelopmentKit",
-                      description: "A complete LLVM, Swift, Clang, and LLD toolchain running natively on iOS, powering compilation and linking completely on-device without any overpriced cloud services or subscriptions."),
+                      description: "A completely FOSS LLVM, Swift, Clang, and LLD toolchain running natively on iOS, powering compilation and linking completely on-device without any overpriced cloud services or subscriptions."),
             
                 .init(icon: UIImage(systemName: "cpu.fill")!,
                       iconTint: UIColor { trait in
@@ -77,7 +68,16 @@ struct UIOnboardingHelper {
                           : UIColor(red: 0.30, green: 0.68, blue: 0.58, alpha: 1.0)
                       },
                       title: "Native Performance",
-                      description: "A custom kernel virtualization layer providing real process management, Mach IPC, and POSIX semantics directly on-device."),
+                      description: "A custom kernel immitation layer called ksurface providing real process management, Mach IPC(task ports for example) and POSIX semantics directly on-device for your projects."),
+            
+                .init(icon: UIImage(systemName: "exclamationmark.triangle.fill")!,
+                      iconTint: UIColor { trait in
+                                trait.userInterfaceStyle == .dark
+                                ? UIColor(red: 0.98, green: 0.82, blue: 0.45, alpha: 1.0)
+                                : UIColor(red: 0.85, green: 0.60, blue: 0.12, alpha: 1.0)
+                        },
+                      title: "Warning",
+                      description: "This is a beta version of emexDE, don't expect everything to work 100% yet please be kind and respectful, it is very hard to develop this kind of software. Please report any kinds of issues and ask any question over at our github we have a lot of time and passion answering your questions and making emexDE better."),
         ])
     }
     
