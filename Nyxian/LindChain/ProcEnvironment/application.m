@@ -38,7 +38,7 @@ static dispatch_source_t global_signal_source = nil;
 
 - (void)hook_run
 {
-    /* Tell host app to let our process appear */
+    /* tell host app to let our process appear as a window */
     environment_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
     
     while(errno == EAGAIN)
