@@ -50,15 +50,8 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
     {
         return NULL;
     }
-    
-    /*
-     * setting child process identifiers
-     * which are safe to change now, such
-     * as the ppid, the ppid becomes the pid
-     * because the ppid is the pid of the copy
-     * and the copy is the copy of the parent.
-     */
-    proc_setppid(child, proc_getpid(child));
+
+    proc_setppid(child, proc_getpid(child));    /* as the child is the copy of the parent the current pid is the ppid */
     proc_setpid(child, child_pid);  /* function passed pid of child */
     
     /*
@@ -69,7 +62,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
      * sayed executable.
      */
     PEEntitlement entitlement = [[PEContainer shared] entitlementForExecutableAtPath:nsPath];
-    PEEntitlement currentEntitlement = proc_getentitlements(child);
+    PEEntitlement currentEntitlement = PEEntitlementNone;   /* is set at inheritance stage if applicable */
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child);
     
     /*
@@ -88,30 +81,24 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
          */
         entitlement &= currentEntitlement;
     }
-    
-    /*
-     * checking if parent process is the kernel
-     * process, because the kernel process
-     * regardless of what its own entitlements
-     * are shall drop the entitlements of the
-     * child process and force a new session id
-     * and ucred. this is also to prevent a attack
-     * to change the kernels entitlements with
-     * a vulnerability and then escalate it by
-     * making it spawn process with entitlement
-     * inheritence as code on iOS has to be signed
-     * a attacker cannot change this would causing
-     * ksurface to crash.
-     */
+
+    /* entitlement inheritance */
     if(parent == kernel_proc_)
     {
-        proc_setmobilecred(child);                          /* dropping ucred permitives */
-        proc_setsid(child, child_pid);                      /* forcing its own process identifier as session identifier */
-        goto force_not_inherite_entitlements;               /* forcing none, so it gets fresh entitlements from the executable */
+        /*
+         * The kernel process shall never inherite entitlements,
+         * imagine a attacker could laverage a PUAF
+         * (very unlikely currently, but never say it's not possible,
+         * just look at where we are rn xD) in ksurface and then
+         * manipulate the kernel processes data structures to inherite
+         * entitlements, you would argue now that they could overwrite
+         * this code here, but iOS doesn't allow JIT so that would make
+         * emexDE and ksurface crash immediately.
+         */
+        proc_setmobilecred(child);
+        proc_setsid(child, child_pid);
     }
-    
-    /* process can decide if they want to inherite entitlements or not */
-    if(entitlement_got_entitlement(currentEntitlement, PEEntitlementProcessSpawnInheriteEntitlements))
+    else if(entitlement_got_entitlement(currentEntitlement, PEEntitlementProcessSpawnInheriteEntitlements))
     {
         /*
          * entitlements which shall be stripped regardless
@@ -120,22 +107,17 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
          * wants to debug they need to spawn the child process
          * or debug a process in the same session.
          */
+        currentEntitlement = proc_getentitlements(child);   /* still mirrors parents entitlements at process creation time */
         currentEntitlement &= ~(PEEntitlementPlatform | PEEntitlementPlatformRoot | PEEntitlementTaskForPid | PEEntitlementProcessElevate);
     }
-    else
-force_not_inherite_entitlements:
-    {
-        currentEntitlement = PEEntitlementNone;
-    }
     
-    /* checking for special platform root */
+    /* checking for special platform root credentials */
     if(entitlement_got_entitlement(entitlement, PEEntitlementPlatformRoot) &&
        entitlement_got_entitlement(entitlement, PEEntitlementPlatform))
     {
         /*
-         * process exeuctable is platform binary and has
-         * the special platform root entitlement, meaning
-         * elevating ucred to root user.
+         * child process exeuctable is platform binary and has
+         * the special platform root entitlement.
          */
         proc_setrootcred(child);
     }
@@ -144,11 +126,10 @@ force_not_inherite_entitlements:
      * now combining the current eneitlements
      * and the entitlements of the executable.
      */
-    PEEntitlement combined_entitlement = currentEntitlement | entitlement;
-    proc_setentitlements(child, combined_entitlement);
-    proc_setmaxentitlements(child, combined_entitlement);
+    PEEntitlement combinedEntitlement = currentEntitlement | entitlement;
+    proc_setentitlements(child, combinedEntitlement);
+    proc_setmaxentitlements(child, combinedEntitlement);
     
-    /* copying the executables path */
     strlcpy(child->nyx.executable_path, path, PATH_MAX);
         
     /* FIXME: argv[0] shall be used for p_comm and not the last path component */
