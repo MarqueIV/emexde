@@ -90,6 +90,8 @@ class FileIcon: UIView {
                 configureImageIcon(name: "photo.fill")
             case "dylib":
                 configureImageIcon(name: "building.columns.fill")
+            case "o":
+                configureImageIcon(name: "cube.fill")
             default:
                 configureImageIcon(name: "text.alignleft")
             }
