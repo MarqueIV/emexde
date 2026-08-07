@@ -87,7 +87,7 @@
     if(_contentView != nil)
     {
         UIView *currentContentView = _contentView;
-        [UIView animateWithDuration:0.5 animations:^{
+        [UIView animateWithDuration:0.125 animations:^{
             currentContentView.alpha = 0.0;
             contentView.alpha = 1.0;
         } completion:^(BOOL finished){
