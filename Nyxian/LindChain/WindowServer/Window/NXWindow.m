@@ -363,6 +363,7 @@
         case UIGestureRecognizerStateBegan:
             [self focusWindow];
             [gesture setTranslation:CGPointZero inView:self.view.superview];
+            [self.session beginInteractiveResize];
             break;
         case UIGestureRecognizerStateChanged:
         {
@@ -395,6 +396,8 @@
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
             [self updateOriginalFrame];
+            [self.session commitInteractiveResize];
+            [self.session cancelInteractiveResize];
             break;
         default:
             break;

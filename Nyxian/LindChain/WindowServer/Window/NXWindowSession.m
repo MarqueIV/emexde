@@ -100,6 +100,19 @@
     return;
 }
 
+- (void)beginInteractiveResize
+{
+    
+}
 
+- (void)commitInteractiveResize
+{
+    
+}
+
+- (void)cancelInteractiveResize
+{
+    
+}
 
 @end

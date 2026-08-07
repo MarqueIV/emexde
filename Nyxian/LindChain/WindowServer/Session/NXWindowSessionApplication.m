@@ -34,6 +34,10 @@
 @implementation NXWindowSessionApplication {
     UIView *_contentView;
     FBScene *_scene;
+    
+    UIImageView *_resizeSnapshotView;
+    NSArray<NSLayoutConstraint*> *_contentViewConstraints;
+    BOOL _isInteractivelyResizing;
 }
 
 @dynamic contentView;
@@ -68,16 +72,18 @@
         contentView.alpha = 0.0;
     }
     [self.view addSubview:contentView];
-    
+
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    
-    [NSLayoutConstraint activateConstraints:@[
+
+    /* keep a reference so the resize path can drop/restore pinning */
+    _contentViewConstraints = @[
         [contentView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
         [contentView.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
         [contentView.centerYAnchor constraintEqualToAnchor:self.view.centerYAnchor],
         [contentView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
-    ]];
-    
+    ];
+    [NSLayoutConstraint activateConstraints:_contentViewConstraints];
+
     if(_contentView != nil)
     {
         UIView *currentContentView = _contentView;
@@ -85,13 +91,10 @@
             currentContentView.alpha = 0.0;
             contentView.alpha = 1.0;
         } completion:^(BOOL finished){
-            if(finished)
-            {
-                [currentContentView removeFromSuperview];
-            }
+            if(finished) [currentContentView removeFromSuperview];
         }];
     }
-    
+
     _contentView = contentView;
 }
 
@@ -311,7 +314,6 @@
         settings.foreground = NO;
     }];
  
-    /* TODO: implement the jailbreak way of getting a snapshot of a iOS app */
     [_process sendSignal:SIGUSR1];
     
     /* deactivate the presenter */
@@ -401,6 +403,79 @@
 - (void)dealloc
 {
     NSLog(@"deallocated %@", self);
+}
+
+- (void)beginInteractiveResize
+{
+    assert([NSThread isMainThread]);
+    if(_isInteractivelyResizing || _contentView == nil)
+    {
+        return;
+    }
+    _isInteractivelyResizing = YES;
+    
+    self.process.snapshot = NULL;
+    [_process sendSignal:SIGUSR1];
+    while(self.process.snapshot == NULL)
+    {
+        /* this needs to be gone when done as this is a HUGE security concern */
+    }
+    
+    _resizeSnapshotView = [[UIImageView alloc] initWithImage:self.process.snapshot];
+    _resizeSnapshotView.userInteractionEnabled = NO;
+    _resizeSnapshotView.contentMode = UIViewContentModeScaleToFill;
+    _resizeSnapshotView.frame = self.view.bounds;
+    _resizeSnapshotView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+    [self.view addSubview:_resizeSnapshotView];
+    if(_contentViewConstraints)
+    {
+        [NSLayoutConstraint deactivateConstraints:_contentViewConstraints];
+    }
+    _contentView.frame = _contentView.frame;
+    _contentView.translatesAutoresizingMaskIntoConstraints = YES;
+}
+
+- (void)commitInteractiveResize
+{
+    assert([NSThread isMainThread]);
+    if(!_isInteractivelyResizing) return;
+    _isInteractivelyResizing = NO;
+    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    if(_contentViewConstraints)
+    {
+        [NSLayoutConstraint activateConstraints:_contentViewConstraints];
+    }
+    
+    [self.view layoutIfNeeded];
+    UIImageView *snapshotView = _resizeSnapshotView;
+    _resizeSnapshotView = nil;
+    
+    _contentView.alpha = 0.0;
+    [UIView animateWithDuration:0.18 animations:^{
+        self->_contentView.alpha  = 1.0;
+        snapshotView.alpha  = 0.0;
+    } completion:^(BOOL finished){
+        [snapshotView removeFromSuperview];
+    }];
+}
+
+- (void)cancelInteractiveResize
+{
+    assert([NSThread isMainThread]);
+    if(!_isInteractivelyResizing)
+    {
+        return;
+    }
+    _isInteractivelyResizing = NO;
+    
+    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    if(_contentViewConstraints)
+    {
+        [NSLayoutConstraint activateConstraints:_contentViewConstraints];
+    }
+    
+    [_resizeSnapshotView removeFromSuperview];
+    _resizeSnapshotView = nil;
 }
 
 @end

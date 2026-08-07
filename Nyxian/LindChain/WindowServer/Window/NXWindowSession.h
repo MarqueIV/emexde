@@ -53,6 +53,10 @@
 
 - (void)movedWindowToScene:(UIWindowScene*)windowScene withIdentifier:(id_t)identifier;
 
+- (void)beginInteractiveResize;
+- (void)commitInteractiveResize;
+- (void)cancelInteractiveResize;
+
 @end
 
 #endif /* NXWINDOWSESSION_H */
