@@ -176,6 +176,11 @@
 {
     _exitingCallback = callback;
 }
+
+- (void)setSnapshotReceivedCallback:(void(^)(UIImage*))callback
+{
+    _snapshotReceivedCallback = callback;
+}
         
 - (void)processDidExit:(FBProcess *)arg1
 {
@@ -244,6 +249,15 @@
         kvo_release(_proc);
     }
     proc_uncount();
+}
+
+- (void)setSnapshot:(UIImage *)snapshot
+{
+    if(_snapshotReceivedCallback)
+    {
+        _snapshotReceivedCallback(snapshot);
+    }
+    _snapshot = snapshot;
 }
 
 @end

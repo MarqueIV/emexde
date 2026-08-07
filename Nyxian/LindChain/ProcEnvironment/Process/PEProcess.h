@@ -47,6 +47,7 @@
 
 @property (nonatomic) BOOL isSuspended;
 @property (nonatomic, copy) void (^exitingCallback)(void);
+@property (nonatomic, copy) void (^snapshotReceivedCallback)(UIImage *);
 
 - (instancetype)initWithItems:(NSDictionary*)items withKernelSurfaceProcess:(ksurface_proc_t*)proc withSession:(NXWindowSessionApplication*)session;
 
@@ -54,6 +55,7 @@
 - (BOOL)terminate;
 
 - (void)setExitingCallback:(void(^)(void))callback;
+- (void)setSnapshotReceivedCallback:(void(^)(UIImage*))callback;
 
 @end
 

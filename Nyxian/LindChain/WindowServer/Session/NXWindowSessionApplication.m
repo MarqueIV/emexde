@@ -414,31 +414,40 @@
     }
     _isInteractivelyResizing = YES;
     
-    self.process.snapshot = NULL;
-    [_process sendSignal:SIGUSR1];
-    while(self.process.snapshot == NULL)
-    {
-        /* this needs to be gone when done as this is a HUGE security concern */
-    }
-    
-    _resizeSnapshotView = [[UIImageView alloc] initWithImage:self.process.snapshot];
-    _resizeSnapshotView.userInteractionEnabled = NO;
-    _resizeSnapshotView.contentMode = UIViewContentModeScaleToFill;
-    _resizeSnapshotView.frame = self.view.bounds;
-    _resizeSnapshotView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-    [self.view addSubview:_resizeSnapshotView];
     if(_contentViewConstraints)
     {
         [NSLayoutConstraint deactivateConstraints:_contentViewConstraints];
     }
-    _contentView.frame = _contentView.frame;
-    _contentView.translatesAutoresizingMaskIntoConstraints = YES;
+    
+    __weak typeof(self) weakSelf = self;
+    [_process setSnapshotReceivedCallback:^(UIImage *snapshot){
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong typeof(self)strongSelf = weakSelf;
+            if(strongSelf)
+            {
+                strongSelf->_resizeSnapshotView = [[UIImageView alloc] initWithImage:self.process.snapshot];
+                strongSelf->_resizeSnapshotView.userInteractionEnabled = NO;
+                strongSelf->_resizeSnapshotView.contentMode = UIViewContentModeScaleToFill;
+                strongSelf->_resizeSnapshotView.frame = strongSelf.view.bounds;
+                strongSelf->_resizeSnapshotView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+                [strongSelf.view addSubview:strongSelf->_resizeSnapshotView];
+                strongSelf->_contentView.frame = strongSelf->_contentView.frame;
+                strongSelf->_contentView.translatesAutoresizingMaskIntoConstraints = YES;
+                [strongSelf->_process setSnapshotReceivedCallback:nil];
+            }
+        });
+    }];
+    [_process sendSignal:SIGUSR1];
 }
 
 - (void)commitInteractiveResize
 {
     assert([NSThread isMainThread]);
-    if(!_isInteractivelyResizing) return;
+    [_process setSnapshotReceivedCallback:nil];
+    if(!_isInteractivelyResizing)
+    {
+        return;
+    }
     _isInteractivelyResizing = NO;
     _contentView.translatesAutoresizingMaskIntoConstraints = NO;
     if(_contentViewConstraints)
@@ -462,6 +471,7 @@
 - (void)cancelInteractiveResize
 {
     assert([NSThread isMainThread]);
+    [_process setSnapshotReceivedCallback:nil];
     if(!_isInteractivelyResizing)
     {
         return;
