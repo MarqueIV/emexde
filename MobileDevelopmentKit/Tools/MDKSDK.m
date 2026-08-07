@@ -106,7 +106,7 @@
     }
     
 failed:
-    return @[[MDKOSVersion versionWithVersionString:@"27.0"]];
+    return @[[MDKOSVersion versionWithVersionString:@"26.5"]];
 }
 
 @end
