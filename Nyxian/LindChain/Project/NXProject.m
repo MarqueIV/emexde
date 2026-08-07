@@ -281,7 +281,7 @@
         @"NXDisplayName": name,
         @"NXOrganizationPrefix": organizationIdentifierValue,
         @"NXBundleIdentifier": bundleIdentifierValue,
-        @"NXDeploymentTarget": version.versionString ?: @"26.5",
+        @"NXDeploymentTarget": version.versionString ?: @"27.0",
         @"NXClangFlags": NXCompilerFlagsForCodeTemplateLanguage(schemeKind, languageKind),
         @"NXLinkerFlags": @[],
         @"NXSwiftFlags": NXSwiftFlagsForCodeTemplateLanguage(schemeKind, languageKind),

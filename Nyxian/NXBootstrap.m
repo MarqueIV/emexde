@@ -64,7 +64,7 @@
 
 - (NSURL*)sdkURL
 {
-    return [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS26.5.sdk"];
+    return [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS27.0.sdk"];
 }
 
 - (NSURL*)includeURL
@@ -288,7 +288,7 @@
                 self.version = 23;
             }
             
-            if(self.version < 24)
+            if(self.version < 25)
             {
                 /*
                  * the SDK is very important to use iOS API which
@@ -298,9 +298,9 @@
                 [[NSFileManager defaultManager] removeItemAtURL:[self.rootURL URLByAppendingPathComponent:@"SDK"] error:nil];
                 [[NSFileManager defaultManager] removeItemAtURL:self.swiftModuleCacheURL error:nil];    /* clearing module cache */
                 
-                if(!fdownload(@"https://nyxian.app/bootstrap/iPhoneOS26.5.sdk.zip", @"sdk.zip"))
+                if(!fdownload(@"https://nyxian.app/bootstrap/iPhoneOS27.0.sdk.zip", @"sdk.zip"))
                 {
-                    error = [NSError errorWithDomain:@"" code:0 userInfo:@{ NSLocalizedDescriptionKey: @"downloading \"https://nyxian.app/bootstrap/iPhoneOS26.5.sdk.zip\" failed" }];
+                    error = [NSError errorWithDomain:@"" code:0 userInfo:@{ NSLocalizedDescriptionKey: @"downloading \"https://nyxian.app/bootstrap/iPhoneOS27.0.sdk.zip\" failed" }];
                     goto report_error;
                 }
                 
@@ -313,7 +313,8 @@
                 NSArray<NSURL*> *symlinkSDKs = @[
                     [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS26.2.sdk"],
                     [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS26.4.1.sdk"],
-                    [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS26.4.sdk"]
+                    [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS26.4.sdk"],
+                    [self.rootURL URLByAppendingPathComponent:@"/SDK/iPhoneOS26.5.sdk"]
                 ];
                 
                 for(NSURL *symlink in symlinkSDKs)
@@ -324,7 +325,7 @@
                     }
                 }
                 
-                self.version = 24;
+                self.version = 25;
             }
         }
         
