@@ -21,6 +21,11 @@
 
 import UIKit
 
+func shouldRemoveExtensionForFileName(fileName: String) -> Bool {
+    let extensions: [String] = ["swift","c","h","cpp","cc","c++","hpp","h++","m","mm","plist","xml","zip", "tar", "zst","ipa","png", "jpg", "jpeg", "gif", "svg","dylib", "o", "a","txt"]
+    return extensions.contains((fileName as NSString).pathExtension)
+}
+
 class FileIcon: UIView {
     private let iconView = UIView()
     private let iconLabel = UILabel()
@@ -72,9 +77,9 @@ class FileIcon: UIView {
                 configureTextIcon(text: "c", color: .systemPurple)
             case "h":
                 configureTextIcon(text: "h", color: .systemGray)
-            case "cpp":
+            case "cpp","cc","c++":
                 configureStackedIcon(base: "c", color: .systemBlue)
-            case "hpp":
+            case "hpp","h++":
                 configureStackedIcon(base: "h", color: .systemGray)
             case "m":
                 configureTextIcon(text: "m", color: .systemPurple)
@@ -90,8 +95,10 @@ class FileIcon: UIView {
                 configureImageIcon(name: "photo.fill")
             case "dylib", "o", "a":
                 configureImageIcon(name: "building.columns.fill")
+            case "txt":
+                configureImageIcon(name: "text.document.fill")
             default:
-                configureImageIcon(name: "text.alignleft")
+                configureImageIcon(name: "document.fill")
             }
         } else {
             configureImageIcon(name: "folder.fill")
@@ -187,7 +194,7 @@ class FileListCell: UITableViewCell {
     
     func configure(with entry: FileListEntry) {
         let url = URL(fileURLWithPath: entry.path)
-        textLabel?.text = url.deletingPathExtension().lastPathComponent
+        textLabel?.text = shouldRemoveExtensionForFileName(fileName: url.path) ? url.deletingPathExtension().lastPathComponent : url.lastPathComponent
         accessoryType = (entry.type == .dir) ? .disclosureIndicator : .none
         
         fileIcon.configure(with: entry)
