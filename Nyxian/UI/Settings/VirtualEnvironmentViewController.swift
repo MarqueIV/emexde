@@ -21,10 +21,10 @@
 
 import UIKit
 
-class ProcEnvironmentViewController: UIThemedTableViewController {
+class VirtualEnvironmentViewController: UIThemedTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Process Environment"
+        title = "Virtual Environment"
         view.backgroundColor = .systemBackground
     }
     

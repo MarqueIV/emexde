@@ -65,8 +65,8 @@ class SettingsViewController: UIThemedTableViewController {
             cell.textLabel?.text = "Certificate"
             break
         case 4:
-            cell.imageView?.image = UIImage(systemName: "folder.fill.badge.gearshape")
-            cell.textLabel?.text = "Process Environment"
+            cell.imageView?.image = UIImage(systemName: "shippingbox.fill")
+            cell.textLabel?.text = "Virtual Environment"
             break
 #if DEBUG
         case 5:
@@ -107,7 +107,7 @@ class SettingsViewController: UIThemedTableViewController {
             case 3:
                 return CertificateController(style: .insetGrouped)
             case 4:
-                return ProcEnvironmentViewController(style: .insetGrouped)
+                return VirtualEnvironmentViewController(style: .insetGrouped)
 #if DEBUG
             case 5:
                 return KernelLogViewController()
