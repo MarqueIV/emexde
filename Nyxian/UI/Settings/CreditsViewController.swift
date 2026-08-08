@@ -29,6 +29,7 @@ class CreditsViewController: UIThemedTableViewController {
         Credit(name: "emexLabs", role: "Maintainer", githubURL: "https://github.com/emexlab"),
         Credit(name: "LiveContainer", role: "LiveContainer", githubURL: "https://github.com/livecontainer"),
         Credit(name: "zipgod", role: "Security Researcher", githubURL: "https://github.com/zipgod24"),
+        Credit(name: "semvis123", role: "Security Researcher", githubURL: "https://github.com/semvis123"),
         Credit(name: "Simon Støvring", role: "Runestone", githubURL: "https://github.com/simonbs"),
         Credit(name: "Vinogradov Daniil", role: "Massive help on LLVM-On-iOS", githubURL: "https://github.com/XITRIX"),
         Credit(name: "light-tech", role: "LLVM-On-iOS", githubURL: "https://github.com/light-tech"),
