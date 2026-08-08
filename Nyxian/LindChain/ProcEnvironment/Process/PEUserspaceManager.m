@@ -36,15 +36,16 @@
         return;
     }
     
-    klog_log("PEUserspaceManager:reboot", "invalidating all launch services");
+    klog_log("PEUserspaceManager:reboot", "invalidating all launch service entries in registry");
     [[PELaunchServiceRegistry shared] invalidateAllEntries];    /* causes reignition to fail in launch services, so killing will not automatically restart them */
     
-    klog_log("PEUserspaceManager:reboot", "killing running processes");
+    klog_log("PEUserspaceManager:reboot", "killing all running processes");
     [[PEProcessManager shared] killAllRunningProcesses];
     
     klog_log("PEUserspaceManager:reboot", "releasing proctil lock");
     proctil(kProctilActionUnlock);
     
+    klog_log("PEUserspaceManager:reboot", "reloading all launch service entries in registry");
     klog_log("PEUserspaceManager:reboot", "starting all launch services");
     [[PELaunchServiceRegistry shared] reloadAllEntries];
     
