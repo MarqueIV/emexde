@@ -37,9 +37,9 @@ class SettingsViewController: UIThemedTableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 #if DEBUG
-        return 6
+        return 7
 #else
-        return 5
+        return 6
 #endif // DEBUG
     }
 
@@ -64,17 +64,21 @@ class SettingsViewController: UIThemedTableViewController {
             cell.imageView?.image = UIImage(systemName: "checkmark.seal.text.page.fill")
             cell.textLabel?.text = "Certificate"
             break
-#if DEBUG
         case 4:
+            cell.imageView?.image = UIImage(systemName: "folder.fill.badge.gearshape")
+            cell.textLabel?.text = "Process Environment"
+            break
+#if DEBUG
+        case 5:
             cell.imageView?.image = UIImage(systemName: "ant.fill")
             cell.textLabel?.text = "Kernel Log"
             break
-        case 5:
+        case 6:
             cell.imageView?.image = UIImage(systemName: "person.3.fill")
             cell.textLabel?.text = "Credits"
             break
 #else
-        case 4:
+        case 5:
             cell.imageView?.image = UIImage(systemName: "person.3.fill")
             cell.textLabel?.text = "Credits"
             break
@@ -102,13 +106,15 @@ class SettingsViewController: UIThemedTableViewController {
                 return CustomizationViewController(style: .insetGrouped)
             case 3:
                 return CertificateController(style: .insetGrouped)
-#if DEBUG
             case 4:
-                return KernelLogViewController()
+                return ProcEnvironmentViewController(style: .insetGrouped)
+#if DEBUG
             case 5:
+                return KernelLogViewController()
+            case 6:
                 return CreditsViewController(style: .insetGrouped)
 #else
-            case 4:
+            case 5:
                 return CreditsViewController(style: .insetGrouped)
 #endif // DEBUG
             default:

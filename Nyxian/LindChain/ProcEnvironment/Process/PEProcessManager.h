@@ -38,6 +38,8 @@
 - (PEProcess*)processForBundleIdentifier:(NSString*)bundleIdentifier;
 - (void)unregisterProcessWithProcessIdentifier:(pid_t)pid;
 
+- (void)rebootUserspace;
+
 @end
 
 #endif /* LDEPROCESSMANAGER_H */
