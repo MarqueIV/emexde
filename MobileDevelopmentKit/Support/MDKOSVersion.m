@@ -116,6 +116,10 @@ NSString *MDKNumericVersionToVersionString(uint32_t numeric)
 
 - (BOOL)isEqual:(MDKOSVersion*)version
 {
+    if(version == nil)
+    {
+        return NO;
+    }
     return self.versionNumeric == version.versionNumeric;
 }
 

@@ -52,7 +52,7 @@ NSString * _Nullable MDKNumericVersionToVersionString(uint32_t numeric);
 - (instancetype _Nonnull)init;
 - (instancetype _Nullable)initWithVersionString:(NSString * _Nullable)versionString;
 
-- (BOOL)isEqual:(MDKOSVersion * _Nonnull)version;
+- (BOOL)isEqual:(MDKOSVersion * _Nullable)version;
 - (NSString * _Nonnull)description;
 
 + (instancetype _Nonnull)versionForVersion:(MDKOSVersion * _Nonnull)version inVersionRange:(MDKOSVersionRange)range;
