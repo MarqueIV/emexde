@@ -29,16 +29,15 @@
 + (void)rebootUserspace
 {
     /* TODO: prevent spawns from happening, deny any new spawns too */
-    /* TODO: somehow restart the launch service manager and make it stop relaunch on it's own */
-    klog_log("PEUserspaceManager:reboot", "invalidating all launch services");
-    [[PELaunchServiceRegistry shared] invalidateAllEntries];    /* causes reignition to fail in launch services, so killing will not automatically restart them */
-    
     klog_log("PEUserspaceManager:reboot", "aquiring proctil lock");
     if(proctil(kProctilActionLock) != KERN_SUCCESS)
     {
         klog_log("PEUserspaceManager:Reboot", "userspace reboot failed, lock couldn't be claimed");
         return;
     }
+    
+    klog_log("PEUserspaceManager:reboot", "invalidating all launch services");
+    [[PELaunchServiceRegistry shared] invalidateAllEntries];    /* causes reignition to fail in launch services, so killing will not automatically restart them */
     
     klog_log("PEUserspaceManager:reboot", "killing running processes");
     [[PEProcessManager shared] killAllRunningProcesses];
