@@ -128,11 +128,6 @@ static inline kern_return_t litehook_unprotect(vm_address_t addr, vm_size_t size
     return litehook_vm_protect(mach_task_self(), addr, size, false, VM_PROT_READ | VM_PROT_WRITE | VM_PROT_COPY);
 }
 
-static inline kern_return_t litehook_protect(vm_address_t addr, vm_size_t size)
-{
-    return litehook_vm_protect(mach_task_self(), addr, size, false, VM_PROT_READ | VM_PROT_EXECUTE);
-}
-
 const char *litehook_locate_dsc(void)
 {
     static char dscPath[PATH_MAX] = {};

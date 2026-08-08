@@ -109,39 +109,6 @@ public:
 
 static std::once_flag SwiftModulesInitOnce;
 
-static CFStringRef CCStringCreateWithFileDescriptor(CFAllocatorRef allocator, int fd)
-{
-    if(fd < 0)
-    {
-        return CFSTR("");
-    }
-
-    lseek(fd, 0, SEEK_SET);
-
-    CFMutableDataRef data = CFDataCreateMutable(allocator, 0);
-    if(data == nullptr)
-    {
-        return CFSTR("");
-    }
-
-    char buffer[4096];
-    ssize_t count = 0;
-    while((count = read(fd, buffer, sizeof(buffer))) > 0)
-    {
-        CFDataAppendBytes(data, reinterpret_cast<const UInt8 *>(buffer), count);
-    }
-
-    CFStringRef string = CFStringCreateFromExternalRepresentation(allocator, data, kCFStringEncodingUTF8);
-    CFRelease(data);
-
-    if(string == nullptr)
-    {
-        return CFSTR("");
-    }
-
-    return string;
-}
-
 CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
                                             CFArrayRef *outDiagnostics,
                                             CFStringRef *outMainSource)
