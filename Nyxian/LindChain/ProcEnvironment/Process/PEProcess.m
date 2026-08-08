@@ -27,6 +27,7 @@
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/Process/PEExtension.h>
+#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Syscall/mach_syscall_client.h>
 #import <LindChain/ProcEnvironment/Object/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
@@ -68,7 +69,12 @@
     
     self.wid = (id_t)-1;
     
-    LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:self.executablePath];
+    LDEApplicationObject *applicationObject = nil;
+    
+    if(PELaunchServiceRegistry.shared.isBooted)
+    {
+        applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:self.executablePath];
+    }
     
     self.bundleIdentifier = applicationObject ? applicationObject.bundleIdentifier : nil;
     self.displayName = applicationObject ? applicationObject.localizedName : [self.executablePath lastPathComponent];

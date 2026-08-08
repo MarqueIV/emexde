@@ -19,26 +19,15 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PELAUNCHSERVICEREGISTRY_H
-#define PELAUNCHSERVICEREGISTRY_H
+#ifndef PEUSERSPACEMANAGER_H
+#define PEUSERSPACEMANAGER_H
 
 #import <Foundation/Foundation.h>
-#import <os/lock.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchService.h>
 
-@interface PELaunchServiceRegistry : NSObject
+@interface PEUserspaceManager : NSObject
 
-@property (atomic,readonly) BOOL isBooted;
-
-- (instancetype)init;
-+ (instancetype)shared;
-
-- (NSXPCConnection *)connectToService:(NSString *)serviceIdentifier protocol:(Protocol *)protocol observer:(id)observer observerProtocol:(Protocol *)observerProtocol;
-- (PELaunchService *)serviceForIdentifier:(NSString *)serviceIdentifier;
-
-- (void)invalidateAllEntries;
-- (void)reloadAllEntries;
++ (void)rebootUserspace;
 
 @end
 
-#endif /* PELAUNCHSERVICEREGISTRY_H */
+#endif /* PEUSERSPACEMANAGER_H */

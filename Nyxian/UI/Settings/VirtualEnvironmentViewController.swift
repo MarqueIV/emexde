@@ -39,7 +39,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        PEProcessManager.shared().rebootUserspace()
+        PEUserspaceManager.rebootUserspace()
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

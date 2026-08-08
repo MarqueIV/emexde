@@ -115,4 +115,9 @@
     return _autoRestart;
 }
 
+- (void)dealloc
+{
+    [_process sendSignal:SIGKILL];
+}
+
 @end

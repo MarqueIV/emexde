@@ -216,28 +216,14 @@
     }
 }
 
-- (void)rebootUserspace
+- (void)killAllRunningProcesses;
 {
-    /* TODO: prevent spawns from happening, deny any new spawns too */
-    /* TODO: somehow restart the launch service manager and make it stop relaunch on it's own */
-    klog_log("PEUserspaceManager:Reboot", "killing running processes");
-    
-    if(proctil(kProctilActionLock) != KERN_SUCCESS)
-    {
-        klog_log("PEUserspaceManager:Reboot", "userspace reboot failed, lock couldn't be claimed");
-        return;
-    }
-    
     os_unfair_lock_lock(&_lock);
     for(PEProcess *process in _processes.allValues)
     {
         [process sendSignal:SIGKILL];
     }
     os_unfair_lock_unlock(&_lock);
-    
-    proctil(kProctilActionUnlock);
-    
-    klog_log("PEUserspaceManager:Reboot", "userspace rebooted successfully");
 }
 
 @end

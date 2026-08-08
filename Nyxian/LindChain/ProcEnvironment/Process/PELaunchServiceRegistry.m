@@ -32,15 +32,7 @@
     self = [super init];
     _launchServices = [[NSMutableArray alloc] init];
     _lock = OS_UNFAIR_LOCK_INIT;
-    
-    NSString *plistPath = [[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Shared"] stringByAppendingPathComponent:@"LaunchServices"];
-    NSArray<NSString*> *plists = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:plistPath error:nil];
-   
-    for(NSString *plist in plists)
-    {
-        [_launchServices addObject:[PELaunchService launchServiceWithPlistPath:[plistPath stringByAppendingPathComponent:plist]]];
-    }
-    
+    [self reloadAllEntries];
     return self;
 }
 
@@ -70,7 +62,10 @@
                      observerProtocol:(Protocol *)observerProtocol
 {
     NSXPCListenerEndpoint *endpoint = [[PEBootstrapRegistry shared] getEndpointWithServiceIdentifier:serviceIdentifier];
-    if(!endpoint) return nil;
+    if(!endpoint)
+    {
+        return nil;
+    }
     
     NSXPCConnection *connection = [[NSXPCConnection alloc] initWithListenerEndpoint:endpoint];
     connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:protocol];
@@ -94,6 +89,30 @@
     }
     os_unfair_lock_unlock(&_lock);
     return nil;
+}
+
+- (void)invalidateAllEntries
+{
+    os_unfair_lock_lock(&_lock);
+    _isBooted = NO;
+    [_launchServices removeAllObjects];
+    os_unfair_lock_unlock(&_lock);
+}
+
+- (void)reloadAllEntries
+{
+    os_unfair_lock_lock(&_lock);
+    _isBooted = NO;
+    [_launchServices removeAllObjects];
+    NSString *plistPath = [[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Shared"] stringByAppendingPathComponent:@"LaunchServices"];
+    NSArray<NSString*> *plists = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:plistPath error:nil];
+   
+    for(NSString *plist in plists)
+    {
+        [_launchServices addObject:[PELaunchService launchServiceWithPlistPath:[plistPath stringByAppendingPathComponent:plist]]];
+    }
+    _isBooted = YES;
+    os_unfair_lock_unlock(&_lock);
 }
 
 @end

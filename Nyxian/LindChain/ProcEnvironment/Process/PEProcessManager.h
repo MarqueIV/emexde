@@ -38,7 +38,7 @@
 - (PEProcess*)processForBundleIdentifier:(NSString*)bundleIdentifier;
 - (void)unregisterProcessWithProcessIdentifier:(pid_t)pid;
 
-- (void)rebootUserspace;
+- (void)killAllRunningProcesses;
 
 @end
 

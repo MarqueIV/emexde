@@ -47,6 +47,7 @@
 #import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/Process/PEExtension.h>
+#import <LindChain/ProcEnvironment/Process/PEUserspaceManager.h>
 
 /* Kernel Virtualisation Layer Headers */
 #import <LindChain/ProcEnvironment/Utils/klog.h>
