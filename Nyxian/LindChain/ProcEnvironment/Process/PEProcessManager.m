@@ -220,24 +220,14 @@
 {
     /* TODO: prevent spawns from happening, deny any new spawns too */
     /* TODO: somehow restart the launch service manager and make it stop relaunch on it's own */
-    klog_log("PEUserspaceManager:Reboot", "capturing running process identifiers");
-    pid_t processIdentifiers[_processes.count];
-    
-    os_unfair_lock_lock(&_lock);
-    CFIndex idx = 0;
-    for(NSNumber *processIdentifierObject in _processes.allKeys)
-    {
-        processIdentifiers[idx++] = processIdentifierObject.intValue;
-    }
-    os_unfair_lock_unlock(&_lock);
-    
     klog_log("PEUserspaceManager:Reboot", "killing running processes");
     
-    for(CFIndex cur = 0; cur < idx; cur++)
+    os_unfair_lock_lock(&_lock);
+    for(PEProcess *process in _processes.allValues)
     {
-        PEProcess *process = [self processForProcessIdentifier:processIdentifiers[cur]];
         [process sendSignal:SIGKILL];
     }
+    os_unfair_lock_unlock(&_lock);
     
     klog_log("PEUserspaceManager:Reboot", "userspace rebooted successfully");
 }
