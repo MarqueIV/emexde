@@ -41,6 +41,6 @@
 void NSFMGuestHooksInit(void) {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        swizzle_objc_method(@selector(containerURLForSecurityApplicationGroupIdentifier:), [NSFileManager class], @selector(hook_containerURLForSecurityApplicationGroupIdentifier:), nil);
+        SwizzleObjCMethod(@selector(containerURLForSecurityApplicationGroupIdentifier:), [NSFileManager class], @selector(hook_containerURLForSecurityApplicationGroupIdentifier:), nil, kSwizzleMethodTypeInstance);
     });
 }

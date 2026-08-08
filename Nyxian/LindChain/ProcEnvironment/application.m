@@ -54,7 +54,7 @@ static dispatch_source_t global_signal_source = nil;
 
 void environment_application_init(void)
 {
-    swizzle_objc_method(@selector(_run), [UIApplication class], @selector(hook_run), nil);
+    SwizzleObjCMethod(@selector(_run), [UIApplication class], @selector(hook_run), nil, kSwizzleMethodTypeInstance);
     
     signal(SIGUSR1, SIG_IGN);
     global_signal_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_SIGNAL, SIGUSR1, 0, dispatch_get_main_queue());

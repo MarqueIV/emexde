@@ -39,10 +39,11 @@ void NUDGuestHooksInit(void)
             appContainerPath = [NSString stringWithCString:home encoding:NSUTF8StringEncoding];
         }
         
-        swizzle_objc_method(@selector(initWithDomain:user:byHost:containerPath:containingPreferences:),
-                            NSClassFromString(@"CFPrefsPlistSource"),
-                            @selector(hook_initWithDomain:user:byHost:containerPath:containingPreferences:),
-                            [CFPrefsPlistSource2 class]);
+        SwizzleObjCMethod(@selector(initWithDomain:user:byHost:containerPath:containingPreferences:),
+                          NSClassFromString(@"CFPrefsPlistSource"),
+                          @selector(hook_initWithDomain:user:byHost:containerPath:containingPreferences:),
+                          [CFPrefsPlistSource2 class],
+                          kSwizzleMethodTypeInstance);
         
         Class CFXPreferencesClass = NSClassFromString(@"_CFXPreferences");
         NSMutableDictionary* sources = object_getIvar([CFXPreferencesClass copyDefaultPreferences], class_getInstanceVariable(CFXPreferencesClass, "_sources"));
@@ -75,7 +76,7 @@ void NUDGuestHooksInit(void)
 
 @implementation CFPrefsPlistSource2
 
--(id)hook_initWithDomain:(CFStringRef)domain user:(CFStringRef)user byHost:(bool)host containerPath:(CFStringRef)containerPath containingPreferences:(id)arg5
+- (id)hook_initWithDomain:(CFStringRef)domain user:(CFStringRef)user byHost:(bool)host containerPath:(CFStringRef)containerPath containingPreferences:(id)arg5
 {
     static NSArray* appleIdentifierPrefixes = @[
         @"com.apple.",

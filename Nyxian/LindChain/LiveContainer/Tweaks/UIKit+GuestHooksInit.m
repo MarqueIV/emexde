@@ -64,9 +64,9 @@
     if(![delegate respondsToSelector:@selector(application:configurationForConnectingSceneSession:options:)])
     {
         // Fix old apps black screen when UIApplicationSupportsMultipleScenes is YES
-        swizzle_objc_method(@selector(makeKeyAndVisible), [UIApplication class], @selector(hook_makeKeyAndVisible), nil);
-        swizzle_objc_method(@selector(makeKeyWindow), [UIApplication class], @selector(hook_makeKeyWindow), nil);
-        swizzle_objc_method(@selector(setHidden:), [UIApplication class], @selector(hook_setHidden:), nil);
+        SwizzleObjCMethod(@selector(makeKeyAndVisible), [UIApplication class], @selector(hook_makeKeyAndVisible), nil, kSwizzleMethodTypeInstance);
+        SwizzleObjCMethod(@selector(makeKeyWindow), [UIApplication class], @selector(hook_makeKeyWindow), nil, kSwizzleMethodTypeInstance);
+        SwizzleObjCMethod(@selector(setHidden:), [UIApplication class], @selector(hook_setHidden:), nil, kSwizzleMethodTypeInstance);
     }
     [self hook_setDelegate:delegate];
 }
@@ -144,11 +144,11 @@ void UIKitGuestHooksInit(void)
     dispatch_once(&onceToken, ^{
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
-        swizzle_objc_method(@selector(_connectUISceneFromFBSScene:transitionContext:), [UIApplication class], @selector(hook__connectUISceneFromFBSScene:transitionContext:), nil);
+        SwizzleObjCMethod(@selector(_connectUISceneFromFBSScene:transitionContext:), [UIApplication class], @selector(hook__connectUISceneFromFBSScene:transitionContext:), nil, kSwizzleMethodTypeInstance);
 #pragma clang diagnostic pop
-        swizzle_objc_method(@selector(__supportedInterfaceOrientations), [UIViewController class], @selector(hook___supportedInterfaceOrientations), nil);
-        swizzle_objc_method(@selector(shouldAutorotateToInterfaceOrientation:), [UIViewController class], @selector(hook_shouldAutorotateToInterfaceOrientation:), nil);
-        swizzle_objc_method(@selector(setAutorotates:forceUpdateInterfaceOrientation:), [UIWindow class], @selector(hook_setAutorotates:forceUpdateInterfaceOrientation:), nil);
-        swizzle_objc_method(@selector(setDelegate:), [UIApplication class], @selector(hook_setDelegate:), nil);
+        SwizzleObjCMethod(@selector(__supportedInterfaceOrientations), [UIViewController class], @selector(hook___supportedInterfaceOrientations), nil, kSwizzleMethodTypeInstance);
+        SwizzleObjCMethod(@selector(shouldAutorotateToInterfaceOrientation:), [UIViewController class], @selector(hook_shouldAutorotateToInterfaceOrientation:), nil, kSwizzleMethodTypeInstance);
+        SwizzleObjCMethod(@selector(setAutorotates:forceUpdateInterfaceOrientation:), [UIWindow class], @selector(hook_setAutorotates:forceUpdateInterfaceOrientation:), nil, kSwizzleMethodTypeInstance);
+        SwizzleObjCMethod(@selector(setDelegate:), [UIApplication class], @selector(hook_setDelegate:), nil, kSwizzleMethodTypeInstance);
     });
 }

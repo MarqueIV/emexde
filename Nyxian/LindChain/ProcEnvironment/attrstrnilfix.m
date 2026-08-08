@@ -38,5 +38,5 @@
 __attribute__((constructor))
 void attrstrnilfix_init(void)
 {
-    swizzle_objc_method(@selector(initWithString:), NSClassFromString(@"NSConcreteAttributedString"), @selector(hook_initWithString:), [NXCAttrStrFix class]);
+    SwizzleObjCMethod(@selector(initWithString:), NSClassFromString(@"NSConcreteAttributedString"), @selector(hook_initWithString:), [NXCAttrStrFix class], kSwizzleMethodTypeInstance);
 }

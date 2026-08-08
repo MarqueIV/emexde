@@ -21,88 +21,72 @@
 
 #import <LindChain/Utils/Swizzle.h>
 
-static unsigned char swizzle_objc_method_type(Class class,
-                                              SEL action,
-                                              Method *method,
-                                              unsigned char *type)
-{
-    // First safety check
-    if(method == nil ||
-       type == NULL)
-    {
-        return SWIZZLE_RETURN_ARGUMENTS;
-    }
+typedef struct {
+    Method method;
+    SwizzleMethodType type;
+} SwizzleMethod;
 
-    // Get method
-    *method = class_getClassMethod(class, action);
-    *type = SWIZZLE_METHOD_TYPE_CLASS;
-    
-    // If method is nil it has to be done again but with instance method approach
-    if(*method == nil)
+static SwizzleMethod SwizzleGetMethod(Class class,
+                                      SEL selector,
+                                      SwizzleMethodType swizzleMethodType)
+{
+    SwizzleMethod swizzleMethod = { .method = nil, .type = swizzleMethodType };
+    if(selector == nil)
     {
-        // Yep we do
-        *method = class_getInstanceMethod(class, action);
-        *type = SWIZZLE_METHOD_TYPE_INSTANCE;
+        return swizzleMethod;
     }
     
-    return SWIZZLE_RETURN_SUCCESS;
+    switch(swizzleMethodType)
+    {
+        case kSwizzleMethodTypeClass:
+            swizzleMethod.method = class_getClassMethod(class, selector);
+            break;
+        case kSwizzleMethodTypeInstance:
+            swizzleMethod.method = class_getInstanceMethod(class, selector);
+            break;
+        default:
+            break;
+            
+    }
+    
+    if(swizzleMethod.method == nil)
+    {
+        swizzleMethod.type = kSwizzleMethodTypeUnknown;
+    }
+    
+    return swizzleMethod;
 }
 
-unsigned char swizzle_objc_method(SEL originalAction,
-                                  Class originalClass,
-                                  SEL replacementAction,
-                                  Class replacementClass)
+SwizzleReturn SwizzleObjCMethod(SEL originalAction,
+                                Class originalClass,
+                                SEL replacementAction,
+                                Class replacementClass,
+                                SwizzleMethodType swizzleMethodType)
 {
-    // First safety check
     if(originalAction == nil ||
        originalClass == nil  ||
        replacementAction == nil)
     {
-        return SWIZZLE_RETURN_ARGUMENTS;
+        return kSwizzleReturnArguments;
     }
     
-    // Get the type of those methods
-    Method originalMethod;
-    Method replacementMethod;
-    
-    unsigned char originalType;
-    unsigned char replacementType;
-    
-    swizzle_objc_method_type(originalClass, originalAction, &originalMethod, &originalType);
+    SwizzleMethod originalMethod = SwizzleGetMethod(originalClass, originalAction, swizzleMethodType);
+    SwizzleMethod replacementMethod = SwizzleGetMethod(replacementClass ?: originalClass, replacementAction, swizzleMethodType);
+    if(originalMethod.method == nil || replacementMethod.method == nil)
+    {
+        return kSwizzleReturnArguments;
+    }
     
     if(replacementClass)
     {
-        swizzle_objc_method_type(replacementClass, replacementAction, &replacementMethod, &replacementType);
-    }
-    else
-    {
-        swizzle_objc_method_type(originalClass, replacementAction, &replacementMethod, &replacementType);
-    }
-    
-    // Now both types have to match
-    // MARK: Not necessarily but lack of knowledge
-    if(originalType != replacementType)
-    {
-        return SWIZZLE_RETURN_METHOD_TYPE;
-    }
-    else if(originalMethod == nil ||
-            replacementMethod == nil)
-    {
-        return SWIZZLE_RETURN_ARGUMENTS;
-    }
-    
-    // Now we gonna get their implementations
-    if(replacementClass)
-    {
-        // Add the method so its available in the class
-        class_addMethod(originalClass, replacementAction, method_getImplementation(replacementMethod), method_getTypeEncoding(replacementMethod));
-        swizzle_objc_method_type(originalClass, replacementAction, &replacementMethod, &replacementType);
-        if(replacementMethod == nil)
+        class_addMethod(originalClass, replacementAction, method_getImplementation(replacementMethod.method), method_getTypeEncoding(replacementMethod.method));
+        replacementMethod = SwizzleGetMethod(originalClass, replacementAction, swizzleMethodType);
+        if(replacementMethod.method == nil)
         {
-            return SWIZZLE_RETURN_ARGUMENTS;
+            return kSwizzleReturnArguments;
         }
     }
-    method_exchangeImplementations(originalMethod, replacementMethod);
+    method_exchangeImplementations(originalMethod.method, replacementMethod.method);
     
-    return SWIZZLE_RETURN_SUCCESS;
+    return kSwizzleReturnSuccess;
 }
