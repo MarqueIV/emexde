@@ -99,8 +99,7 @@ static NSString *const IDEFullLineHighlightAttributeName = @"IDEFullLineHighligh
     _stdinPipe = [NSPipe pipe];
     _followTail = YES;
     _inputStartLocation = 0;
-    _isAppendingOutput = NO;    
-    self.textLayoutManager.delegate = self;
+    _isAppendingOutput = NO;
 
     self.font = [UIFont monospacedSystemFontOfSize:12 weight:UIFontWeightRegular];
     self.backgroundColor = [UIColor systemGray6Color];

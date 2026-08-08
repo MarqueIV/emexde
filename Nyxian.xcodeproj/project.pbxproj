@@ -641,7 +641,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					79AA11BB2F7FFE24002FEAF2 = {
 						CreatedOnToolsVersion = 26.0.1;
@@ -794,6 +794,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = Nyxian/;
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
@@ -806,6 +807,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				HEADER_SEARCH_PATHS = Nyxian/;
 				MACOSX_DEPLOYMENT_TARGET = 11.5;
@@ -822,7 +824,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
-				DEAD_CODE_STRIPPING = NO;
+				DEAD_CODE_STRIPPING = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -866,7 +868,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
-				DEAD_CODE_STRIPPING = NO;
+				DEAD_CODE_STRIPPING = YES;
 				GCC_OPTIMIZATION_LEVEL = s;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1212,10 +1214,11 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
-				DEAD_CODE_STRIPPING = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Nyxian/Preview Content\"";
 				ENABLE_ENHANCED_SECURITY = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_SECURITY_COMPILER_WARNINGS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Nyxian/LindChain",
@@ -1298,9 +1301,6 @@
 					"$(PROJECT_DIR)/Nyxian",
 					"$(PROJECT_DIR)/Nyxian/LindChain/Synpush",
 					"$(PROJECT_DIR)/Nyxian/LindChain",
-					"$(PROJECT_DIR)/Nyxian/LindChain/JBSupport",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs/CoreCompilerSupportLibs",
 				);
 				MARKETING_VERSION = "$(VERSION)";
 				OTHER_CFLAGS = "-DHOST_ENV";
@@ -1330,10 +1330,11 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = "$(BUILD_NUMBER)";
-				DEAD_CODE_STRIPPING = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Nyxian/Preview Content\"";
 				ENABLE_ENHANCED_SECURITY = NO;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_SECURITY_COMPILER_WARNINGS = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Nyxian/LindChain",
@@ -1417,9 +1418,6 @@
 					"$(PROJECT_DIR)/Nyxian",
 					"$(PROJECT_DIR)/Nyxian/LindChain/Synpush",
 					"$(PROJECT_DIR)/Nyxian/LindChain",
-					"$(PROJECT_DIR)/Nyxian/LindChain/JBSupport",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs",
-					"$(PROJECT_DIR)/Nyxian/LindChain/CoreCompilerSupportLibs/CoreCompilerSupportLibs",
 				);
 				MARKETING_VERSION = "$(VERSION)";
 				ONLY_ACTIVE_ARCH = YES;
