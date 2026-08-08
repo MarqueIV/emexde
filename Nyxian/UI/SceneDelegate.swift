@@ -77,7 +77,7 @@ struct UIOnboardingHelper {
                                 : UIColor(red: 0.85, green: 0.60, blue: 0.12, alpha: 1.0)
                         },
                       title: "Warning",
-                      description: "This is a beta version of Nyxian, don't expect everything to work 100% yet please be kind and respectful, it is very hard to develop this kind of software. Please report any kinds of issues and ask any question over at our github we have a lot of time and passion answering your questions and making Nyxian better."),
+                      description: "This is a beta version of Nyxian, so don't expect a product without bugs, please be kind and respectful, it is very hard to develop this kind of software. Please report any kinds of issues and ask any question over at our github we have a lot of time and passion answering your questions and making Nyxian better."),
         ])
     }
     
