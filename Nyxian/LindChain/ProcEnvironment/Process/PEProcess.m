@@ -24,7 +24,6 @@
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
-
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/Process/PEExtension.h>
@@ -32,6 +31,7 @@
 #import <LindChain/ProcEnvironment/Object/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Surface/proc/counter.h>
+#import <MobileDevelopmentKit/MDKThreadPool.h>
 
 @implementation PEProcess {
     dispatch_once_t _notifyWindowManagerOnce;
@@ -184,6 +184,7 @@
         
 - (void)processDidExit:(FBProcess *)arg1
 {
+    
     if(self.proc != NULL)
     {
         /* yep writing official wait4 code~~ */
@@ -195,7 +196,14 @@
         }
     }
     
-    if(self.exitingCallback) self.exitingCallback();
+    printf("process %d died\n", self.pid);
+    if(self.exitingCallback)
+    {
+        /* exit callback shall never run on the same queue */
+        MDKPthreadDispatch(^{
+            self.exitingCallback();
+        });
+    }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         if(self.wid != -1)
