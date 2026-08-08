@@ -30,7 +30,7 @@
 #import <LindChain/ProcEnvironment/Syscall/mach_syscall_client.h>
 #import <LindChain/ProcEnvironment/Object/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
-#import <LindChain/ProcEnvironment/Surface/proc/counter.h>
+#import <LindChain/ProcEnvironment/Surface/proc/proctil.h>
 #import <MobileDevelopmentKit/MDKThreadPool.h>
 
 @implementation PEProcess {
@@ -43,12 +43,12 @@
      withKernelSurfaceProcess:(ksurface_proc_t*)proc
                   withSession:(NXWindowSessionApplication*)session
 {
-    if(proc == NULL)
+    if(proctil(kProctilActionCount) != KERN_SUCCESS)
     {
-        proc = kernel_proc_;
+        return nil;
     }
     
-    if(!proc_count())
+    if(proctil(kProctilActionLock) != KERN_SUCCESS)
     {
         return nil;
     }
@@ -60,6 +60,7 @@
     self.executablePath = items[@"PEExecutablePath"];
     if(self.executablePath == nil)
     {
+        proctil(kProctilActionUnlock);
         return nil;
     }
     /* FIXME: before it was a isExecutableFileAtPath check, but since installd broke the permissions at install time we can forget that lol */
@@ -76,6 +77,7 @@
     self.process = PESpawnFBProcess(items);
     if(self.process == nil)
     {
+        proctil(kProctilActionUnlock);
         return nil;
     }
     
@@ -88,13 +90,15 @@
          */
         FBProcessManager *manager = [PrivClass(FBProcessManager) sharedInstance];
         [manager _removeProcess:self.process];
+        proctil(kProctilActionUnlock);
         return nil;
     }
     
-    ksurface_proc_t *child = proc_fork(proc, self.pid, [self.executablePath UTF8String]);
+    ksurface_proc_t *child = proc_fork(proc ?: kernel_proc_, self.pid, [self.executablePath UTF8String]);
     if(child == NULL)
     {
         [self terminate];
+        proctil(kProctilActionUnlock);
         return nil;
     }
     else
@@ -102,6 +106,7 @@
         self.proc = child;
     }
     
+    proctil(kProctilActionUnlock);
     return self;
 }
 
@@ -242,7 +247,7 @@
     {
         kvo_release(_proc);
     }
-    proc_uncount();
+    proctil(kProctilActionUncount);
 }
 
 - (void)setSnapshot:(UIImage *)snapshot

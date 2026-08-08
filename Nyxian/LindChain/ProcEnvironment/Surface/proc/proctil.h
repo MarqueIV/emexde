@@ -19,12 +19,21 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PROC_COUNTER_H
-#define PROC_COUNTER_H
+#ifndef PROC_COUNTER_PROCTIL_H
+#define PROC_COUNTER_PROCTIL_H
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <mach/kern_return.h>
 
-bool proc_count(void);
-void proc_uncount(void);
+typedef enum: uint8_t {
+    kProctilActionCount,
+    kProctilActionUncount,
+    kProctilActionLock,
+    kProctilActionUnlock,
+    kProctilActionTrylock,
+} ProctilAction;
 
-#endif /* PROC_COUNTER_H */
+kern_return_t proctil(ProctilAction action);
+
+#endif /* PROC_COUNTER_PROCTIL_H */
