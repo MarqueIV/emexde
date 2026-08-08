@@ -59,7 +59,7 @@ class Coordinator: NSObject, TextViewDelegate {
             guard let server = parent.synpushServer else { return }
             
             parent.project?.projectConfig.reloadIfNeeded()
-            let flags: [String] = parent.isReadOnly ? NXProjectConfig.sdkCompilerFlags() as! [String] : parent.project?.projectConfig.compilerFlags as! [String]
+            let flags: [String] = parent.isReadOnly ? NXProjectConfig.sdkCompilerFlags() ?? [] : parent.project?.projectConfig.compilerFlags ?? []
             
             server.reparseFile(self.parent?.textView.text, withArgs: flags)
             let diag = self.parent?.synpushServer?.getDiagnostics() ?? []

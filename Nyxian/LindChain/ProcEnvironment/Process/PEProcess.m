@@ -72,8 +72,6 @@
     self.bundleIdentifier = applicationObject ? applicationObject.bundleIdentifier : nil;
     self.displayName = applicationObject ? applicationObject.localizedName : [self.executablePath lastPathComponent];
     
-    __weak typeof(self) weakSelf = self;
-    
     /* spawning process */
     self.process = PESpawnFBProcess(items);
     if(self.process == nil)

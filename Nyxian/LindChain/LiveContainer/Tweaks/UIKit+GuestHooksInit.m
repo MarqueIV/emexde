@@ -63,10 +63,13 @@
 {
     if(![delegate respondsToSelector:@selector(application:configurationForConnectingSceneSession:options:)])
     {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundeclared-selector"
         // Fix old apps black screen when UIApplicationSupportsMultipleScenes is YES
         SwizzleObjCMethod(@selector(makeKeyAndVisible), [UIApplication class], @selector(hook_makeKeyAndVisible), nil, kSwizzleMethodTypeInstance);
         SwizzleObjCMethod(@selector(makeKeyWindow), [UIApplication class], @selector(hook_makeKeyWindow), nil, kSwizzleMethodTypeInstance);
         SwizzleObjCMethod(@selector(setHidden:), [UIApplication class], @selector(hook_setHidden:), nil, kSwizzleMethodTypeInstance);
+#pragma clang diagnostic pop
     }
     [self hook_setDelegate:delegate];
 }

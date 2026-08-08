@@ -79,7 +79,7 @@ DEFINE_SYSCALL_HANDLER(ioctl)
                 goto out_fault;
             }
             
-            kern_return_t ksr = tty_suspend(tty);
+            ksr = tty_suspend(tty);
             if(ksr != KERN_SUCCESS)
             {
                 goto out_fault;

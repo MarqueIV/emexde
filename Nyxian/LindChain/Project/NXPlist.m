@@ -88,8 +88,8 @@ static const char kNSDictionaryVariables;
                     break;
                 }
                 
-                NSDictionary *sroot = currentObject;
-                currentObject = sroot[component];
+                NSDictionary *root = currentObject;
+                currentObject = root[component];
             }
         }
         

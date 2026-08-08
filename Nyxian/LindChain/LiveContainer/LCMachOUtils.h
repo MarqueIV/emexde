@@ -44,8 +44,8 @@ void LCUnmapMachO(LCMachO *machO);
 
 void LCPatchAppBundleFixupARM64eSlice(NSBundle *bundle);
 bool LCPatchExecSlice(LCMachO *machO);
-uint64_t LCFindSymbolOffsetUnsafe(const char *basePath, const char *symbol);
-uint64_t LCFindSymbolOffset(const char *basePath, const char *symbol);
+uintptr_t LCFindSymbolOffsetUnsafe(const char *basePath, const char *symbol);
+uintptr_t LCFindSymbolOffset(const char *basePath, const char *symbol);
 struct mach_header_64 *LCGetLoadedImageHeader(int i0, const char* name);
 bool LCCheckCodeSignature(LCMachO *machO);
 void *getDyldBase(void);

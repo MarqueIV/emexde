@@ -58,8 +58,6 @@ BOOL NXCodeTemplateMakeProjectStructure(NXProjectScheme scheme,
         fileName = NXSubstituteContent(fileName, variables, NO);
         dstURL = [[dstURL URLByDeletingLastPathComponent] URLByAppendingPathComponent:fileName];
         
-        
-        NSError *error = NULL;
         NSString *codeFileContent = [NSString stringWithContentsOfURL:srcURL encoding:NSUTF8StringEncoding error:&error];
         if(error)
         {

@@ -430,13 +430,13 @@ bool ZSignAsset::GetCMSInfo(uint8_t * pCMSData, uint32_t uCMSLength, jvalue & jv
 				continue;
 			}
 
-			ASN1_OBJECT* obj = X509_ATTRIBUTE_get0_object(attr);
-			if (!obj) {
+			ASN1_OBJECT* objA = X509_ATTRIBUTE_get0_object(attr);
+			if (!objA) {
 				continue;
 			}
 
 			char txtobj[128] = { 0 };
-			OBJ_obj2txt(txtobj, 128, obj, 1);
+			OBJ_obj2txt(txtobj, 128, objA, 1);
 
 			if (0 == strcmp("1.2.840.113549.1.9.3", txtobj)) { //V_ASN1_OBJECT
 				ASN1_TYPE* av = X509_ATTRIBUTE_get0_type(attr, 0);

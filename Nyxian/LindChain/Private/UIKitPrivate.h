@@ -916,7 +916,7 @@ API_AVAILABLE(ios(17.4))
 - (void)setInitialClientSettingsUpdater:(id /* block */)arg1;
 - (void)setInitialSettingsUpdater:(id /* block */)arg1;
 - (void)setSceneIdentifier:(id)arg1;
-- (void)setSceneSpecification:(id)arg1;
+- (void)setSceneSpecification:(UIApplicationSceneSpecification*)arg1;
 - (void)setSceneWorkspace:(id)arg1;
 
 @end

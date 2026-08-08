@@ -31,7 +31,7 @@
 
 @class NXWindowSessionApplication;
 
-@interface PEProcess : NSObject <FBProcessObserver,FBProcessManagerObserver>
+@interface PEProcess : NSObject <FBProcessObserver>
 
 @property (nonatomic) ksurface_proc_t *proc;
 

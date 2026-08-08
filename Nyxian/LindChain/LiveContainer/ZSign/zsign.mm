@@ -46,15 +46,12 @@ NSError* makeErrorFromLog(const std::vector<std::string>& vec) {
     return [NSError errorWithDomain:@"Failed to Sign" code:-1 userInfo:userInfo];
 }
 
-ZSignAsset zSignAsset;
-
 void zsign(NSString *appPath,
-          NSData *prov,
-          NSData *key,
-          NSString *pass,
-          NSProgress* progress,
-          void(^completionHandler)(BOOL success, NSError *error)
-          )
+           NSData *prov,
+           NSData *key,
+           NSString *pass,
+           NSProgress* progress,
+           void(^completionHandler)(BOOL success, NSError *error))
 {
     ZTimer gtimer;
     ZTimer timer;

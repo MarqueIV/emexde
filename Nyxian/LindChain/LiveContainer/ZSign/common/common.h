@@ -44,11 +44,16 @@
 #include <functional>
 using namespace std;
 
-#define FORMAT_V(x, format) char format[1024] = { 0 }; \
-                        	va_list va_args; \
-							va_start(va_args, x); \
-							vsnprintf(format, 1024, x, va_args); \
-							va_end(va_args);
+#define FORMAT_V(x, format) \
+    char format[1024] = { 0 }; \
+    va_list va_args; \
+    va_start(va_args, x); \
+    _Pragma("clang diagnostic push") \
+    _Pragma("clang diagnostic ignored \"-Wformat-security\"") \
+    _Pragma("clang diagnostic ignored \"-Wformat-nonliteral\"") \
+    vsnprintf(format, 1024, x, va_args); \
+    _Pragma("clang diagnostic pop") \
+    va_end(va_args);
 
 #include "fs.h"
 #include "sha.h"

@@ -262,9 +262,9 @@ bool LCPatchExecSlice(LCMachO *machO)
             case LC_LOAD_UPWARD_DYLIB:
             {
                 char* loadPath =  (void *)command2 + ((struct dylib_command*)command2)->dylib.name.offset;
-                for(int i = 0; i < depCount; ++i)
+                for(int j = 0; j < depCount; ++j)
                 {
-                    if (strcmp(loadPath, depPaths[i]) == 0 )
+                    if (strcmp(loadPath, depPaths[j]) == 0 )
                     {
                         // replace this duplicated dylib command with an invalid command number
                         command2->cmd = 0x114515;
@@ -293,9 +293,9 @@ NSString *LCPatchMachOFixupARM64eSlice(const char *path)
     if(magic == FAT_CIGAM)
     {
         // Find arm64e slice without CPU_SUBTYPE_LIB64
-        struct fat_header *header = (struct fat_header *)machO->map;
+        struct fat_header *fatHeader = (struct fat_header *)machO->map;
         struct fat_arch *arch = (struct fat_arch *)(machO->map + sizeof(struct fat_header));
-        for(int i = 0; i < OSSwapInt32(header->nfat_arch); i++)
+        for(int i = 0; i < OSSwapInt32(fatHeader->nfat_arch); i++)
         {
             if(OSSwapInt32(arch->cputype) == CPU_TYPE_ARM64 && OSSwapInt32(arch->cpusubtype) == CPU_SUBTYPE_ARM64E)
             {
@@ -402,7 +402,7 @@ void *getDyldBase(void)
 #endif
 }
 
-uint64_t LCFindSymbolOffsetUnsafe(const char *basePath, const char *symbol)
+uintptr_t LCFindSymbolOffsetUnsafe(const char *basePath, const char *symbol)
 {
 #if !TARGET_OS_SIMULATOR
     const char *path = basePath;
@@ -432,9 +432,9 @@ break_out:
     return offset;
 }
 
-uint64_t LCFindSymbolOffset(const char *basePath, const char *symbol)
+uintptr_t LCFindSymbolOffset(const char *basePath, const char *symbol)
 {
-    uint64_t offset = LCFindSymbolOffsetUnsafe(basePath, symbol);
+    uintptr_t offset = LCFindSymbolOffsetUnsafe(basePath, symbol);
     NSCAssert(offset != 0, @"Failed to find symbol %s", symbol);
     return offset;
 }

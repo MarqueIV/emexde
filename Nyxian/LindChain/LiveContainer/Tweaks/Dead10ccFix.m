@@ -246,4 +246,8 @@ void initDead10ccFix(void)
     return YES;
 }
 
+- (void)_handleTaskCompletionAndTerminate:(id)arg1
+{
+}
+
 @end

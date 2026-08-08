@@ -668,7 +668,7 @@
             [tileContainer removeFromSuperview];
             [stack layoutIfNeeded];
             [stack.superview layoutIfNeeded];
-        } completion:^(BOOL finished) {
+        } completion:^(BOOL finishedB) {
             if(self.windows.count == 0 && self->_placeholderStack)
             {
                 self->_placeholderStack.alpha = 0;

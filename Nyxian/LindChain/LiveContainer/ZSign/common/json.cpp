@@ -1027,6 +1027,9 @@ bool jvalue::_read_data_from_file(const char* path, string& data)
 	return false;
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+
 bool jvalue::read_from_file(const char* path, ...)
 {
 	char file[1024] = { 0 };
@@ -1141,6 +1144,8 @@ bool jvalue::style_write_plist_to_file(const char* path, ...)
 	style_write_plist(data);
 	return _write_data_to_file(file, data);
 }
+
+#pragma clang diagnostic pop
 
 string jvalue::write_plist() const
 {
@@ -1353,14 +1358,14 @@ void jreader::_skip_comment()
 	char c = _get_next_char();
 	if (c == '*') {
 		while (m_pcursor != m_pend) {
-			char c = _get_next_char();
+			c = _get_next_char();
 			if (c == '*' && *m_pcursor == '/') {
 				break;
 			}
 		}
 	} else if (c == '/') {
 		while (m_pcursor != m_pend) {
-			char c = _get_next_char();
+            c = _get_next_char();
 			if (c == '\r' || c == '\n') {
 				break;
 			}

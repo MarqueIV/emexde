@@ -316,7 +316,7 @@ bool initGuestSDKVersionInfo(void)
 {
     void* dyldBase = getDyldBase();
     // it seems Apple is constantly changing findVersionSetEquivalent's signature so we directly search sVersionMap instead
-    uint32_t* versionMapPtr = LCFindSymbolOffsetUnsafe(@"__ZN5dyld3L11sVersionMapE", dyldBase);
+    uint32_t *versionMapPtr = (uint32_t*)LCFindSymbolOffsetUnsafe("__ZN5dyld3L11sVersionMapE", dyldBase);
     if(!versionMapPtr) {
 #if !TARGET_OS_SIMULATOR
         const char* dyldPath = "/usr/lib/dyld";
@@ -435,7 +435,9 @@ void *dlopenBypassingLock(const char *path, int mode)
     void **lockUnlockPtr = NULL;
     void **vtableLibSystemHelpers = litehook_find_dsc_symbol(libdyldPath, "__ZTVN5dyld416LibSystemHelpersE");
     void *lockFunc = litehook_find_dsc_symbol(libdyldPath, "__ZNK5dyld416LibSystemHelpers42os_unfair_recursive_lock_lock_with_optionsEP26os_unfair_recursive_lock_s24os_unfair_lock_options_t");
+    #if DEBUG
     void *unlockFunc = litehook_find_dsc_symbol(libdyldPath, "__ZNK5dyld416LibSystemHelpers31os_unfair_recursive_lock_unlockEP26os_unfair_recursive_lock_s");
+    #endif /* DEBUG */
     while(!lockUnlockPtr)
     {
         if(vtableLibSystemHelpers[0] == lockFunc)

@@ -304,7 +304,7 @@
                              animated:(BOOL)animated
                          withDuration:(double)duration
 {
-    void (^block)(NSString *systemName, BOOL animated, double duration) = ^(NSString *systemName, BOOL animated, double duration){
+    void (^block)(void) = ^(void){
         UIImageView *imageView = [self shared].XCImageView;
         if(!imageView)
         {
@@ -347,12 +347,12 @@
     
     if([NSThread isMainThread])
     {
-        block(systemName, animated, duration);
+        block();
     }
     else
     {
         dispatch_sync(dispatch_get_main_queue(), ^{
-            block(systemName, animated, duration);
+            block();
         });
     }
 }
