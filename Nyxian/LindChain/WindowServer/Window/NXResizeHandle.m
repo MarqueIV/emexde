@@ -38,9 +38,13 @@
     return self;
 }
 
+#if DEBUG
+
 - (void)dealloc
 {
     NSLog(@"deallocated %@", self);
 }
+
+#endif /* DEBUG */
 
 @end

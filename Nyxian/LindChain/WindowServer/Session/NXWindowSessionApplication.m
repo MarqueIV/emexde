@@ -401,10 +401,14 @@
     return windowName ?: self.process.displayName;
 }
 
+#if DEBUG
+
 - (void)dealloc
 {
     NSLog(@"deallocated %@", self);
 }
+
+#endif /* DEBUG */
 
 - (void)beginInteractiveResize
 {

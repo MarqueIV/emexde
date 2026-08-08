@@ -401,7 +401,9 @@
 - (void)dealloc
 {
     [_collapseTimer invalidate];
+    #if DEBUG
     NSLog(@"deallocated %@", self);
+    #endif /* DEBUG */
 }
 
 - (UIView *)hitTest:(CGPoint)point

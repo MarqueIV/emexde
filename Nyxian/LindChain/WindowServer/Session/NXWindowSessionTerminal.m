@@ -264,8 +264,10 @@
     {
         kvo_release(_tty);
     }
-    
+
+#if DEBUG
     NSLog(@"deallocated %@", self);
+#endif /* DEBUG */
 }
 
 @end
