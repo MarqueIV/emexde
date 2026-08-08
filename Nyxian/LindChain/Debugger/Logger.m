@@ -20,7 +20,7 @@
 */
 
 #import <LindChain/Debugger/Logger.h>
-#import <emexDE-Swift.h>
+#import <Nyxian-Swift.h>
 
 static const CGFloat kAutoScrollThreshold = 20.0;
 

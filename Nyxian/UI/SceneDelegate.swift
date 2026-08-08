@@ -32,7 +32,7 @@ struct UIOnboardingHelper {
     }
     
     static func setUpSecondTitleLine() -> NSMutableAttributedString {
-        .init(string: Bundle.main.displayName ?? "emexDE", attributes: [
+        .init(string: Bundle.main.displayName ?? "Nyxian", attributes: [
             .foregroundColor: UIColor { trait in
                 trait.userInterfaceStyle == .dark
                 ? UIColor(red: 0.85, green: 0.74, blue: 0.93, alpha: 1.0)
@@ -77,7 +77,7 @@ struct UIOnboardingHelper {
                                 : UIColor(red: 0.85, green: 0.60, blue: 0.12, alpha: 1.0)
                         },
                       title: "Warning",
-                      description: "This is a beta version of emexDE, don't expect everything to work 100% yet please be kind and respectful, it is very hard to develop this kind of software. Please report any kinds of issues and ask any question over at our github we have a lot of time and passion answering your questions and making emexDE better."),
+                      description: "This is a beta version of Nyxian, don't expect everything to work 100% yet please be kind and respectful, it is very hard to develop this kind of software. Please report any kinds of issues and ask any question over at our github we have a lot of time and passion answering your questions and making Nyxian better."),
         ])
     }
     

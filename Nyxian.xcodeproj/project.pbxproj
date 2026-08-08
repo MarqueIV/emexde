@@ -115,7 +115,7 @@
 		79277DC02EE8752800F18B30 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		79277DC62EE8761000F18B30 /* version.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = version.sh; sourceTree = "<group>"; };
 		79281CBF2E3A44CA00E983C9 /* UniformTypeIdentifiers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UniformTypeIdentifiers.framework; path = System/Library/Frameworks/UniformTypeIdentifiers.framework; sourceTree = SDKROOT; };
-		7944B5652DEC74EA00834134 /* emexDE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = emexDE.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7944B5652DEC74EA00834134 /* Nyxian.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nyxian.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7944B5672DEC74FC00834134 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		79AA11BC2F7FFE24002FEAF2 /* nxtool */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = nxtool; sourceTree = BUILT_PRODUCTS_DIR; };
 		79AA11C32F7FFEE4002FEAF2 /* libarchive.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libarchive.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk/usr/lib/libarchive.tbd; sourceTree = DEVELOPER_DIR; };
@@ -130,7 +130,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		798BBD332F1D265200CBB23F /* Exceptions for "Nyxian" folder in "emexDE" target */ = {
+		798BBD332F1D265200CBB23F /* Exceptions for "Nyxian" folder in "Nyxian" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				LindChain/LiveContainer/LCBootstrap.m,
@@ -151,7 +151,7 @@
 				LindChain/ProcEnvironment/tfp.c,
 				LindChain/ProcEnvironment/vfork.c,
 			);
-			target = AF9916D82DC8C42200DDF895 /* emexDE */;
+			target = AF9916D82DC8C42200DDF895 /* Nyxian */;
 		};
 		79AA11C62F7FFF12002FEAF2 /* Exceptions for "Nyxian" folder in "nxtool" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -172,14 +172,14 @@
 			);
 			target = 79BF97F62E6291EE00C60D4C /* LiveProcess */;
 		};
-		79BF98402E62931E00C60D4C /* Exceptions for "LiveProcess" folder in "emexDE" target */ = {
+		79BF98402E62931E00C60D4C /* Exceptions for "LiveProcess" folder in "Nyxian" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				LindChain/Services/applicationmgmtd/LDEApplicationObject.m,
 				LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.m,
 				LindChain/Services/containerd/PEContainer.m,
 			);
-			target = AF9916D82DC8C42200DDF895 /* emexDE */;
+			target = AF9916D82DC8C42200DDF895 /* Nyxian */;
 		};
 		79BF9A972E62BB6900C60D4C /* Exceptions for "Nyxian" folder in "LiveProcess" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
@@ -330,7 +330,7 @@
 				CoreCompilerSupportLibs/lib_CompilerSwiftSyntaxMacros.dylib,
 			);
 		};
-		AFF4DBDB2DCA5DEA00B1B5F9 /* Exceptions for "Nyxian" folder in "Embed Libraries" phase from "emexDE" target */ = {
+		AFF4DBDB2DCA5DEA00B1B5F9 /* Exceptions for "Nyxian" folder in "Embed Libraries" phase from "Nyxian" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			attributesByRelativePath = {
 				LindChain/OpenSSL.xcframework = (CodeSignOnCopy, RemoveHeadersOnCopy, );
@@ -346,7 +346,7 @@
 		798692F02E627A3B00390D7E /* LiveProcess */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				79BF98402E62931E00C60D4C /* Exceptions for "LiveProcess" folder in "emexDE" target */,
+				79BF98402E62931E00C60D4C /* Exceptions for "LiveProcess" folder in "Nyxian" target */,
 				79BF983D2E62930600C60D4C /* Exceptions for "LiveProcess" folder in "LiveProcess" target */,
 			);
 			path = LiveProcess;
@@ -377,8 +377,8 @@
 		AF9916DB2DC8C42200DDF895 /* Nyxian */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				798BBD332F1D265200CBB23F /* Exceptions for "Nyxian" folder in "emexDE" target */,
-				AFF4DBDB2DCA5DEA00B1B5F9 /* Exceptions for "Nyxian" folder in "Embed Libraries" phase from "emexDE" target */,
+				798BBD332F1D265200CBB23F /* Exceptions for "Nyxian" folder in "Nyxian" target */,
+				AFF4DBDB2DCA5DEA00B1B5F9 /* Exceptions for "Nyxian" folder in "Embed Libraries" phase from "Nyxian" target */,
 				79BF9A972E62BB6900C60D4C /* Exceptions for "Nyxian" folder in "LiveProcess" target */,
 				79AA11C62F7FFF12002FEAF2 /* Exceptions for "Nyxian" folder in "nxtool" target */,
 			);
@@ -475,7 +475,7 @@
 				860D91762FAE1F95000D321B /* MobileDevelopmentKit */,
 				7944B5662DEC74FC00834134 /* Frameworks */,
 				79BF97F72E6291EE00C60D4C /* LiveProcess.appex */,
-				7944B5652DEC74EA00834134 /* emexDE.app */,
+				7944B5652DEC74EA00834134 /* Nyxian.app */,
 				79AA11BC2F7FFE24002FEAF2 /* nxtool */,
 				86DCC25A2FA5209600973169 /* CoreCompiler.framework */,
 				860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */,
@@ -591,9 +591,9 @@
 			productReference = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */;
 			productType = "com.apple.product-type.framework";
 		};
-		AF9916D82DC8C42200DDF895 /* emexDE */ = {
+		AF9916D82DC8C42200DDF895 /* Nyxian */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AF9916E72DC8C42400DDF895 /* Build configuration list for PBXNativeTarget "emexDE" */;
+			buildConfigurationList = AF9916E72DC8C42400DDF895 /* Build configuration list for PBXNativeTarget "Nyxian" */;
 			buildPhases = (
 				AF9916D52DC8C42200DDF895 /* Sources */,
 				AF9916D62DC8C42200DDF895 /* Frameworks */,
@@ -611,7 +611,7 @@
 			fileSystemSynchronizedGroups = (
 				AF9916DB2DC8C42200DDF895 /* Nyxian */,
 			);
-			name = emexDE;
+			name = Nyxian;
 			packageProductDependencies = (
 				AF9919572DC9175A00DDF895 /* TreeSitterObjc */,
 				AF99195A2DC9176900DDF895 /* TreeSitterC */,
@@ -630,7 +630,7 @@
 				8FECB24C2FFD367A00049BB0 /* Runestone */,
 			);
 			productName = LindDE;
-			productReference = 7944B5652DEC74EA00834134 /* emexDE.app */;
+			productReference = 7944B5652DEC74EA00834134 /* Nyxian.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -686,7 +686,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				AF9916D82DC8C42200DDF895 /* emexDE */,
+				AF9916D82DC8C42200DDF895 /* Nyxian */,
 				79BF97F62E6291EE00C60D4C /* LiveProcess */,
 				860D91742FAE1F95000D321B /* MobileDevelopmentKit */,
 				86DCC2592FA5209600973169 /* CoreCompiler */,
@@ -1228,7 +1228,7 @@
 					LiveProcess/,
 				);
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = emexDE;
+				INFOPLIST_KEY_CFBundleDisplayName = Nyxian;
 				INFOPLIST_KEY_GCSupportsControllerUserInteraction = NO;
 				INFOPLIST_KEY_GCSupportsGameMode = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -1347,7 +1347,7 @@
 					LiveProcess/,
 				);
 				INFOPLIST_FILE = Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = emexDE;
+				INFOPLIST_KEY_CFBundleDisplayName = Nyxian;
 				INFOPLIST_KEY_GCSupportsControllerUserInteraction = NO;
 				INFOPLIST_KEY_GCSupportsGameMode = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
@@ -1488,7 +1488,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		AF9916E72DC8C42400DDF895 /* Build configuration list for PBXNativeTarget "emexDE" */ = {
+		AF9916E72DC8C42400DDF895 /* Build configuration list for PBXNativeTarget "Nyxian" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AF9916E82DC8C42400DDF895 /* Debug */,

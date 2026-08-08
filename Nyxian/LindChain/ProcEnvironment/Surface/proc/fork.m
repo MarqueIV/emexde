@@ -93,7 +93,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
          * manipulate the kernel processes data structures to inherite
          * entitlements, you would argue now that they could overwrite
          * this code here, but iOS doesn't allow JIT so that would make
-         * emexDE and ksurface crash immediately.
+         * Nyxian and ksurface crash immediately.
          */
         proc_setmobilecred(child);
         proc_setsid(child, child_pid);

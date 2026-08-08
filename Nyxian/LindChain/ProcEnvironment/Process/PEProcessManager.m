@@ -23,7 +23,7 @@
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #import <LindChain/ProcEnvironment/panic.h>
-#import <emexDE-Swift.h>
+#import <Nyxian-Swift.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <os/lock.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
