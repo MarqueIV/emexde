@@ -46,13 +46,12 @@
 #import <LindChain/WindowServer/Session/NXWindowSessionTerminal.h>
 #import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/Process/PEExtension.h>
 
 /* Kernel Virtualisation Layer Headers */
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
-
-bool liveProcessIsAvailable(void);
 
 /* Project Headers */
 #import <LindChain/Project/NXUser.h>

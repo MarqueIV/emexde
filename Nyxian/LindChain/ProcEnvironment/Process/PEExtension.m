@@ -28,17 +28,14 @@
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
 
-bool liveProcessIsAvailable(void)
+NSBundle *PEGetLiveProcessBundle(void)
 {
-    static bool available = false;
-    
+    static NSBundle *liveProcessBundle = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSBundle *liveProcessBundle = [NSBundle bundleWithPath:[NSBundle.mainBundle.builtInPlugInsPath stringByAppendingPathComponent:@"LiveProcess.appex"]];
-        available = (liveProcessBundle != NULL);
+        liveProcessBundle = [NSBundle bundleWithPath:[NSBundle.mainBundle.builtInPlugInsPath stringByAppendingPathComponent:@"LiveProcess.appex"]];
     });
-    
-    return available;
+    return liveProcessBundle;
 }
 
 static const char kNSExtensionKey;
@@ -70,12 +67,7 @@ static const char kIdentifierKey;
 
 NSExtension *PEGetNSExtension(void)
 {
-    static NSBundle *liveProcessBundle = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        liveProcessBundle = [NSBundle bundleWithPath:[NSBundle.mainBundle.builtInPlugInsPath stringByAppendingPathComponent:@"LiveProcess.appex"]];
-    });
-    
+    NSBundle *liveProcessBundle = PEGetLiveProcessBundle();
     if(liveProcessBundle == nil)
     {
         return nil;
@@ -192,9 +184,9 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
 }
 
 __attribute__((constructor))
-static void start_environment(int argc, char *argv[])
+static void __PEKickstart(int argc, char *argv[])
 {
-    if(liveProcessIsAvailable())
+    if(PEGetLiveProcessBundle() != nil)
     {
         environment_init(EnvironmentExecCustom, NSBundle.mainBundle.executablePath, argc, argv);
         [PELaunchServiceRegistry shared]; /* invokes launch services startup*/

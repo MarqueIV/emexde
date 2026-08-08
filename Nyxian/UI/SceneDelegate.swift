@@ -118,7 +118,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
             return;
         }
         
-        if(!liveProcessIsAvailable())
+        if(PEGetLiveProcessBundle() == nil)
         {
             let label = UILabel()
             label.text = "NSExtension missing, make sure you keep the extension when installing."
