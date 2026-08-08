@@ -29,6 +29,7 @@
 #include <LindChain/ProcEnvironment/Surface/proc/lookup.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #include <LindChain/ProcEnvironment/Surface/proc/remove.h>
+#include <LindChain/ProcEnvironment/Surface/proc/proctil.h>
 
 DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(proc);
 
