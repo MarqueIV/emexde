@@ -357,15 +357,15 @@
     __weak typeof(self) weakSelf = self;
     [self registerForTraitChanges:@[UITraitUserInterfaceStyle.class] withHandler:^(__kindof id<UITraitChangeObservable> _Nonnull target, UITraitCollection * _Nonnull previousTraitCollection) {
         __strong typeof(self) strongSelf = weakSelf;
-        if(strongSelf == nil || !self.process.process.running || self.process.isSuspended)
+        if(strongSelf == nil || !strongSelf.process.process.running || strongSelf.process.isSuspended)
         {
             return;
         }
         
-        if(self.traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle)
+        if(strongSelf.traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle)
         {
             [strongSelf.scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
-                settings.userInterfaceStyle = self.traitCollection.userInterfaceStyle;
+                settings.userInterfaceStyle = strongSelf.traitCollection.userInterfaceStyle;
             }];
         }
     }];
