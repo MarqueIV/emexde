@@ -93,6 +93,12 @@ kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach,
 {
     assert(mach != NULL);
     
+    /* the blob's mac length can never exceed 72 */
+    if(mach->blob.mac_len > 72)
+    {
+        return KERN_DENIED;
+    }
+    
     /* verify signature from blob */
     const uint8_t *p = pub_key;
     EVP_PKEY *pub = d2i_PUBKEY(NULL, &p, pub_key_len);
