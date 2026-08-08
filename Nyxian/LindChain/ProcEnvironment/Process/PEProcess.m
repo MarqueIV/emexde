@@ -196,7 +196,6 @@
         }
     }
     
-    printf("process %d died\n", self.pid);
     if(self.exitingCallback)
     {
         /* exit callback shall never run on the same queue */
@@ -227,17 +226,6 @@
 - (void)process:(FBProcess *)arg1 stateDidChangeFromState:(FBProcessState *)arg2 toState:(FBProcessState *)arg3
 {
     /* stub for when ever */
-}
-
-- (void)processManager:(FBProcessManager *)arg1 didAddProcess:(FBProcess *)arg2
-{
-    [arg2 addObserver:self];
-}
-
-- (void)processManager:(FBProcessManager *)arg1 didRemoveProcess:(FBProcess *)arg2
-{
-    [arg2 removeObserver:self];
-    [arg1 removeObserver:self];
 }
 
 - (id)forwardingTargetForSelector:(SEL)sel
