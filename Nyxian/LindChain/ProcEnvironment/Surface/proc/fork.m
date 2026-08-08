@@ -62,7 +62,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
      * sayed executable.
      */
     PEEntitlement entitlement = [[PEContainer shared] entitlementForExecutableAtPath:nsPath];
-    PEEntitlement currentEntitlement = PEEntitlementNone;   /* is set at inheritance stage if applicable */
+    PEEntitlement currentEntitlement = proc_getentitlements(child);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child);
     
     /*
@@ -95,6 +95,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
          * this code here, but iOS doesn't allow JIT so that would make
          * Nyxian and ksurface crash immediately.
          */
+        currentEntitlement = PEEntitlementNone;
         proc_setmobilecred(child);
         proc_setsid(child, child_pid);
     }
@@ -107,8 +108,12 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
          * wants to debug they need to spawn the child process
          * or debug a process in the same session.
          */
-        currentEntitlement = proc_getentitlements(child);   /* still mirrors parents entitlements at process creation time */
         currentEntitlement &= ~(PEEntitlementPlatform | PEEntitlementPlatformRoot | PEEntitlementTaskForPid | PEEntitlementProcessElevate);
+    }
+    else
+    {
+        /* inherites nothing */
+        currentEntitlement = PEEntitlementNone;
     }
     
     /* checking for special platform root credentials */
