@@ -600,7 +600,6 @@ exports:
                             FBWorkspaceAssertionAttributes._jetsamPriorityUtility3,
                             FBWorkspaceAssertionAttributes._maintainSelfForBGHosting,
                             FBWorkspaceAssertionAttributes._maintainSelfForFGHosting,
-                            FBWorkspaceAssertionAttributes._prefetch,
                             FBWorkspaceAssertionAttributes._roleNonUI,
                             FBWorkspaceAssertionAttributes._roleOpportunistic,
                             FBWorkspaceAssertionAttributes._roleUIFocal,

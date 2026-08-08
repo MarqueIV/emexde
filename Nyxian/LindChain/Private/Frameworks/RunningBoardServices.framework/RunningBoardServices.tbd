@@ -3,7 +3,7 @@ archs:                 [ armv7, armv7s, arm64, arm64e ]
 platform:              ios
 flags:                 [ flat_namespace ]
 install-name:          /System/Library/PrivateFrameworks/RunningBoardServices.framework/RunningBoardServices
-current-version:       1015.100.16
+current-version:       1008.60.3
 compatibility-version: 1
 objc-constraint:       retain_release
 exports:
@@ -135,9 +135,9 @@ exports:
                             RBSMimicTaskSuspensionAttribute, RBSNotPredicate,
                             RBSOSServiceProcessIdentity,
                             RBSOpaqueProcessIdentity, RBSPersistentAttribute,
-                            RBSPrefetchPageAttribute, RBSPreserveBaseMemoryGrant,
-                            RBSPreventIdleSleepGrant, RBSPreventLaunchLimitation,
-                            RBSPrewarmAttribute, RBSProcessAUIDPredicate,
+                            RBSPreserveBaseMemoryGrant, RBSPreventIdleSleepGrant,
+                            RBSPreventLaunchLimitation, RBSPrewarmAttribute,
+                            RBSProcessAUIDPredicate,
                             RBSProcessApplicationPredicate,
                             RBSProcessAssertionInfo,
                             RBSProcessBKSLegacyPredicate,
@@ -168,7 +168,6 @@ exports:
                             RBSProcessPredicateLaunchServicesProcesses,
                             RBSProcessPredicateSuspendable,
                             RBSProcessPredicateTypeApplication,
-                            RBSProcessPrefetchPageScenario,
                             RBSProcessReportedProcesses,
                             RBSProcessServiceNamePredicate, RBSProcessState,
                             RBSProcessStateDescriptor, RBSProcessStateUpdate,
@@ -322,7 +321,6 @@ exports:
                             RBSLaunchContext._managedPersona,
                             RBSLaunchContext._oneShotUUID,
                             RBSLaunchContext._preventContainerization,
-                            RBSLaunchContext._psPageIn,
                             RBSLaunchContext._requestorHandle,
                             RBSLaunchContext._requiredCacheUUID,
                             RBSLaunchContext._requiredExistingProcess,
@@ -361,7 +359,6 @@ exports:
                             RBSNotPredicate._predicate,
                             RBSOSServiceProcessIdentity._jobLabel,
                             RBSOSServiceProcessIdentity._type,
-                            RBSPrefetchPageAttribute._scenario,
                             RBSPreventLaunchLimitation._allow,
                             RBSPreventLaunchLimitation._predicate,
                             RBSPrewarmAttribute._identity,
@@ -438,7 +435,6 @@ exports:
                             RBSProcessMonitorConfiguration._updateHandler,
                             RBSProcessPlatformPredicate._platform,
                             RBSProcessPredicate._predicate,
-                            RBSProcessPrefetchPageScenario._scenario,
                             RBSProcessState._codedState,
                             RBSProcessState._codedStateCache,
                             RBSProcessState._codedValues,
@@ -449,7 +445,6 @@ exports:
                             RBSProcessState._lastStateChangeTimestamp,
                             RBSProcessState._legacyAssertions,
                             RBSProcessState._lock,
-                            RBSProcessState._prefetchPageScenarios,
                             RBSProcessState._preventedFromLaunching,
                             RBSProcessState._primitiveAssertions,
                             RBSProcessState._process, RBSProcessState._tags,
