@@ -63,9 +63,7 @@ SwizzleReturn SwizzleObjCMethod(SEL originalAction,
                                 Class replacementClass,
                                 SwizzleMethodType swizzleMethodType)
 {
-    if(originalAction == nil ||
-       originalClass == nil  ||
-       replacementAction == nil)
+    if(originalAction == nil || originalClass == nil  || replacementAction == nil)
     {
         return kSwizzleReturnArguments;
     }

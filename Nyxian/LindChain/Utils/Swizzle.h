@@ -22,7 +22,7 @@
 #ifndef LINDCHAIN_UTILS_SWIZZLE_H
 #define LINDCHAIN_UTILS_SWIZZLE_H
 
-#import <Foundation/Foundation.h>
+#import <CoreFoundation/CoreFoundation.h>
 #import <objc/runtime.h>
 
 typedef enum: UInt8 {
