@@ -351,23 +351,24 @@
     return YES;
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
+- (void)viewDidLoad
 {
-    assert([NSThread isMainThread]);
-    
-    [super traitCollectionDidChange:previousTraitCollection];
-    
-    if(!self.process.process.running || self.process.isSuspended)
-    {
-        return;
-    }
-    
-    if(self.traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle)
-    {
-        [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
-            settings.userInterfaceStyle = self.traitCollection.userInterfaceStyle;
-        }];
-    }
+    [super viewDidLoad];
+    __weak typeof(self) weakSelf = self;
+    [self registerForTraitChanges:@[UITraitUserInterfaceStyle.class] withHandler:^(__kindof id<UITraitChangeObservable> _Nonnull target, UITraitCollection * _Nonnull previousTraitCollection) {
+        __strong typeof(self) strongSelf = weakSelf;
+        if(strongSelf == nil || !self.process.process.running || self.process.isSuspended)
+        {
+            return;
+        }
+        
+        if(self.traitCollection.userInterfaceStyle != previousTraitCollection.userInterfaceStyle)
+        {
+            [strongSelf.scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
+                settings.userInterfaceStyle = self.traitCollection.userInterfaceStyle;
+            }];
+        }
+    }];
 }
 
 - (NSString*)windowName

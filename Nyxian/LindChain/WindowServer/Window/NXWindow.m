@@ -38,7 +38,17 @@
                    withDelegate:(id<NXWindowDelegate>)delegate;
 {
     self = [super initWithNibName:nil bundle:nil];
-    /* TODO: sanitize all nil classes in all objc apis of Nyxian please */
+    
+    __weak typeof(self) weakSelf = self;
+    [self registerForTraitChanges:@[UITraitUserInterfaceStyle.class] withHandler:^(__kindof id<UITraitChangeObservable> _Nonnull target, UITraitCollection * _Nonnull previousTraitCollection) {
+        __strong typeof(self) strongSelf = weakSelf;
+        if(strongSelf == nil)
+        {
+            return;
+        }
+        
+        [strongSelf refreshEffects];
+    }];
     
     _session = session;
     _session.isFullscreen = NO;
@@ -78,7 +88,6 @@
     _contentStack.layer.masksToBounds = YES;
     [self.view addSubview:_contentStack];
     
-    __weak typeof(self) weakSelf = self;
     _windowBar = [[NXWindowBar alloc] initWithTitle:self.session.windowName withCloseCallback:^{
         [weakSelf closeWindowWithCompletion:nil];
     } withMaximizeCallback:^{
@@ -496,12 +505,6 @@
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
         shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
     return YES;
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
-{
-    [super traitCollectionDidChange:previousTraitCollection];
-    [self refreshEffects];
 }
 
 - (void)refreshEffects

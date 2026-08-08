@@ -43,6 +43,11 @@
     [self.layer addSublayer:self.backgroundCircle];
     [self.layer addSublayer:self.progressLayer];
     
+    [self registerForTraitChanges:@[UITraitUserInterfaceStyle.class] withHandler:^(__kindof id<UITraitChangeObservable> _Nonnull target, UITraitCollection * _Nonnull previousTraitCollection) {
+        self.backgroundCircle.strokeColor = [[UITableViewCell appearance] backgroundColor].CGColor;
+        self.progressLayer.strokeColor = [[UIView appearance] tintColor].CGColor;
+    }];
+    
     return self;
 }
 
@@ -174,13 +179,6 @@
     }
 
     [self.progressLayer removeAnimationForKey:@"spinRotation"];
-}
-
-- (void)traitCollectionDidChange:(UITraitCollection *)previousTraitCollection
-{
-    [super traitCollectionDidChange:previousTraitCollection];
-    self.backgroundCircle.strokeColor = [[UITableViewCell appearance] backgroundColor].CGColor;
-    self.progressLayer.strokeColor = [[UIView appearance] tintColor].CGColor;
 }
 
 @end
