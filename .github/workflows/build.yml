@@ -16,7 +16,7 @@ concurrency:
 jobs:
   build:
     name: Build and Package
-    runs-on: macos-26
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
@@ -50,5 +50,5 @@ jobs:
       - name: Upload Nyxian
         uses: actions/upload-artifact@v4
         with:
-          name: emexDE.ipa
-          path: emexDE.ipa
+          name: Nyxian.ipa
+          path: Nyxian.ipa

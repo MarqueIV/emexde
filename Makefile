@@ -103,7 +103,7 @@ endif
 
 # Targets
 all: SCHEME := Nyxian
-all: FILE := emexDE.ipa
+all: FILE := Nyxian.ipa
 all: clean check compile package-app clean
 
 # Dependencies
