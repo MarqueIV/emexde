@@ -93,7 +93,7 @@ void LCOverwriteExecutablePath(NSString *executablePath)
     /* allocators shall match */
     CFAllocatorRef allocator = CFGetAllocator(currentMainCFBundle); /* doesnt matter if zero */
     
-    /* first overwriting bundle MARK: i think both can fail on runtime, so we need to use something else than asserts */
+    /* first overwriting bundle */
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(allocator, (__bridge CFStringRef)[executablePath stringByDeletingLastPathComponent], kCFURLPOSIXPathStyle, true);
     if(urlRef == NULL)
     {
@@ -161,7 +161,7 @@ static void *LCGetAppEntryPoint(void *handle)
         cmd = (const struct load_command *)((uintptr_t)cmd + cmd->cmdsize);
     }
 
-    __builtin_unreachable();
+    return NULL;
 }
 
 void LCInsertLibrariesIfNeeded(void)
