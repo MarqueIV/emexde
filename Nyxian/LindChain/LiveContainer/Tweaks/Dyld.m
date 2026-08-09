@@ -416,6 +416,7 @@ void DyldHooksInit(void)
 static const unsigned char *cdhash = NULL;
 static const char *expectedPath = NULL;
 static const struct dyld_all_image_infos *g_infos;
+static BOOL dyldVerified = NO;
 
 void cache_all_image_infos(void)
 {
@@ -443,6 +444,8 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
             if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
             {
                 printf("[DYLD verifier] found %s\n", path);
+                /* give me the cdhash please! */
+                dyldVerified = YES;
             }
             seenCount++;
         }
@@ -463,6 +466,7 @@ void *dlopenBypassingLockWithTrust(const char *path,
                                    int mode,
                                    const unsigned char *cdhash)
 {
+    dyldVerified = NO;
     cdhash = cdhash;
     expectedPath = path;
 
@@ -502,5 +506,6 @@ void *dlopenBypassingLockWithTrust(const char *path,
     lockUnlockPtr[1] = origUnlockPtr;
     ret = builtin_vm_protect(mach_task_self(), (mach_vm_address_t)lockUnlockPtr, sizeof(uintptr_t[2]), false, PROT_READ);
     assert(ret == KERN_SUCCESS);
+    assert(dyldVerified);
     return result;
 }
