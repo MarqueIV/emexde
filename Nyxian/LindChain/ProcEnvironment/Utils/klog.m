@@ -211,7 +211,7 @@ void klog_log_internal(const char *system, const char *format, ...)
         NSString *ts = [df stringFromDate:[NSDate date]];
         
         /* final log string */
-        NSString *final = [NSString stringWithFormat:@"[%@] [%@] %@\n", ts, [NSString stringWithCString:system encoding:NSUTF8StringEncoding] ?: @"(null)", msg ?: @"(null)"];
+        NSString *final = [NSString stringWithFormat:@"%@ [%@] %@\n", ts, [NSString stringWithCString:system encoding:NSUTF8StringEncoding] ?: @"(null)", msg ?: @"(null)"];
         
         /* getting constent c version of that string */
         const char *utf8 = [final UTF8String];

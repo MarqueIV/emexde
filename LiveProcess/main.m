@@ -195,6 +195,10 @@ int LiveProcessMain(int argc, char *argv[])
          * codebase.
          */
         environment_init(EnvironmentExecCustom, executablePath, argc, argv);
+        
+#if DEBUG
+        NSLog(@"ping");
+#endif /* DEBUG */
 
         /*
          * first ever step is to elevate their permitives as
