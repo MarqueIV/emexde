@@ -17,16 +17,43 @@ emexDE is an iOS app that empowers developers with a full toolchain they can use
 To start using emexDE view the [Installation Guide](https://emexlabs.org/emexDE/docs/installation/).
 
 ## Todo
-- [x] Code execution using NSExtension
-- [x] Syscall Handling 
-- [x] Sub processsing
-- [x] Compiling code
-- [x] Linking object files
-- [x] Signing executables
-- [x] Native iOS app development
-- [x] Native iOS utility development
-- [x] Swift support
-- [ ] Native iOS library development
-- [ ] Native iOS swift package development
-- [ ] Native iOS framework development
-- [ ] Native iOS tweak development
+- IDE
+  - Compiling code
+    - [x] C support
+    - [x] Objective-C support
+    - [x] C++ support
+    - [x] Objective-C++ support
+    - [x] Swift support
+  - Typechecking
+    - [x] C support
+    - [x] Objective-C support
+    - [x] C++ support (limited)
+    - [ ] Objective-C++ support (dead without indexing)
+    - [ ] Swift support
+  - [x] Linking objects to MachO
+  - [ ] Indexing
+- Offline Code Execution
+  - [x] Code execution (via NSExtension)
+  - Micro Kernel (ksurface)
+    - [x] radix trees
+    - [x] object API
+    - [x] process object
+    - [x] privelege model
+    - [x] custom entitlement blob (you can also sign apps like CocoaTop on your desktop using nxtool)
+    - Syscall handling
+      - [x] Mach IPC syscall server
+      - [x] Task port handoff (usually they are guarded we bypass that by moving a receive right after the send right has been set as exception port to the host and then executing a `__builtin_trap` which then causes the host to get a `ÌKOT_TASK` which is a control task port which can be reference retained and boom we got our redistributable unguarded task port)
+      - [x] Memory copy in/out of guests (yep out of the iOS processes and into them without assistance, this is not a typo lol)
+    - Subprocess Patches
+      - [x] `posix_spawn`/`posix_spawnp` fix
+      - [x] `vfork` fix
+      - [x] `sysctl` fix
+      - [x] tty support on iPhone and the necessary `ioctl` fix (tho not entirely yet, it only works when NXWindowSessionTerminal creates it, but it is already progress)
+      - [x] libproc fix
+      - [x] `task_for_pid`/`task_name_for_pid` fix (you heard right, that is not a typo)
+      - [x] patches to credential syscalls like `setuid` or `setgid`
+  - [x] Signing executables
+  - [x] CS bypass without exploit (by resigning and then dlopen)
+  - [x] Overwriting NSBundle/CFBundle without wasting 2000 branches like Duy Tran (a little side joke we laugh about at emexLabs "Yk how Duy Tran wasted 2000 branches to replace 2 pointers in memory")
+  - [x] Actually making new main NSBundle think it is loaded **as a binary**
+  - [x] Actually make iOS apps and binaries use the version as DYLD version they have been made for
