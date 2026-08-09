@@ -415,6 +415,16 @@ void DyldHooksInit(void)
 static void *lockPtrToIgnore;
 void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lock, uint32_t options)
 {
+    static atomic_flag once = ATOMIC_FLAG_INIT;
+    if(!atomic_flag_test_and_set_explicit(&once, memory_order_acq_rel))
+    {
+        /*
+         * code execution before constructors run, problem: we don't know where the mach header of the executable is
+         * if we find it out we can then compare it's cdhash with a not yet provided by ksurface cdhash to then check
+         * weither the cdhash is matching, then we can say the TOCTOU has been fixed.
+         */
+    };
+    
     if(!lockPtrToIgnore)
         lockPtrToIgnore = lock;
     if(lock != lockPtrToIgnore)
