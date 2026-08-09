@@ -108,21 +108,6 @@ syscall_client_t *syscall_client_create(mach_port_t port)
     return client;
 }
 
-void syscall_client_destroy(syscall_client_t *client)
-{
-    assert(client != NULL);
-    
-    if(client->server_port != MACH_PORT_NULL)
-    {
-        mach_port_deallocate(mach_task_self(), client->server_port);
-    }
-    
-    /* shall destroy all ports in existence */
-    pthread_key_delete(client->reply_port_key);
-    
-    free(client);
-}
-
 int64_t syscall_invoke(syscall_client_t *client,
                        uint32_t syscall_num,
                        int64_t *args,
