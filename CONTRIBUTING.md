@@ -14,9 +14,9 @@ Thank you soooo much for your interest in Nyxian and contributing to it, I had t
 1. Before you open Nyxian in Xcode **you have to run the Makefile first!**, otherwise you end up breaking project internal dependency configurations:
 
 ```bash
-git clone --recursive https://github.com/emexlab/emexDE.git
-cd emexDE
-make jailed
+git clone --recursive https://github.com/emexlab/Nyxian.git
+cd Nyxian
+make
 ```
 2. Open it in Xcode (Now you can enjoyyy)
 
