@@ -302,6 +302,22 @@ DEFINE_SYSCALL_HANDLER(pectl)
             });
             sys_return_failure(err);
         }
+        case PECTL_CS_GET_CDHASH:
+        {
+            if(!sys_proc_snapshot_->nyx.explicit_cdhash)
+            {
+                sys_return_failure(ENOENT);
+            }
+            
+            userspace_pointer_t ch_user_ptr = (userspace_pointer_t)args[1];
+            
+            if(!mach_syscall_copy_out(sys_task_, sizeof(sys_proc_->nyx.cdhash), sys_proc_->nyx.cdhash, ch_user_ptr))
+            {
+                sys_return_failure(EFAULT);
+            }
+            
+            sys_return;
+        }
         default:
             sys_return_failure(ENOSYS);
     }

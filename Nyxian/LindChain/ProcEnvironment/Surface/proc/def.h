@@ -132,6 +132,8 @@ struct ksurface_proc {
         
         /* executable path at which the macho is located at */
         char executable_path[PATH_MAX];
+        bool explicit_cdhash;
+        char cdhash[USER_FSIGNATURES_CDHASH_LEN];
         
         /* entitlements the process has */
         PEEntitlement entitlements;

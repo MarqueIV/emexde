@@ -433,7 +433,7 @@ static void *lockPtrToIgnore;
 static uint32_t seenCount;
 void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lock, uint32_t options)
 {
-    if(g_infos)
+    if(g_infos && cdhash != NULL)
     {
         uint32_t now = g_infos->infoArrayCount;
         const struct dyld_image_info *arr = g_infos->infoArray;
@@ -445,12 +445,16 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
             if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
             {
                 char *foundCdhash = cdhash_of_loaded_image((const struct mach_header*)hdr);
-                printf("[DYLD verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
+#if DEBUG
+                printf("[DYLD:verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
+#endif /* DEBUG */
                 if(foundCdhash == NULL ||
                    cdhash == NULL ||
                    memcmp(cdhash, foundCdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
                 {
-                    printf("[DYLD verifier] something is wrong 3:\n");
+#if DEBUG
+                    printf("[DYLD:verifier] something is wrong 3:\n");
+#endif /* DEBUG */
                     abort();
                 }
                 /* give me the cdhash please! */
@@ -473,10 +477,10 @@ void hook_libdyld_os_unfair_recursive_lock_unlock(void *ptr, void* lock)
 
 void *dlopenBypassingLockWithTrust(const char *path,
                                    int mode,
-                                   const unsigned char *cdhash)
+                                   const char *expectedCdhash)
 {
-    dyldVerified = NO;
-    cdhash = cdhash;
+    dyldVerified = expectedCdhash == NULL;
+    cdhash = expectedCdhash;
     expectedPath = path;
 
     cache_all_image_infos();

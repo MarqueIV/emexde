@@ -611,6 +611,37 @@
     return containerHome;
 }
 
+- (BOOL)entitlementBlobForExecutableAtPath:(NSString*)path
+                                withResult:(ksurface_ent_result_t*)result
+{
+    /*
+     * get the file descriptor objet so we can get the
+     * entitlements of the executable at that time this
+     * opens a security hole for a TOCTOU vulnerability
+     * but we might be able to fix that in the future.
+     */
+    FDObject *object = [self fdObjectForItemAtPath:path withFlags:O_RDONLY withMode:0];
+    if(object == nil)
+    {
+        return false;
+    }
+    
+    /*
+     * getting the file descriptor so we can extract the
+     * entitlements.
+     */
+    int fd = [object dup];
+    if(fd < 0)
+    {
+        return false;
+    }
+    
+    /* extracting entitlements */
+    BOOL success = macho_read_token(fd, result) == 0;
+    close(fd);
+    return success;
+}
+
 - (PEEntitlement)entitlementForExecutableAtPath:(NSString*)path
 {
     /*
@@ -629,19 +660,6 @@
      * entitlements of the executable at that time this
      * opens a security hole for a TOCTOU vulnerability
      * but we might be able to fix that in the future.
-     *
-     * fixme: This is prone to a TOCTOU vulnerability
-     *        a fix is required where the runner is
-     *        aquiring the entitlements at binary
-     *        load time with a new syscall, after
-     *        having load the executable memory
-     *        slice into memory it has to find the
-     *        entitlements and use them to set the
-     *        entitlements once using SYS_pectl.
-     *        like implementing some kind of
-     *        process pre-execution mode that
-     *        gets exited out of when ever it ran
-     *        SYS_pectl with setentitlements once.
      */
     FDObject *object = [self fdObjectForItemAtPath:path withFlags:O_RDONLY withMode:0];
     if(object == nil)

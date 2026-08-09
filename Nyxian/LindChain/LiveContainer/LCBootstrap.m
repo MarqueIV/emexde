@@ -43,6 +43,7 @@
 #import <LindChain/LiveContainer/LCBootstrap.h>
 #import <malloc/malloc.h>
 #import <LindChain/Utils/CFTools.h>
+#import <LindChain/ProcEnvironment/syscall.h>
 
 int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char* newPath, uint32_t* bufsize)
 {
@@ -196,18 +197,11 @@ int LCBootstrapMain(NSString *executablePath,
         return 1;
     }
     
-    /*
-     * Preload executable to bypass RT_NOLOAD
-     *
-     * fixme: there is a TOCTOU vulnerability, we need to
-     *        map the segments manually to my knowledge of
-     *        the current time to prevent attackers of
-     *        replacing the image them selves. so we gotta
-     *        need to write a very very slim custom loader
-     *        which is hard or we find another way.
-     */
+    /* preload executable to bypass RT_NOLOAD */
+    char cdhash[USER_FSIGNATURES_CDHASH_LEN];
+    int64_t ret = environment_syscall(SYS_pectl, PECTL_CS_GET_CDHASH, cdhash, MACH_PORT_NULL);
     appMainImageIndex = _dyld_image_count();
-    void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, NULL);
+    void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, ret != 0 ? NULL : cdhash);
     appExecutableHandle = appHandle;
     const char *dlerr = dlerror();
     if(!appHandle || (uint64_t)appHandle > 0xf00000000000 || dlerr)

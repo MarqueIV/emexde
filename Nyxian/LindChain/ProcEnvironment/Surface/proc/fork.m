@@ -50,6 +50,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
     {
         return NULL;
     }
+    child->nyx.explicit_cdhash = false;
 
     proc_setppid(child, proc_getpid(child));    /* as the child is the copy of the parent the current pid is the ppid */
     proc_setpid(child, child_pid);  /* function passed pid of child */
@@ -61,9 +62,29 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
      * will return the entitlements of
      * sayed executable.
      */
-    PEEntitlement entitlement = [[PEContainer shared] entitlementForExecutableAtPath:nsPath];
+    PEEntitlement entitlement = PEEntitlementNone;
     PEEntitlement currentEntitlement = proc_getentitlements(child);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child);
+    
+    ksurface_ent_result_t resultBlob;
+    if([nsPath isEqualToString:@"/usr/libexec/containerd"] ||
+       [nsPath isEqualToString:@"/usr/libexec/installd"])
+    {
+        entitlement = PEEntitlementSystemDaemon;
+    }
+    else if([[PEContainer shared] entitlementBlobForExecutableAtPath:nsPath withResult:&resultBlob])
+    {
+        /* verifying entitlement validity */
+        kern_return_t ksr = entitlement_mach_verify(&resultBlob, ksurface->pub_key, ksurface->pub_key_len);
+        if(ksr == KERN_SUCCESS)
+        {
+            entitlement = resultBlob.blob.entitlement;
+            
+            /* and copy cdhash */
+            memcpy(child->nyx.cdhash, resultBlob.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
+            child->nyx.explicit_cdhash = true;
+        }
+    }
     
     /*
      * only a platform process, may be able to
