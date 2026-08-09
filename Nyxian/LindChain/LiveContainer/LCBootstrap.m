@@ -145,7 +145,7 @@ skip_cf_swap:
     }
 }
 
-static void *LCGetAppEntryPoint(void *handle)
+static void *LCGetMachOEntryPoint(void *handle)
 {
     const struct mach_header_64 *header = (const struct mach_header_64 *)getGuestAppHeader();
     const struct load_command *cmd = (const struct load_command *) ((uintptr_t)header + sizeof(struct mach_header_64));
@@ -233,8 +233,8 @@ int LCBootstrapMain(NSString *executablePath,
     }
     
     /* find main */
-    int (*appMain)(int, char**) = LCGetAppEntryPoint(appHandle);
-    if(!appMain)
+    int (*entry)(int, char**) = LCGetMachOEntryPoint(appHandle);
+    if(!entry)
     {
         return 1;
     }
@@ -248,5 +248,5 @@ int LCBootstrapMain(NSString *executablePath,
     DyldHooksInit();
     LCInsertLibrariesIfNeeded();
     
-    return appMain(argc, argv);
+    return entry(argc, argv);
 }
