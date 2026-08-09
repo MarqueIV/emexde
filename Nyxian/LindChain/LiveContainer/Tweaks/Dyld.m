@@ -25,6 +25,7 @@
 #include <mach-o/dyld.h>
 #include <stdlib.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #import <LindChain/litehook/litehook.h>
 #import "LCMachOUtils.h"
 #import "../utils.h"
@@ -412,19 +413,41 @@ void DyldHooksInit(void)
 }
 
 #pragma mark - Fix black screen
+static const unsigned char *cdhash = NULL;
+static const char *expectedPath = NULL;
+static const struct dyld_all_image_infos *g_infos;
+
+void cache_all_image_infos(void)
+{
+    struct task_dyld_info info;
+    mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+    if(task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&info, &count) == KERN_SUCCESS)
+    {
+        g_infos = (const struct dyld_all_image_infos *)info.all_image_info_addr;
+    }
+}
+
 static void *lockPtrToIgnore;
+static uint32_t seenCount;
 void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lock, uint32_t options)
 {
-    static atomic_flag once = ATOMIC_FLAG_INIT;
-    if(!atomic_flag_test_and_set_explicit(&once, memory_order_acq_rel))
+    if(g_infos)
     {
-        /*
-         * code execution before constructors run, problem: we don't know where the mach header of the executable is
-         * if we find it out we can then compare it's cdhash with a not yet provided by ksurface cdhash to then check
-         * weither the cdhash is matching, then we can say the TOCTOU has been fixed.
-         */
-    };
-    
+        uint32_t now = g_infos->infoArrayCount;
+        const struct dyld_image_info *arr = g_infos->infoArray;
+        while(seenCount < now)
+        {
+            const struct mach_header_64 *hdr = (const struct mach_header_64 *)arr[seenCount].imageLoadAddress;
+            const char *path = arr[seenCount].imageFilePath;
+            struct stat sa, sb;
+            if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
+            {
+                printf("[DYLD verifier] found %s\n", path);
+            }
+            seenCount++;
+        }
+    }
+
     if(!lockPtrToIgnore)
         lockPtrToIgnore = lock;
     if(lock != lockPtrToIgnore)
@@ -436,8 +459,16 @@ void hook_libdyld_os_unfair_recursive_lock_unlock(void *ptr, void* lock)
         os_unfair_recursive_lock_unlock(lock);
 }
 
-void *dlopenBypassingLock(const char *path, int mode)
+void *dlopenBypassingLockWithTrust(const char *path,
+                                   int mode,
+                                   const unsigned char *cdhash)
 {
+    cdhash = cdhash;
+    expectedPath = path;
+
+    cache_all_image_infos();
+    seenCount = _dyld_image_count();
+
     /* this shit made by Duy Tran costs 20~30 ms, making this faster would save those */
     const char *libdyldPath = "/usr/lib/system/libdyld.dylib";
     mach_header_u *libdyldHeader = LCGetLoadedImageHeader(0, libdyldPath);

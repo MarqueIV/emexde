@@ -38,7 +38,7 @@ extern uint32_t appMainImageIndex;
 extern void* appExecutableHandle;
 extern bool tweakLoaderLoaded;
 void* getGuestAppHeader(void);
-void* dlopenBypassingLock(const char *path, int mode);
+void* dlopenBypassingLockWithTrust(const char *path, int mode, const unsigned char *cdhash);
 void initDead10ccFix(void);
 void UIKitGuestHooksInit(void);
 

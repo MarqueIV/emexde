@@ -207,7 +207,7 @@ int LCBootstrapMain(NSString *executablePath,
      *        which is hard or we find another way.
      */
     appMainImageIndex = _dyld_image_count();
-    void *appHandle = dlopenBypassingLock(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE);
+    void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, NULL);
     appExecutableHandle = appHandle;
     const char *dlerr = dlerror();
     if(!appHandle || (uint64_t)appHandle > 0xf00000000000 || dlerr)
