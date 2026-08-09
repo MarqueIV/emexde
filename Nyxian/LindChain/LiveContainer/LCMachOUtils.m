@@ -115,6 +115,88 @@ LCMachO *LCMapMachO(const char *path, bool readOnly)
     return machO;
 }
 
+LCMachO *LCMapMachOFromFDRO(int fd)
+{
+    LCMachO *machO = malloc(sizeof(LCMachO));
+    if(machO == nil)
+    {
+        return nil;
+    }
+    
+    machO->path = strdup("I/Am/A/Silly/Cat");
+    if(machO->path == nil)
+    {
+        free(machO);
+        return nil;
+    }
+    
+    /* initially opening the machO */
+    machO->ro = true;
+    machO->fd = fd;
+    if(machO->fd < 0)
+    {
+        free(machO->path);
+        free(machO);
+        return nil;
+    }
+    
+    /* getting its size and so on */
+    struct stat s = {0};
+    if(fstat(machO->fd, &s) != 0)
+    {
+        close(machO->fd);
+        free(machO->path);
+        free(machO);
+        return nil;
+    }
+    
+    machO->size = s.st_size;
+    
+    /* initally mapping the machO */
+    machO->map = mmap(NULL, machO->size, PROT_READ, MAP_SHARED, machO->fd, 0);
+    if(machO->map == MAP_FAILED)
+    {
+        close(machO->fd);
+        free(machO->path);
+        free(machO);
+        return nil;
+    }
+    
+    /* find the header */
+    machO->header = nil;
+    uint32_t magic = *(uint32_t *)machO->map;
+    if(magic == FAT_CIGAM)
+    {
+        /* checking slices */
+        struct fat_header *header = (struct fat_header *)machO->map;
+        struct fat_arch *arch = (struct fat_arch *)(machO->map + sizeof(struct fat_header));
+        for(int i = 0; i < OSSwapInt32(header->nfat_arch); i++)
+        {
+            if(OSSwapInt32(arch->cputype) == CPU_TYPE_ARM64)
+            {
+                machO->header = (struct mach_header_64 *)(machO->map + OSSwapInt32(arch->offset));
+            }
+            arch = (struct fat_arch *)((void *)arch + sizeof(struct fat_arch));
+        }
+    }
+    else if(magic == MH_MAGIC_64 || magic == MH_MAGIC)
+    {
+        machO->header = (struct mach_header_64 *)machO->map;
+    }
+    
+    if(machO->header == nil)
+    {
+        /* incompatible */
+        munmap(machO->map, machO->size);
+        close(machO->fd);
+        free(machO->path);
+        free(machO);
+        return nil;
+    }
+    
+    return machO;
+}
+
 void LCUnmapMachO(LCMachO *machO)
 {
     if(!machO->ro)

@@ -72,7 +72,7 @@ kern_return_t entitlement_token_mach_gen(ksurface_ent_blob_t *blob,
         return KERN_FAILURE;
     }
 
-    size_t mac_len;
+    size_t mac_len = sizeof(blob->mac);
     if(EVP_DigestSign(mdctx, blob->mac, &mac_len, (unsigned char*)blob, offsetof(ksurface_ent_blob_t, mac)) != 1)
     {
         EVP_MD_CTX_free(mdctx);

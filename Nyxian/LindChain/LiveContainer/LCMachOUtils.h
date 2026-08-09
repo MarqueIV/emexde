@@ -23,7 +23,9 @@
 #ifndef LIVECONTAINER_LCMACHOUTILS_H
 #define LIVECONTAINER_LCMACHOUTILS_H
 
+#if __OBJC__
 #import <Foundation/Foundation.h>
+#endif /* __OBJC__ */
 #import <mach-o/loader.h>
 #import <mach-o/fat.h>
 #import <mach-o/dyld.h>
@@ -40,9 +42,12 @@ typedef struct {
 } LCMachO;
 
 LCMachO *LCMapMachO(const char *path, bool readOnly);
+LCMachO *LCMapMachOFromFDRO(int fd);
 void LCUnmapMachO(LCMachO *machO);
 
+#if __OBJC__
 void LCPatchAppBundleFixupARM64eSlice(NSBundle *bundle);
+#endif /* __OBJC__ */
 bool LCPatchExecSlice(LCMachO *machO);
 uintptr_t LCFindSymbolOffsetUnsafe(const char *basePath, const char *symbol);
 uintptr_t LCFindSymbolOffset(const char *basePath, const char *symbol);
