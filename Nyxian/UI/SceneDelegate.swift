@@ -68,7 +68,7 @@ struct UIOnboardingHelper {
                           : UIColor(red: 0.30, green: 0.68, blue: 0.58, alpha: 1.0)
                       },
                       title: "Native Performance",
-                      description: "A custom kernel immitation layer called ksurface providing real process management, Mach IPC(task ports for example) and POSIX semantics directly on-device for your projects."),
+                      description: "A custom micro kernel called ksurface providing real process management, Mach IPC(task ports for example) and POSIX semantics directly on-device for your projects."),
             
                 .init(icon: UIImage(systemName: "exclamationmark.triangle.fill")!,
                       iconTint: UIColor { trait in
