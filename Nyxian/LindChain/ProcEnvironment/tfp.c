@@ -36,6 +36,7 @@ static kern_return_t __environment_task_for_pid(mach_port_name_t tp_in,
         return KERN_FAILURE;
     }
     
+    *tp_out = MACH_PORT_NULL;   /* SYS_gettask may not zero it out on failure */
     int64_t ret = environment_syscall(SYS_gettask, pid, name_port, tp_out);
     if(ret == -1 || *tp_out == MACH_PORT_NULL)
     {
@@ -61,7 +62,7 @@ DEFINE_HOOK(task_name_for_pid, kern_return_t, (mach_port_name_t tp_in,
 
 void environment_tfp_init(void)
 {
-    /* sending our task port to the task port system */
+    /* handing new task control port right off to host */
     ktfp(MACH_PORT_NULL);
     
     /* hooking tfp api */
