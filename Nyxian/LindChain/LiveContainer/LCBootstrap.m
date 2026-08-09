@@ -212,6 +212,7 @@ int LCBootstrapMain(NSString *executablePath,
     const char *dlerr = dlerror();
     if(!appHandle || (uint64_t)appHandle > 0xf00000000000 || dlerr)
     {
+        printf("DYLD: %s\n", dlerr);
         return 1;
     }
     
