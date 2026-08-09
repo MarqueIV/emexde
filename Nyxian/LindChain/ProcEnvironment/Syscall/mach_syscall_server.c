@@ -320,7 +320,7 @@ int syscall_server_start(syscall_server_t *server)
     uint64_t guard_value;
     arc4random_buf(&guard_value, sizeof(guard_value));
     kern_return_t kr = mach_port_construct(mach_task_self(), &options, guard_value, &server->port);
-    guard_value = 0;
+    guard_value = 0;    /* destroyed so nobody can even find it on the stack ever */
     if(kr != KERN_SUCCESS)
     {
         mach_port_deallocate(mach_task_self(), server->port);
@@ -331,7 +331,7 @@ int syscall_server_start(syscall_server_t *server)
     server->threads_cnt = (int)CCGetMaximumPerformanceCores();
     if(server->threads_cnt == 0)
     {
-        environment_panic("got 0 return from LDEGetOptimalThreadCount()");
+        environment_panic("got 0 return from CCGetMaximumPerformanceCores()");
     }
     server->threads = calloc(server->threads_cnt, sizeof(pthread_t));
     
