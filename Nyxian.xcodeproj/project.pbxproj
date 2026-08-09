@@ -211,6 +211,7 @@
 				LindChain/ProcEnvironment/panic.m,
 				LindChain/ProcEnvironment/posix_spawn.m,
 				LindChain/ProcEnvironment/proxy.m,
+				LindChain/ProcEnvironment/Surface/cdhash.m,
 				LindChain/ProcEnvironment/Surface/extra/relax.c,
 				LindChain/ProcEnvironment/syscall.c,
 				LindChain/ProcEnvironment/Syscall/mach_syscall_client.c,

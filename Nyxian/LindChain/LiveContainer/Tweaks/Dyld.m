@@ -31,6 +31,7 @@
 #import "../utils.h"
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/syscall.h>
+#import <LindChain/ProcEnvironment/Surface/cdhash.h>
 
 typedef struct {
     uint32_t platform;
@@ -413,7 +414,7 @@ void DyldHooksInit(void)
 }
 
 #pragma mark - Fix black screen
-static const unsigned char *cdhash = NULL;
+static const char *cdhash = NULL;
 static const char *expectedPath = NULL;
 static const struct dyld_all_image_infos *g_infos;
 static BOOL dyldVerified = NO;
@@ -443,7 +444,15 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
             struct stat sa, sb;
             if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
             {
-                printf("[DYLD verifier] found %s\n", path);
+                char *foundCdhash = cdhash_of_loaded_image((const struct mach_header*)hdr);
+                printf("[DYLD verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
+                if(foundCdhash == NULL ||
+                   cdhash == NULL ||
+                   memcmp(cdhash, foundCdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
+                {
+                    printf("[DYLD verifier] something is wrong 3:\n");
+                    abort();
+                }
                 /* give me the cdhash please! */
                 dyldVerified = YES;
             }
