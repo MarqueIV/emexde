@@ -57,4 +57,5 @@ To start using Nyxian view the [Installation Guide](https://emexlabs.org/emexDE/
   - [x] Overwriting NSBundle/CFBundle without wasting 2000 branches like Duy Tran (a little side joke we laugh about at emexLabs "Yk how Duy Tran wasted 2000 branches to replace 2 pointers in memory")
   - [x] Actually making new main NSBundle think it is loaded **as a binary**
   - [x] Actually make iOS apps and binaries use the version as DYLD version they have been made for
-  - [ ] Somehow, I don't think it is possible, but if you can intercept every `svc #0x80` then the sky is your limit.
+  - [ ] hook `svc #0x80` somehow without using JIT (not possible, for now)
+  - [ ] load dylib from fd
