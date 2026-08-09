@@ -37,7 +37,7 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(proc)
     {
         case kvObjEventInit:
         {
-            klog_log("proc:init", "initilizing process @ %p", proc);
+            klog_log("proc:init", "initializing process @ %p", proc);
             
             /* setting fresh properties */
             proc->bsd.kp_eproc.e_ucred.cr_ngroups = 1;
@@ -88,7 +88,7 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(proc)
         case kvObjEventDeinit:
             if(proc->header.base_type != kvObjBaseTypeObjectSnapshot)
             {
-                klog_log("proc:deinit", "deinitilizing process @ %p", proc);
+                klog_log("proc:deinit", "deinitializing process @ %p", proc);
                 pthread_mutex_destroy(&(proc->children.mutex));
                 
                 if(proc->task != MACH_PORT_NULL)

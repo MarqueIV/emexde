@@ -99,7 +99,7 @@ int environment_init(EnvironmentExec exec,
         LCOverwriteExecutablePath(executablePath);
         
         /*
-         * initilizing subsystems of the guest, basically
+         * initializing subsystems of the guest, basically
          * fixes apple API's that usually wouldn't work in
          * jailed iOS, constructing a new reality in which
          * processes have capabilities on other processes

@@ -55,7 +55,7 @@ static inline kvobject_t *__kvobject_alloc(kvobject_main_event_handler_t handler
     /* only normal objects get those locks */
     if(base_type != kvObjBaseTypeObjectSnapshot)
     {
-        /* safely initilizing both locks */
+        /* safely initializing both locks */
         if(pthread_rwlock_init(&(kvo->rwlock), NULL) != 0)
         {
             free(kvo);

@@ -42,7 +42,7 @@
     self = [super init];
     if(!self) return nil;
     
-    /* initilizing step numero uno */
+    /* initializing step numero uno */
     NSURL *fileURL = [NSURL fileURLWithPath:filepath];
     _file = [MDKMutableFile fileWithURL:fileURL];
     _lock = OS_UNFAIR_LOCK_INIT;

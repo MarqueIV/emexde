@@ -90,14 +90,14 @@ static inline void ksurface_kinit_kinfo(void)
      * well this is for the softies which can only take
      * one at a time.
      */
-    klog_log("ksurface:kinit:kinfo", "initilizing locks");
+    klog_log("ksurface:kinit:kinfo", "initializing locks");
     pthread_rwlock_t *wls[3] = { &(ksurface->proc_info.struct_lock),  &(ksurface->host_info.struct_lock), &(ksurface->tty_info.struct_lock) };
     for(unsigned char i = 0; i < 3; i++)
     {
-        klog_log("ksurface:kinit:kinfo", "initilizing lock @ %p", wls[i]);
+        klog_log("ksurface:kinit:kinfo", "initializing lock @ %p", wls[i]);
         if(pthread_rwlock_init(wls[i], NULL) != 0)
         {
-            environment_panic("failed to initilize lock @ %p", wls[i]);
+            environment_panic("failed to initialize lock @ %p", wls[i]);
         }
     }
     
@@ -106,7 +106,7 @@ static inline void ksurface_kinit_kinfo(void)
      * is a very efficient data struc..., bruh
      * just use google.. im not your CS teacher.
      */
-    klog_log("ksurface:kinit:kinfo", "initilizing radix trees");
+    klog_log("ksurface:kinit:kinfo", "initializing radix trees");
     ksurface->proc_info.tree.root = NULL;
     ksurface->proc_info.proc_count = 0;
     ksurface->tty_info.tty.root = NULL;

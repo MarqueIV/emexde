@@ -255,7 +255,7 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(tty)
             environment_panic("attempted to copy or snapshot tty, which is illegal");
         case kvObjEventInit:
         {
-            klog_log("tty:init", "initilizing tty @ %p", tty);
+            klog_log("tty:init", "initializing tty @ %p", tty);
             
             /* creating pipe */
             int masterpair[2];
@@ -337,7 +337,7 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(tty)
             return -1;
         }
         case kvObjEventDeinit:
-            klog_log("tty:deinit", "deinitilizing tty @ %p", tty);
+            klog_log("tty:deinit", "deinitializing tty @ %p", tty);
             
             /* removing own tty object */
             tty_table_wrlock();
