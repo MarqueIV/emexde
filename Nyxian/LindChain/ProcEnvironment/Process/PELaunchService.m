@@ -22,6 +22,8 @@
 #import <LindChain/ProcEnvironment/Process/PELaunchService.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
 
+extern int kfd;
+
 @implementation PELaunchService
 
 + (instancetype)launchServiceWithPlistPath:(NSString*)plistPath
@@ -52,9 +54,8 @@
 #if DEBUG
     NSMutableDictionary *mutableDictionary = [_dictionary mutableCopy];
     FDMapObject *mapObject = [FDMapObject emptyMap];
-    [mapObject appendFileDescriptor:STDIN_FILENO withMappingToLoc:STDIN_FILENO];
-    [mapObject appendFileDescriptor:STDOUT_FILENO withMappingToLoc:STDOUT_FILENO];
-    [mapObject appendFileDescriptor:STDERR_FILENO withMappingToLoc:STDERR_FILENO];
+    [mapObject appendFileDescriptor:kfd withMappingToLoc:STDOUT_FILENO];
+    [mapObject appendFileDescriptor:kfd withMappingToLoc:STDERR_FILENO];
     [mutableDictionary setObject:mapObject forKey:@"PEMapObject"];
     dictionary = [mutableDictionary copy];
 #endif /* DEBUG */

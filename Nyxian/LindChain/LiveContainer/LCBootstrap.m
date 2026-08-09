@@ -164,7 +164,7 @@ static void *LCGetMachOEntryPoint(void *handle)
     return NULL;
 }
 
-void LCInsertLibrariesIfNeeded(void)
+static void LCInsertLibrariesIfNeeded(void)
 {
     const char *librariesToInsert = getenv("DYLD_INSERT_LIBRARIES");
     if(librariesToInsert == NULL)

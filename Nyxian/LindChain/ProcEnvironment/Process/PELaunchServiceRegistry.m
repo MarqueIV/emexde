@@ -32,6 +32,7 @@
     self = [super init];
     _launchServices = [[NSMutableArray alloc] init];
     _lock = OS_UNFAIR_LOCK_INIT;
+    _isBooted = NO;
     [self reloadAllEntries];
     return self;
 }

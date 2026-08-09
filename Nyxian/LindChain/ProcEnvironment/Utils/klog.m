@@ -26,7 +26,7 @@
 #if DEBUG
 
 /* not the kfd exploit dummy >:3 */
-static int kfd = -1;
+int kfd = -1;
 
 #endif /* DEBUG */
 
