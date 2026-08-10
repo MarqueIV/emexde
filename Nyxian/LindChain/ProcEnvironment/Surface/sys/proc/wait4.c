@@ -37,7 +37,7 @@ bool wait4_proc_event_handler(kvobject_event_type_t type,
                               uint64_t val,
                               kvobject_event_t *event)
 {
-    if(val == 0)
+    if(val == 0 && type != kvObjEventUnregister && type != kvObjEventDeinit)
     {
         return false;
     }
