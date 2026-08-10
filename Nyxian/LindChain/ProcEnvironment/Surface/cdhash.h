@@ -24,6 +24,7 @@
 
 #include <mach-o/loader.h>
 
-char *cdhash_of_loaded_image(const struct mach_header *mh);
+char *cdhash_of_hdr(const uint8_t *mach_header, size_t size);
+char *cdhash_of_fd(int fd);
 
 #endif /* SURFACE_CDHASH_H */

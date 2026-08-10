@@ -79,97 +79,119 @@ typedef struct __CodeDirectory {
     uint64_t execSegFlags;
 } CS_CodeDirectory;
 
-char *cdhash_of_loaded_image(const struct mach_header *mh)
+char *cdhash_of_hdr(const uint8_t *base,
+                    size_t size)
 {
-    if(!mh || mh->magic != MH_MAGIC_64)
+    const uint8_t *mach_header = base;
+    uint32_t magic = *(uint32_t *)base;
+    if(magic == FAT_CIGAM ||
+       magic == FAT_MAGIC ||
+       magic == FAT_CIGAM_64 ||
+       magic == FAT_MAGIC_64)
     {
-        return NULL;
+        struct fat_header *fat = (struct fat_header *)base;
+        uint32_t n_arches = OSSwapBigToHostInt32(fat->nfat_arch);
+        struct fat_arch *arches = (struct fat_arch *)(base + sizeof(struct fat_header));
+        for(uint32_t i = 0; i < n_arches; i++)
+        {
+            cpu_type_t cputype = OSSwapBigToHostInt32(arches[i].cputype);
+            if(cputype == CPU_TYPE_ARM64)
+            {
+                mach_header = base + OSSwapBigToHostInt32(arches[i].offset);
+                break;
+            }
+        }
     }
+    char *result = NULL;
 
-    uint32_t ncmds = ((const struct mach_header_64 *)mh)->ncmds;
-    const uint8_t *p = (const uint8_t *)mh + sizeof(struct mach_header_64);
+    int is64 = (*(uint32_t *)mach_header == MH_MAGIC_64);
+    uint32_t ncmds = is64 ? ((struct mach_header_64 *)mach_header)->ncmds : ((struct mach_header *)mach_header)->ncmds;
 
-    uint64_t text_vmaddr = 0, le_vmaddr = 0, le_fileoff = 0, le_filesize = 0;
-    uint32_t sig_off = 0, sig_size = 0;
-    bool have_text = false, have_le = false, have_sig = false;
+    const uint8_t *cmd = mach_header + (is64 ? sizeof(struct mach_header_64) : sizeof(struct mach_header));
 
     for(uint32_t i = 0; i < ncmds; i++)
     {
-        const struct load_command *lc = (const struct load_command *)p;
+        struct load_command *lc = (struct load_command *)cmd;
 
-        if(lc->cmd == LC_SEGMENT_64)
+        if(lc->cmd == LC_CODE_SIGNATURE)
         {
-            const struct segment_command_64 *seg = (const struct segment_command_64 *)p;
-            if(strncmp(seg->segname, SEG_TEXT, 16) == 0)
+            struct linkedit_data_command *sig_cmd = (struct linkedit_data_command *)cmd;
+            CS_SuperBlob *super_blob = (CS_SuperBlob *)(mach_header + sig_cmd->dataoff);
+
+            if(OSSwapBigToHostInt32(super_blob->magic) != CSMAGIC_EMBEDDED_SIGNATURE)
             {
-                text_vmaddr = seg->vmaddr; have_text = true;
+                goto done;
             }
-            else if(strncmp(seg->segname, SEG_LINKEDIT, 16) == 0)
+
+            uint32_t count = OSSwapBigToHostInt32(super_blob->count);
+            for(uint32_t j = 0; j < count; j++)
             {
-                le_vmaddr = seg->vmaddr; le_fileoff = seg->fileoff;
-                le_filesize = seg->filesize; have_le = true;
+                uint32_t type   = OSSwapBigToHostInt32(super_blob->index[j].type);
+                uint32_t offset = OSSwapBigToHostInt32(super_blob->index[j].offset);
+
+                if(type == CSSLOT_CODEDIRECTORY)
+                {
+                    CS_CodeDirectory *cd = (CS_CodeDirectory *)((uint8_t *)super_blob + offset);
+
+                    if(OSSwapBigToHostInt32(cd->magic) != CSMAGIC_CODEDIRECTORY)
+                    {
+                        goto done;
+                    }
+                    
+                    uint32_t cd_length = OSSwapBigToHostInt32(cd->length);
+                    uint8_t hash_type  = cd->hashType;
+
+                    if(hash_type == CS_HASHTYPE_SHA256 ||
+                       hash_type == CS_HASHTYPE_SHA256_TRUNCATED)
+                    {
+                        result = malloc(CC_SHA256_DIGEST_LENGTH);
+                        if(!result)
+                        {
+                            goto done;
+                        }
+                        CC_SHA1(cd, cd_length, (unsigned char*)result);
+                    }
+                    else
+                    {
+                        result = malloc(CC_SHA1_DIGEST_LENGTH);
+                        if(!result)
+                        {
+                            goto done;
+                        }
+                        CC_SHA1(cd, cd_length, (unsigned char*)result);
+                    }
+                    goto done;
+                }
             }
         }
-        else if(lc->cmd == LC_CODE_SIGNATURE)
-        {
-            const struct linkedit_data_command *sc = (const struct linkedit_data_command *)p;
-            sig_off = sc->dataoff; sig_size = sc->datasize; have_sig = true;
-        }
-        p += lc->cmdsize;
+        cmd += lc->cmdsize;
     }
-    if(!have_text || !have_le || !have_sig)
+
+done:
+    return result;
+}
+
+char *cdhash_of_fd(int fd)
+{
+    struct stat st;
+    if(fstat(fd, &st) != 0)
     {
         return NULL;
     }
 
-    if(sig_off < le_fileoff || (uint64_t)sig_off + sig_size > le_fileoff + le_filesize)
+    size_t size = (size_t)st.st_size;
+    if(size == 0)
     {
         return NULL;
     }
 
-    uintptr_t slide = (uintptr_t)mh - (uintptr_t)text_vmaddr;
-    const uint8_t *le_base = (const uint8_t *)(slide + le_vmaddr - le_fileoff);
-    const CS_SuperBlob *sb = (const CS_SuperBlob *)(le_base + sig_off);
-
-    if(OSSwapBigToHostInt32(sb->magic) != CSMAGIC_EMBEDDED_SIGNATURE)
+    uint8_t *base = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if(base == MAP_FAILED)
     {
         return NULL;
     }
-
-    uint32_t count = OSSwapBigToHostInt32(sb->count);
-    for(uint32_t j = 0; j < count; j++)
-    {
-        if(OSSwapBigToHostInt32(sb->index[j].type) != CSSLOT_CODEDIRECTORY)
-        {
-            continue;
-        }
-
-        uint32_t off = OSSwapBigToHostInt32(sb->index[j].offset);
-        const CS_CodeDirectory *cd = (const CS_CodeDirectory *)((const uint8_t *)sb + off);
-        if(OSSwapBigToHostInt32(cd->magic) != CSMAGIC_CODEDIRECTORY)
-        {
-            return NULL;
-        }
-
-        uint32_t cd_len = OSSwapBigToHostInt32(cd->length);
-        unsigned char digest[CC_SHA256_DIGEST_LENGTH];
-
-        if(cd->hashType == CS_HASHTYPE_SHA256 || cd->hashType == CS_HASHTYPE_SHA256_TRUNCATED)
-        {
-            CC_SHA256(cd, cd_len, digest);
-        }
-        else
-        {
-            CC_SHA1(cd, cd_len, digest);
-        }
-
-        char *result = malloc(USER_FSIGNATURES_CDHASH_LEN);
-        if(!result)
-        {
-            return NULL;
-        }
-        memcpy(result, digest, USER_FSIGNATURES_CDHASH_LEN);
-        return result;
-    }
-    return NULL;
+    
+    char *result = cdhash_of_hdr(base, size);
+    munmap(base, size);
+    return result;
 }

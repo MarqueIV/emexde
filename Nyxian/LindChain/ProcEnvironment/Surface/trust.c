@@ -73,7 +73,7 @@ int macho_after_sign_fd(int fd, PEEntitlement entitlement)
     {
         return -1;
     }
-    char *cdhash = cdhash_of_loaded_image((const struct mach_header*)machO->header);
+    char *cdhash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
     LCUnmapMachO(machO);
     
     ksurface_ent_blob_t token;
@@ -168,7 +168,7 @@ int macho_read_token(int fd,
     {
         return -1;
     }
-    char *hash = cdhash_of_loaded_image((const struct mach_header*)machO->header);
+    char *hash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
     LCUnmapMachO(machO);
     
     if(hash == NULL)
