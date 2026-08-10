@@ -332,33 +332,36 @@ bool LCPatchExecSlice(LCMachO *machO)
     // https://github.com/apple-oss-distributions/dyld/blob/93bd81f9d7fcf004fcebcb66ec78983882b41e71/mach_o/Header.cpp#L678
     struct load_command *command2 = (struct load_command *)imageHeaderPtr;
     __block int depCount = 0;
-    const char* depPathsBuffer[256];
-    const char** depPaths = depPathsBuffer;
+    const char** depPaths = calloc(machO->header->ncmds, sizeof(const char*));
+    if(depPaths == NULL)
+    {
+        return false;
+    }
     for(int i = 0; i < machO->header->ncmds; i++)
     {
-        switch( command2->cmd )
+        switch(command2->cmd)
         {
             case LC_LOAD_DYLIB:
             case LC_LOAD_WEAK_DYLIB:
             case LC_REEXPORT_DYLIB:
             case LC_LOAD_UPWARD_DYLIB:
             {
-                char* loadPath =  (void *)command2 + ((struct dylib_command*)command2)->dylib.name.offset;
+                const char* loadPath =  (void *)command2 + ((struct dylib_command*)command2)->dylib.name.offset;
                 for(int j = 0; j < depCount; ++j)
                 {
-                    if (strcmp(loadPath, depPaths[j]) == 0 )
+                    if(strcmp(loadPath, depPaths[j]) == 0)
                     {
                         // replace this duplicated dylib command with an invalid command number
                         command2->cmd = 0x114515;
                         continue;
                     }
                 }
-                depPaths[depCount] = loadPath;
-                ++depCount;
+                depPaths[depCount++] = loadPath;
             }
         }
         command2 = (struct load_command *)((void *)command2 + command2->cmdsize);
     }
+    free(depPaths);
     
     return true;
 }
