@@ -289,7 +289,7 @@ int sysctl_kernhostname(sysctl_req_t *req)
             return -1;
         }
         
-        if(req->newlen > MAXHOSTNAMELEN)
+        if(req->newlen >= MAXHOSTNAMELEN)
         {
             req->err = EINVAL;
             return -1;
@@ -312,7 +312,7 @@ int sysctl_kernhostname(sysctl_req_t *req)
         }
         
         host_wrlock();
-        strlcpy(ksurface->host_info.hostname, newname, req->newlen + 1);
+        strlcpy(ksurface->host_info.hostname, newname, sizeof(ksurface->host_info.hostname));
         [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithCString:ksurface->host_info.hostname encoding:NSUTF8StringEncoding] forKey:@"LDEHostname"];
         host_unlock();
         
