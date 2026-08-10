@@ -86,7 +86,6 @@ out_dealloc:
         task_set_exception_ports(mach_task_self(), EXC_MASK_BREAKPOINT, MACH_PORT_NULL, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
     }
     
-    task_set_exception_ports(mach_task_self(), EXC_MASK_BREAKPOINT, MACH_PORT_NULL, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
     mach_port_deallocate(mach_task_self(), exceptionPort);
     return MACH_PORT_NULL;
     
@@ -101,11 +100,7 @@ out_dealloc:
     request.Head.msgh_local_port = exceptionPort;
     request.Head.msgh_size = (mach_msg_size_t)request_size;
     mr = mach_msg(&(request.Head), MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TIMEOUT, 0, request.Head.msgh_size, exceptionPort, 1000, MACH_PORT_NULL);
-    
-    /* predefined variable */
     task_t exportedTask = MACH_PORT_NULL;
-    
-    /* handling timeout and other errors */
     if(mr != MACH_MSG_SUCCESS)
     {
         klog_log("ktfp", "failed receiving task port");
@@ -116,7 +111,6 @@ out_dealloc:
     ipc_info_object_type_t type;
     mach_vm_address_t address;
     kr = mach_port_kobject(mach_task_self(), request.task.name, &type, &address);
-    
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed getting the kobject type");
@@ -140,7 +134,6 @@ out_dealloc:
     arm_thread_state64_t state;
     mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
     kr = thread_get_state(request.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, &count);
-    
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to get thread state");
@@ -150,9 +143,7 @@ out_dealloc:
     /* skipping over pseudo exception */
     state.__pc += 4;
     
-    
     kr = thread_set_state(request.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
-    
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to restore thread state");
@@ -160,7 +151,6 @@ out_dealloc:
     }
     
     kr = mach_port_mod_refs(mach_task_self(), request.task.name, MACH_PORT_RIGHT_SEND, 1);
-    
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to increment tsdk port send right");
