@@ -106,30 +106,27 @@ void LCOverwriteExecutablePath(NSString *executablePath)
     assert(CFSwap(currentMainCFBundle, guestMainCFBundle));
     CFRelease(guestMainCFBundle);                   /* destroys the real bundle, sounds like swizzling x3 */
     
-skip_cf_swap:
-    {
-        /*
-         * dyld4 stores executable path in a different place (iOS 15.0 +)
-         * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
-         */
-        int (*orig__NSGetExecutablePath)(void* dyldPtr, char* buf, uint32_t* bufsize);
-        performHookDyldApi("_NSGetExecutablePath", 2, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
-        _NSGetExecutablePath((char*)[executablePath UTF8String], NULL);
-        /* put the original function back */
-        performHookDyldApi("_NSGetExecutablePath", 2, nil, orig__NSGetExecutablePath);
+    /*
+     * dyld4 stores executable path in a different place (iOS 15.0 +)
+     * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
+     */
+    int (*orig__NSGetExecutablePath)(void* dyldPtr, char* buf, uint32_t* bufsize);
+    performHookDyldApi("_NSGetExecutablePath", 2, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
+    _NSGetExecutablePath((char*)[executablePath UTF8String], NULL);
+    /* put the original function back */
+    performHookDyldApi("_NSGetExecutablePath", 2, nil, orig__NSGetExecutablePath);
         
-        /* overwriting remaining upper systems */
-        NSString *procName = [executablePath lastPathComponent];
-        NSProcessInfo.processInfo.processName = procName;
-        *_CFGetProgname() = strdup(procName.UTF8String);
-        *_CFGetProcessPath() = strdup(executablePath.UTF8String);
-        Class swiftNSProcessInfo = NSClassFromString(@"_NSSwiftProcessInfo");
-        if(swiftNSProcessInfo)
-        {
-            /* swizzle the arguments method to return the ObjC arguments */
-            SEL selector = @selector(arguments);
-            method_setImplementation(class_getInstanceMethod(swiftNSProcessInfo, selector), class_getMethodImplementation(NSProcessInfo.class, selector));
-        }
+    /* overwriting remaining upper systems */
+    NSString *procName = [executablePath lastPathComponent];
+    NSProcessInfo.processInfo.processName = procName;
+    *_CFGetProgname() = strdup(procName.UTF8String);
+    *_CFGetProcessPath() = strdup(executablePath.UTF8String);
+    Class swiftNSProcessInfo = NSClassFromString(@"_NSSwiftProcessInfo");
+    if(swiftNSProcessInfo)
+    {
+        /* swizzle the arguments method to return the ObjC arguments */
+        SEL selector = @selector(arguments);
+        method_setImplementation(class_getInstanceMethod(swiftNSProcessInfo, selector), class_getMethodImplementation(NSProcessInfo.class, selector));
     }
 }
 
@@ -188,6 +185,7 @@ int LCBootstrapMain(NSString *executablePath,
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     int64_t ret = environment_syscall(SYS_pectl, PECTL_CS_GET_CDHASH, cdhash, MACH_PORT_NULL);
     appMainImageIndex = _dyld_image_count();
+    /* makes sure the binary gets loaded that is meant to have the ksurface capabilities */
     void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, ret != 0 ? NULL : cdhash);
     appExecutableHandle = appHandle;
     const char *dlerr = dlerror();
