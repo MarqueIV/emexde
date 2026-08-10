@@ -85,28 +85,15 @@ int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char
 void LCOverwriteExecutablePath(NSString *executablePath)
 {
     /* literally swapping CFBundle CFRuntime instances */
-    CFBundleRef currentMainCFBundle = (__bridge CFBundleRef)NSBundle.mainBundle._cfBundle;
-    if(currentMainCFBundle == NULL)
-    {
-        goto skip_cf_swap;
-    }
-    
-    /* allocators shall match */
+    CFBundleRef currentMainCFBundle = CFBundleGetMainBundle();
+    assert(currentMainCFBundle != NULL);
     CFAllocatorRef allocator = CFGetAllocator(currentMainCFBundle); /* doesnt matter if zero */
-    
-    /* first overwriting bundle */
+    assert(allocator != NULL);
     CFURLRef urlRef = CFURLCreateWithFileSystemPath(allocator, (__bridge CFStringRef)[executablePath stringByDeletingLastPathComponent], kCFURLPOSIXPathStyle, true);
-    if(urlRef == NULL)
-    {
-        goto skip_cf_swap;
-    }
-    
+    assert(urlRef != NULL);
     CFBundleRef guestMainCFBundle = CFBundleCreate(allocator, urlRef);
     CFRelease(urlRef);  /* took a reference of it most probably */
-    if(guestMainCFBundle == NULL)
-    {
-        goto skip_cf_swap;
-    }
+    assert(guestMainCFBundle != NULL);
     
     /*
      * Swaps both bundles simply, not leaking any memory
@@ -116,7 +103,7 @@ void LCOverwriteExecutablePath(NSString *executablePath)
      * CFBundle also doesn't cary any extra inline
      * buffers but relies on other CF types.
      */
-    CFSwap(currentMainCFBundle, guestMainCFBundle); /* doesnt matter if it succeeded or nah */
+    assert(CFSwap(currentMainCFBundle, guestMainCFBundle));
     CFRelease(guestMainCFBundle);                   /* destroys the real bundle, sounds like swizzling x3 */
     
 skip_cf_swap:
@@ -206,7 +193,7 @@ int LCBootstrapMain(NSString *executablePath,
     const char *dlerr = dlerror();
     if(!appHandle || (uint64_t)appHandle > 0xf00000000000 || dlerr)
     {
-        printf("DYLD: %s\n", dlerr);
+        printf("%s\n", dlerr);
         return 1;
     }
     
@@ -221,18 +208,12 @@ int LCBootstrapMain(NSString *executablePath,
      * the frameworks the app uses do aswell.
      */
     CFBundleRef bundle = CFBundleGetMainBundle();
-    if(CFBundleLoadExecutable(bundle))
-    {
-        /* patching binaryType to be executable at CFBundle level */
-        CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
-    }
+    assert(CFBundleLoadExecutable(bundle));
+    CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
     
     /* find main */
     int (*entry)(int, char**) = LCGetMachOEntryPoint(appHandle);
-    if(!entry)
-    {
-        return 1;
-    }
+    assert(entry);
     
     /* perform other hooks */
     NUDGuestHooksInit();
