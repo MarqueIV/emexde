@@ -431,8 +431,10 @@ void cache_all_image_infos(void)
 
 static void *lockPtrToIgnore;
 static uint32_t seenCount;
+static os_unfair_lock cdlock = OS_UNFAIR_LOCK_INIT;
 void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lock, uint32_t options)
 {
+    os_unfair_lock_lock(&cdlock);
     if(g_infos && cdhash != NULL)
     {
         uint32_t now = g_infos->infoArrayCount;
@@ -471,6 +473,7 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
             seenCount++;
         }
     }
+    os_unfair_lock_unlock(&cdlock);
 
     if(!lockPtrToIgnore)
         lockPtrToIgnore = lock;
