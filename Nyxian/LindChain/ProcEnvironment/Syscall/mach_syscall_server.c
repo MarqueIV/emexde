@@ -2,6 +2,7 @@
  SPDX-License-Identifier: AGPL-3.0-or-later
 
  Copyright (C) 2025 - 2026 emexlab
+ Copyright (C) 2026 semvis123
 
  This file is part of Nyxian.
 
@@ -187,8 +188,6 @@ static void* syscall_worker_thread(void *ctx)
         
         /* waiting for the syscall client to invoke its syscall */
         mach_msg_return_t mr = mach_msg(&(buffer->header), options, 0, sizeof(recv_buffer_t), server->port, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-        
-        /* evaluating if the request received from the kernel was geniune */
         if(mr != MACH_MSG_SUCCESS)
         {
             /* receive right is dead when the server stops */
@@ -203,6 +202,25 @@ static void* syscall_worker_thread(void *ctx)
         
         /* getting request from receive buffer */
         syscall_request_t *req = (syscall_request_t *)&(buffer->header);
+        
+        /* validating message header */
+        if((req->header.msgh_bits & MACH_MSGH_BITS_COMPLEX) == 0 ||
+           (req->header.msgh_bits & MACH_MSGH_BITS_PORTS_MASK) != MACH_MSGH_BITS(MACH_MSG_TYPE_PORT_SEND_ONCE, MACH_MSG_TYPE_PORT_SEND))
+        {
+            errno = EBADMSG;
+            result = -1;
+            goto cleanup;
+        }
+        
+        /* validate message descriptor */
+        if(req->body.msgh_descriptor_count != 1 ||
+           req->oolp.type != MACH_MSG_OOL_PORTS_DESCRIPTOR ||
+           req->oolp.count > 64)    /* 64 ports maximum for now */
+        {
+            errno = EBADMSG;
+            result = -1;
+            goto cleanup;
+        }
         
         /*
          * getting the callers identity from the payload,

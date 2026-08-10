@@ -140,7 +140,7 @@ out_dealloc:
         goto out_destroy_request;
     }
     
-    /* skipping over pseudo exception */
+    /* skipping over __builtin_trap */
     state.__pc += 4;
     
     kr = thread_set_state(request.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
@@ -153,7 +153,7 @@ out_dealloc:
     kr = mach_port_mod_refs(mach_task_self(), request.task.name, MACH_PORT_RIGHT_SEND, 1);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to increment tsdk port send right");
+        klog_log("ktfp", "failed to increment task port send right");
         goto out_destroy_request;
     }
     

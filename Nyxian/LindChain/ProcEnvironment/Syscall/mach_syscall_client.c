@@ -139,7 +139,7 @@ int64_t syscall_invoke(syscall_client_t *client,
     bzero(&buffer, sizeof(buffer));
     
     /* setting up request >~< */
-    buffer.req.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE);
+    buffer.req.header.msgh_bits = MACH_MSGH_BITS(MACH_MSG_TYPE_COPY_SEND, MACH_MSG_TYPE_MAKE_SEND_ONCE) | MACH_MSGH_BITS_COMPLEX;
     buffer.req.header.msgh_remote_port = client->server_port;
     buffer.req.header.msgh_local_port = reply_port;
     buffer.req.header.msgh_size = sizeof(syscall_request_t);
@@ -166,17 +166,12 @@ int64_t syscall_invoke(syscall_client_t *client,
      * descriptor later with the oppositing
      * fileport api.
      */
-    if(in_ports &&
-       in_ports_cnt > 0)
-    {
-        buffer.req.body.msgh_descriptor_count = 1;
-        buffer.req.oolp.type = MACH_MSG_OOL_PORTS_DESCRIPTOR;
-        buffer.req.header.msgh_bits |= MACH_MSGH_BITS_COMPLEX;
-        buffer.req.oolp.disposition = in_type;
-        buffer.req.oolp.address = in_ports;
-        buffer.req.oolp.count = in_ports_cnt;
-        buffer.req.oolp.copy = MACH_MSG_PHYSICAL_COPY;
-    }
+    buffer.req.body.msgh_descriptor_count = 1;
+    buffer.req.oolp.type = MACH_MSG_OOL_PORTS_DESCRIPTOR;
+    buffer.req.oolp.disposition = in_type;
+    buffer.req.oolp.address = in_ports;
+    buffer.req.oolp.count = in_ports_cnt;
+    buffer.req.oolp.copy = MACH_MSG_PHYSICAL_COPY;
     
     /*
      * now lets call da cutie >.<

@@ -93,7 +93,7 @@ kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach,
 {
     assert(mach != NULL);
     
-    /* the blob's mac length can never exceed 72 */
+    /* the blob's mac length can never exceed the size of mach->blob.mac */
     if(mach->blob.mac_len > sizeof(mach->blob.mac))
     {
         return KERN_DENIED;
