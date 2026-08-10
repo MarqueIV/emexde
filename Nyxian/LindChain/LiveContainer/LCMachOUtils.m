@@ -332,13 +332,30 @@ bool LCPatchExecSlice(LCMachO *machO)
     // https://github.com/apple-oss-distributions/dyld/blob/93bd81f9d7fcf004fcebcb66ec78983882b41e71/mach_o/Header.cpp#L678
     struct load_command *command2 = (struct load_command *)imageHeaderPtr;
     __block int depCount = 0;
-    const char** depPaths = calloc(machO->header->ncmds, sizeof(const char*));
+    const char** depPaths = malloc(machO->header->ncmds * sizeof(const char*));
     if(depPaths == NULL)
     {
         return false;
     }
+    
+    const uint8_t *cmds = (const uint8_t *)imageHeaderPtr;
+    const uint32_t sizeofcmds = machO->header->sizeofcmds;
+    uint32_t off = 0;
+    
     for(int i = 0; i < machO->header->ncmds; i++)
     {
+        if(sizeofcmds - off < sizeof(struct load_command))
+        {
+            goto fail;
+        }
+
+        struct load_command *lc = (struct load_command *)(cmds + off);
+        const uint32_t cmdsize = lc->cmdsize;
+        if(cmdsize < sizeof(struct load_command) || (cmdsize & 7) != 0 || cmdsize > sizeofcmds - off)
+        {
+            goto fail;
+        }
+        
         switch(command2->cmd)
         {
             case LC_LOAD_DYLIB:
@@ -346,24 +363,43 @@ bool LCPatchExecSlice(LCMachO *machO)
             case LC_REEXPORT_DYLIB:
             case LC_LOAD_UPWARD_DYLIB:
             {
-                const char* loadPath =  (void *)command2 + ((struct dylib_command*)command2)->dylib.name.offset;
+                if(cmdsize < sizeof(struct dylib_command))
+                {
+                    goto fail;
+                }
+                
+                const uint32_t nameOff = ((struct dylib_command *)lc)->dylib.name.offset;
+                if(nameOff < sizeof(struct dylib_command) || nameOff >= cmdsize)
+                {
+                    goto fail;
+                }
+                
+                const char *loadPath = (const char *)lc + nameOff;
+                if(memchr(loadPath, 0, cmdsize - nameOff) == NULL)
+                {
+                    goto fail;
+                }
+                
                 for(int j = 0; j < depCount; ++j)
                 {
                     if(strcmp(loadPath, depPaths[j]) == 0)
                     {
                         // replace this duplicated dylib command with an invalid command number
                         command2->cmd = 0x114515;
-                        continue;
+                        break;
                     }
                 }
                 depPaths[depCount++] = loadPath;
             }
         }
-        command2 = (struct load_command *)((void *)command2 + command2->cmdsize);
+        off += cmdsize;
     }
     free(depPaths);
-    
     return true;
+    
+fail:
+    free(depPaths);
+    return false;
 }
 
 NSString *LCPatchMachOFixupARM64eSlice(const char *path)
