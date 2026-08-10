@@ -27,8 +27,8 @@ To start using Nyxian view the [Installation Guide](https://emexlabs.org/emexDE/
   - Typechecking
     - [x] C support
     - [x] Objective-C support
-    - [x] C++ support (limited)
-    - [ ] Objective-C++ support (dead without indexing)
+    - [x] C++ support (limited without indexing)
+    - [x] Objective-C++ support (limited without indexing)
     - [ ] Swift support
   - [x] Linking objects to MachO
   - [ ] Indexing
@@ -53,9 +53,5 @@ To start using Nyxian view the [Installation Guide](https://emexlabs.org/emexDE/
       - [x] `task_for_pid`/`task_name_for_pid` fix (you heard right, that is not a typo)
       - [x] patches to credential syscalls like `setuid` or `setgid`
   - [x] Signing executables
-  - [x] CS bypass without exploit (by resigning and then dlopen)
-  - [x] Overwriting NSBundle/CFBundle without wasting 2000 branches like Duy Tran (a little side joke we laugh about at emexLabs "Yk how Duy Tran wasted 2000 branches to replace 2 pointers in memory")
-  - [x] Actually making new main NSBundle think it is loaded **as a binary**
+  - [x] NSBundle think it is loaded **as a binary**
   - [x] Actually make iOS apps and binaries use the version as DYLD version they have been made for
-  - [ ] hook `svc #0x80` somehow without using JIT (not possible, for now)
-  - [ ] load dylib from fd
