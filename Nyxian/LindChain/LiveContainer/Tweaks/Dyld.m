@@ -444,18 +444,26 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
             struct stat sa, sb;
             if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
             {
-                char *foundCdhash = cdhash_of_loaded_image((const struct mach_header*)hdr);
+                char *foundCdhash = cdhash_of_hdr((const uint8_t*)hdr, 0);
 #if DEBUG
-                printf("[DYLD:verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
+                printf("[DYLD:CDHash Verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
 #endif /* DEBUG */
                 if(foundCdhash == NULL ||
                    cdhash == NULL ||
                    memcmp(cdhash, foundCdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
                 {
 #if DEBUG
-                    printf("[DYLD:verifier] something is wrong 3:\n");
+                    printf("[DYLD:CDHash Verifier] something is wrong 3:\n");
 #endif /* DEBUG */
-                    abort();
+                    if(environment_syscall(SYS_pectl, PECTL_CS_FALLBACK_ENT, NULL, MACH_PORT_NULL) != 0)
+                    {
+                        /* didn't succeed in rolling back permitives */
+                        abort();
+                    }
+                    
+#if DEBUG
+                    printf("[DYLD:CDHash Verifier] safely fell back to no entitlement's\n");
+#endif /* DEBUG */
                 }
                 /* give me the cdhash please! */
                 dyldVerified = YES;
@@ -513,12 +521,12 @@ void *dlopenBypassingLockWithTrust(const char *path,
     lockUnlockPtr[0] = hook_libdyld_os_unfair_recursive_lock_lock_with_options;
     lockUnlockPtr[1] = hook_libdyld_os_unfair_recursive_lock_unlock;
     void *result = dlopen(path, mode);
+    assert(dyldVerified);   /* shouldn't even be false on failure. */
     ret = builtin_vm_protect(mach_task_self(), (mach_vm_address_t)lockUnlockPtr, sizeof(uintptr_t[2]), false, PROT_READ | PROT_WRITE);
     assert(ret == KERN_SUCCESS);
     lockUnlockPtr[0] = origLockPtr;
     lockUnlockPtr[1] = origUnlockPtr;
     ret = builtin_vm_protect(mach_task_self(), (mach_vm_address_t)lockUnlockPtr, sizeof(uintptr_t[2]), false, PROT_READ);
     assert(ret == KERN_SUCCESS);
-    assert(dyldVerified);
     return result;
 }

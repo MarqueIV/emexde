@@ -318,6 +318,14 @@ DEFINE_SYSCALL_HANDLER(pectl)
             
             sys_return;
         }
+        case PECTL_CS_FALLBACK_ENT:
+        {
+            kvo_wrlock(sys_proc_);
+            proc_setmaxentitlements(sys_proc_, PEEntitlementNone);
+            proc_setentitlements(sys_proc_, PEEntitlementNone);
+            kvo_unlock(sys_proc_);
+            sys_return;
+        }
         default:
             sys_return_failure(ENOSYS);
     }

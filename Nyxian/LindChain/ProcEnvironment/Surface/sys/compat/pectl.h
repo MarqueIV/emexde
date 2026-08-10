@@ -38,7 +38,8 @@
 
 #define PECTL_PE_UIAPP_RUN      0b00000110
 
-#define PECTL_CS_GET_CDHASH     0b00000111
+#define PECTL_CS_GET_CDHASH     0b00000111  /* gets cdhash of currently running executable */
+#define PECTL_CS_FALLBACK_ENT   0b00001000  /* sets entitlements to none as a fallback */
 
 DEFINE_SYSCALL_HANDLER(pectl);
 
