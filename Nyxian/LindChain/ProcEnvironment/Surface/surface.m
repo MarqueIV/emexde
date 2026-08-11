@@ -144,11 +144,8 @@ static inline void ksurface_kinit_kserver(void)
      */
     for(uint32_t sys_i = 0; sys_i < SYS_N; sys_i++)
     {
-        /*
-         * getting entry (dont check anything pointer related, this is not a attack surface, if something is wrong
-         * with the syscall list entries then this shall be patched and not stay hidden
-         */
         syscall_list_item_t *item = &(sys_list[sys_i]);
+        assert(item);
         syscall_server_register(ksurface->sys_server, item->sysnum, item->hndl);
         klog_log("ksurface:kinit:kserver", "registered syscall %d (%s)", item->sysnum, item->name);
     }
@@ -199,9 +196,10 @@ static inline void ksurface_kinit_kproc(void)
     kproc->task = task;
     
     /* setting up properties */
-    proc_setpid(kproc, getpid());
-    proc_setppid(kproc, PID_LAUNCHD);
-    proc_setsid(kproc, proc_getpid(kproc));
+    pid_t pid = getpid();
+    proc_setpid(kproc, pid);
+    proc_setppid(kproc, PID_LAUNCHD);   /* this is done, because when debugging it has a other ppid */
+    proc_setsid(kproc, pid);
     proc_setentitlements(kproc, PEEntitlementKernel);
     proc_setmaxentitlements(kproc, PEEntitlementKernel);
     
@@ -215,13 +213,13 @@ static inline void ksurface_kinit_kproc(void)
         environment_panic("failed to insert kernel process");
     }
     
-    /* releaing our reference to kernrl proc, because we return now and kproc is now held by the radix tree */
+    /* releaing our reference to kernel proc, because we return now and kproc is now held by the radix tree */
     kvo_release(kproc);
 }
 
 void ksurface_kinit(void)
 {
-    /* starting huh :3 (shall only run once )*/
+    /* starting huh :3 (shall only run once) */
     klog_log("ksurface:kinit", "hello from kinit");
     klog_log("ksurface:kinit", "kernel commits magic spells to the iOS kernel now");
     
@@ -231,13 +229,7 @@ void ksurface_kinit(void)
      * sensitive information.
      */
     ksurface_kinit_kalloc();
-    
-    /* sets up the surface to make it ready for everything else */
     ksurface_kinit_kinfo();
-    
-    /* creates syscall server */
     ksurface_kinit_kserver();
-    
-    /* creates the kernel process kproc */
     ksurface_kinit_kproc();
 }

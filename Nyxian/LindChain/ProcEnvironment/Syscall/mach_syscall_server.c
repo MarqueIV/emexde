@@ -313,7 +313,7 @@ void syscall_server_register(syscall_server_t *server,
                              uint32_t syscall_num,
                              syscall_handler_t handler)
 {
-    assert(server->port == MACH_PORT_NULL && server != NULL && syscall_num < MAX_SYSCALLS);
+    assert(server->port == MACH_PORT_NULL && server != NULL && syscall_num < MAX_SYSCALLS && handler != NULL);
     
 #if DEBUG
     syscall_handler_t phandler = server->handlers[syscall_num];

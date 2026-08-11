@@ -53,13 +53,15 @@ extension PEEntitlement {
                     return (.taskForPid, "obtain task ports of any process running inside Nyxian without restriction", .systemRed)
                 }
             } else if self.contains(.processEnumeration) {
-                return (.taskForPid, "obtain task ports of processes running as the same user that explicitly allow it via Get Task Allowed or run within the same session", .customGold)
+                return (.taskForPid, "obtain task ports of processes running as the same user that explicitly allow it via allowing it or are child processes in the same session", .customGold)
+            } else if self.contains(.processSpawn) || self.contains(.processSpawnSignedOnly) {
+                return (nil, "obtain task ports of child processes in the same session", .systemGray)
             }
-            return (nil, "obtain task ports of processes that run within the same session", .systemGray)
+            return nil
         }()
         
         let platformItems: [EntitlementItem] = {
-            let hasRoot     = self.contains(.platformRoot)
+            let hasRoot = self.contains(.platformRoot)
             let hasPlatform = self.contains(.platform)
 
             if hasRoot && hasPlatform {
@@ -67,7 +69,7 @@ extension PEEntitlement {
             } else if hasPlatform {
                 return [(.platform, "platformized", .systemOrange)]
             } else {
-                return [(nil, "as a normal userspace process", .systemGray)]
+                return []
             }
         }()
         
@@ -77,7 +79,7 @@ extension PEEntitlement {
         }
         
         var taskAndProcessItems: [EntitlementItem] = [
-            (.getTaskAllowed, "allow other processes to obtain its task port", .systemGray),
+            (.getTaskAllowed, "allow other processes to obtain it's task port", .systemGray),
             (.processEnumeration, "enumerate all running processes inside Nyxian", .customGold),
         ]
         if let taskForPid = taskForPidEntry {

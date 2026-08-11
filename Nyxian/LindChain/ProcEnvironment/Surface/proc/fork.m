@@ -78,7 +78,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
         kern_return_t ksr = entitlement_mach_verify(&resultBlob, ksurface->pub_key, ksurface->pub_key_len);
         if(ksr == KERN_SUCCESS)
         {
-            entitlement = resultBlob.blob.entitlement;
+            entitlement = entitlement_sanitize(resultBlob.blob.entitlement);
             
             /* and copy cdhash */
             memcpy(child->nyx.cdhash, resultBlob.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
