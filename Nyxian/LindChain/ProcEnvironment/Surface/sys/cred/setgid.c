@@ -2,6 +2,7 @@
  SPDX-License-Identifier: AGPL-3.0-or-later
 
  Copyright (C) 2025 - 2026 emexlab
+ Copyright (C) 2026 semvis123
 
  This file is part of Nyxian.
 
@@ -129,6 +130,7 @@ DEFINE_SYSCALL_HANDLER(setregid)
         if(rgid != cur_rgid &&
            rgid != cur_egid)
         {
+            kvo_unlock(sys_proc_);
             sys_return_failure(EPERM);
         }
     }
@@ -140,6 +142,7 @@ DEFINE_SYSCALL_HANDLER(setregid)
         if(egid != cur_rgid &&
            egid != cur_egid && egid != cur_svgid)
         {
+            kvo_unlock(sys_proc_);
             sys_return_failure(EPERM);
         }
     }
