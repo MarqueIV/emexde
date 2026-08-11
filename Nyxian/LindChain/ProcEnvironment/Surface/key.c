@@ -34,9 +34,14 @@ bool get_kernel_ec_key(uint8_t **priv_bytes,
                        uint8_t **pub_bytes,
                        size_t *pub_len)
 {
+    assert(priv_bytes != NULL && priv_len != NULL && pub_bytes != NULL && pub_len != NULL);
+    
     bool success = false;
     EVP_PKEY_CTX *pctx = NULL;
     EVP_PKEY *pkey = NULL;
+    
+    *priv_bytes = NULL;
+    *pub_bytes = NULL;
     
     pctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
     if(!pctx)
@@ -66,6 +71,10 @@ bool get_kernel_ec_key(uint8_t **priv_bytes,
     }
     
     *priv_bytes = (uint8_t*)malloc(*priv_len);
+    if(*priv_bytes == NULL)
+    {
+        goto cleanup;
+    }
     uint8_t *p = *priv_bytes;
     if(i2d_PrivateKey(pkey, &p) != *priv_len)
     {
@@ -79,6 +88,10 @@ bool get_kernel_ec_key(uint8_t **priv_bytes,
     }
     
     *pub_bytes = (uint8_t*)malloc(*pub_len);
+    if(*pub_bytes == NULL)
+    {
+        goto cleanup;
+    }
     p = *pub_bytes;
     if(i2d_PUBKEY(pkey, &p) != *pub_len)
     {
