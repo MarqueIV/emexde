@@ -158,6 +158,11 @@ int macho_read_token(int fd,
         return -1;
     }
     
+    if(len != sizeof(ksurface_ent_blob_t))
+    {
+        return -1;
+    }
+    
     if(read(fd, &(mach->blob), len) != (ssize_t)len)
     {
         return -1;
