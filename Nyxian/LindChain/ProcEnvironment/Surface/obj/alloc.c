@@ -130,19 +130,20 @@ kvobject_snapshot_t *kvobject_snapshot(kvobject_t *kvo,
 {
     assert(kvo != NULL);
     
+    kvobject_t *kvo_snap = NULL;
     if(!kvo_retain(kvo))
     {
-        return NULL;
+        goto out_unlock;
     }
     
     kvo_rdlock(kvo);
     
     assert(kvo->base_type == kvObjBaseTypeObject && kvo->main_handler != NULL);
     
-    kvobject_t *kvo_snap = __kvobject_alloc(kvo->main_handler, kvObjBaseTypeObjectSnapshot);
+    kvo_snap = __kvobject_alloc(kvo->main_handler, kvObjBaseTypeObjectSnapshot);
     if(kvo_snap == NULL)
     {
-        return NULL;
+        goto out_unlock;
     }
     
     /* set orig pointer if applicable */
