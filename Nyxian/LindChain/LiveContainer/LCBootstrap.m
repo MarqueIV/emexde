@@ -206,8 +206,10 @@ int LCBootstrapMain(NSString *executablePath,
      * the frameworks the app uses do aswell.
      */
     CFBundleRef bundle = CFBundleGetMainBundle();
-    assert(CFBundleLoadExecutable(bundle));
-    CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
+    if(CFBundleLoadExecutable(bundle))
+    {
+        CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
+    }
     
     /* find main */
     int (*entry)(int, char**) = LCGetMachOEntryPoint(appHandle);

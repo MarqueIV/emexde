@@ -521,9 +521,7 @@ DEFINE_SYSCALL_HANDLER(sysctl)
     };
     
     size_t count = req.namelen;
-    
-    /* maximum items are 20 so sanity checking */
-    if(count > 20)
+    if(count > 6)
     {
         sys_return_failure(E2BIG);
     }
