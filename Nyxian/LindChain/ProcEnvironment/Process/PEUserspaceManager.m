@@ -29,10 +29,20 @@
 
 + (void)load
 {
-    [PEUserspaceManager boot];
+    [[PEUserspaceManager shared] boot];
 }
 
-+ (void)boot
++ (instancetype)shared
+{
+    static PEUserspaceManager *shared;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        shared = [[PEUserspaceManager alloc] init];
+    });
+    return shared;
+}
+
+- (void)boot
 {
     static atomic_flag flag = ATOMIC_FLAG_INIT;
     assert(!atomic_flag_test_and_set(&flag));
@@ -41,13 +51,13 @@
     {
         klog_log("PEUserspaceManager:boot", "spinning up micro kernel");
         ksurface_kinit();
+        
         klog_log("PEUserspaceManager:boot", "spinning up launch services");
         [PELaunchServiceRegistry shared];
-        klog_log("PEUserspaceManager:boot", "booted");
     }
 }
 
-+ (void)rebootUserspace
+- (void)rebootUserspace
 {
     /* TODO: prevent spawns from happening, deny any new spawns too */
     klog_log("PEUserspaceManager:reboot", "aquiring proctil lock");
