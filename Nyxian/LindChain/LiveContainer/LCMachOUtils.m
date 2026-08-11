@@ -3,6 +3,7 @@
 
  Copyright (C) 2023 - 2026 LiveContainer
  Copyright (C) 2026 emexlab
+ Copyright (C) 2026 semvis123
 
  This file is part of LiveContainer.
 
