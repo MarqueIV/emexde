@@ -50,6 +50,7 @@ int ksurface_sethostname(NSString *hostname)
     host_wrlock();
     klog_log("surface", "setting hostname to \"%s\"", [hostname UTF8String]);
     strlcpy(ksurface->host_info.hostname, [hostname UTF8String], MAXHOSTNAMELEN);
+    [[NSUserDefaults standardUserDefaults] setObject:[NSString stringWithCString:ksurface->host_info.hostname encoding:NSUTF8StringEncoding] forKey:@"LDEHostname"];
     host_unlock();
     
     return 0;
