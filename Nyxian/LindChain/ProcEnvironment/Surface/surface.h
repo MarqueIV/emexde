@@ -38,6 +38,7 @@ extern ksurface_mapping_t *ksurface;
 int ksurface_sethostname(NSString *hostname);
 #endif /* __OBJC__ */
 
+void ksurface_kinit_get_keys(void);
 void ksurface_kinit(void);
 
 #endif /* PROCENVIRONMENT_SURFACE_H */

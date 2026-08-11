@@ -100,16 +100,34 @@
 
 - (void)restore
 {
-    /* needs to be in minimal userspace boot mode to safely begin restoring the container through containerd */
-    klog_log("PEUserspaceManager:restore", "userspace rebooting into minimal mode");
-    [self rebootUserspaceWithType:kPEUserspaceRebootTypeMinimal];
+    goto first;
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+retry:  /* a retry shall not happen, happens tho if something goes wrong */
+    klog_log("PEUserspaceManager:restore", "failed to restore, reattempt restore");
+    
+first:
+    {
+        /* needs to be in minimal userspace boot mode to safely begin restoring the container through containerd */
+        klog_log("PEUserspaceManager:restore", "rebooting userspace into minimal mode");
+        [self rebootUserspaceWithType:kPEUserspaceRebootTypeMinimal];
+        
+        /* waiting till containerd is back */
+        sleep(1);
+        
         /* getting all directories needed */
         klog_log("PEUserspaceManager:restore", "gathering path intel");
         NSURL *containerRoot = [[PEContainer shared] getContainerRoot];
+        if(containerRoot == NULL)
+        {
+            goto retry;
+        }
+        
         NSURL *containerData = [containerRoot URLByAppendingPathComponent:@"Documents"];
         NSURL *containerTmp = [containerRoot URLByAppendingPathComponent:@"tmp"];
+        if(containerData == NULL || containerTmp == NULL)
+        {
+            goto retry;
+        }
         
         /* getting contents of each */
         NSArray<NSString*> *containerHomeDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerData path] error:nil];
@@ -117,12 +135,14 @@
         klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\n\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories);
         
         /* deleting everything */
+        klog_log("PEUserspaceManager:restore", "restoring container file system");
         for(NSString *pathComponent in containerHomeDirectories)
         {
             NSURL *itemURL = [containerData URLByAppendingPathComponent:pathComponent];
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
                 klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+                goto retry;
             }
         }
         for(NSString *pathComponent in containerTmpDirectories)
@@ -131,12 +151,37 @@
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
                 klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+                goto retry;
             }
         }
         
         /* now we have to restore the default hostname */
-        klog_log("PEUserspaceManager:restore", "resetting hostname");
+        klog_log("PEUserspaceManager:restore", "restoring hostname");
         ksurface_sethostname(@"localhost");
+        
+        /* rebooting into empty mode, to restore the private keys entirely safely */
+        klog_log("PEUserspaceManager:restore", "rebooting userspace into empty mode");
+        [self rebootUserspaceWithType:kPEUserspaceRebootTypeEmpty];
+        
+        klog_log("PEUserspaceManager:restore", "restoring private keys");
+        uint8_t *new_priv = NULL, *new_pub = NULL;
+        size_t new_priv_len = 0, new_pub_len = 0;
+        
+        if(!get_kernel_ec_key(&new_priv, &new_priv_len, &new_pub, &new_pub_len))
+        {
+            goto retry;
+        }
+        
+        int ret = store_kernel_key(new_priv, new_priv_len, new_pub, new_pub_len);
+        free(new_priv);
+        free(new_pub);
+        if(ret != 0)
+        {
+            goto retry;
+        }
+        
+        /* regather them */
+        ksurface_kinit_get_keys();
         
         /* clearing app list TODO: make it a actual "client portal" instead */
         klog_log("PEUserspaceManager:restore", "restored successfully");
@@ -145,7 +190,7 @@
         /* we're done, now rebooting back into default mode */
         klog_log("PEUserspaceManager:restore", "bringing userspace back into normal mode");
         [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
-    });
+    }
 }
 
 @end

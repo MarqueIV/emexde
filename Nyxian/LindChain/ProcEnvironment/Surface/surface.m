@@ -69,20 +69,31 @@ static inline void ksurface_kinit_kalloc(void)
     klog_log("ksurface:kinit:kalloc", "allocated ksurface @ %p", ksurface);
 }
 
-static inline void ksurface_kinit_kinfo(void)
+void ksurface_kinit_get_keys(void)
 {
+    if(ksurface->priv_key != NULL || ksurface->pub_key != NULL)
+    {
+        free(ksurface->priv_key);
+        free(ksurface->pub_key);
+    }
+    
     /*
      * this is the install time generated CS blob
      * key used to sign executables with nyxians
      * own virtualised entitlements, which are only
      * valid within the environment.
      */
-    klog_log("ksurface:kinit:kinfo", "generating code signature private key");
+    klog_log("ksurface:kinit:kinfo", "get code signature private key");
     if(!get_static_kernel_key(&(ksurface->priv_key), &(ksurface->priv_key_len), &(ksurface->pub_key), &(ksurface->pub_key_len)))
     {
         /* shall never happen */
-        environment_panic("failed to generate static kernel crypto key");
+        environment_panic("failed to get code signature private key");
     }
+}
+
+static inline void ksurface_kinit_kinfo(void)
+{
+    ksurface_kinit_get_keys();
     
     /*
      * do you have to make a comment on this one -.-

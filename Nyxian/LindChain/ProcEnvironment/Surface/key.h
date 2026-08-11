@@ -27,6 +27,8 @@
 
 #define KEY_LEN 32
 
+bool get_kernel_ec_key(uint8_t **priv_bytes, size_t *priv_len, uint8_t **pub_bytes, size_t *pub_len);
+int store_kernel_key(uint8_t *priv_bytes, size_t priv_len, uint8_t *pub_bytes, size_t pub_len);
 bool get_static_kernel_key(uint8_t **priv_bytes, size_t *priv_len, uint8_t **pub_bytes, size_t *pub_len);
 
 #endif /* SURFACE_KEY_H */

@@ -27,6 +27,7 @@
 typedef enum: UInt8 {
     kPEUserspaceRebootTypeDefault,
     kPEUserspaceRebootTypeMinimal,  /* only containerd launches */
+    kPEUserspaceRebootTypeEmpty,    /* without daemons, just ksurface */
 } PEUserspaceRebootType;
 
 @interface PEUserspaceManager : NSObject

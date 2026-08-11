@@ -70,9 +70,12 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                     
                     self.present(alert, animated: true)
                     
-                    PEUserspaceManager.shared().restore()
-                    
-                    alert.dismiss(animated: true)
+                    DispatchQueue.global().async {
+                        PEUserspaceManager.shared().restore()
+                        DispatchQueue.main.async {
+                            alert.dismiss(animated: true)
+                        }
+                    }
                 }
             })
             
