@@ -32,6 +32,8 @@
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/syscall.h>
 #import <LindChain/ProcEnvironment/Surface/cdhash.h>
+#import <LindChain/LiveContainer/Tweaks/Tweaks.h>
+#import <LindChain/Utils/CFTools.h>
 
 typedef struct {
     uint32_t platform;
@@ -413,6 +415,29 @@ void DyldHooksInit(void)
     });
 }
 
+static void LCInsertLibrariesIfNeeded(void)
+{
+    const char *librariesToInsert = getenv("DYLD_INSERT_LIBRARIES");
+    if(librariesToInsert == NULL)
+    {
+        return;
+    }
+    
+    NSString *nsLibrariesToInsert = [NSString stringWithCString:librariesToInsert encoding:NSUTF8StringEncoding];
+    NSArray<NSString*> *librariesToInsertArray = [nsLibrariesToInsert componentsSeparatedByString:@":"];
+    
+    for(NSString *library in librariesToInsertArray)
+    {
+        void *handle = dlopen([library UTF8String], RTLD_GLOBAL | RTLD_NOW);
+        if(handle == NULL)
+        {
+            const char *error = dlerror();
+            fprintf(stderr, "%s\n", error);
+            exit(1);
+        }
+    }
+}
+
 #pragma mark - Fix black screen
 static const char *cdhash = NULL;
 static const char *expectedPath = NULL;
@@ -434,46 +459,77 @@ static uint32_t seenCount;
 static os_unfair_lock cdlock = OS_UNFAIR_LOCK_INIT;
 void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lock, uint32_t options)
 {
-    os_unfair_lock_lock(&cdlock);
-    if(g_infos && cdhash != NULL)
+    if(os_unfair_lock_trylock(&cdlock))
     {
-        uint32_t now = g_infos->infoArrayCount;
-        const struct dyld_image_info *arr = g_infos->infoArray;
-        while(seenCount < now)
+        if(g_infos)
         {
-            const struct mach_header_64 *hdr = (const struct mach_header_64 *)arr[seenCount].imageLoadAddress;
-            const char *path = arr[seenCount].imageFilePath;
-            struct stat sa, sb;
-            if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
+            uint32_t now = g_infos->infoArrayCount;
+            const struct dyld_image_info *arr = g_infos->infoArray;
+            while(seenCount < now)
             {
-                char *foundCdhash = cdhash_of_hdr((const uint8_t*)hdr, 0);
-#if DEBUG
-                printf("[DYLD:CDHash Verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
-#endif /* DEBUG */
-                if(foundCdhash == NULL ||
-                   cdhash == NULL ||
-                   memcmp(cdhash, foundCdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
+                const struct mach_header_64 *hdr = (const struct mach_header_64 *)arr[seenCount].imageLoadAddress;
+                const char *path = arr[seenCount].imageFilePath;
+                struct stat sa, sb;
+                if(stat(path, &sa) == 0 && stat(expectedPath, &sb) == 0 && sa.st_dev == sb.st_dev && sa.st_ino == sb.st_ino)
                 {
-#if DEBUG
-                    printf("[DYLD:CDHash Verifier] something is wrong 3:\n");
-#endif /* DEBUG */
-                    if(environment_syscall(SYS_pectl, PECTL_CS_FALLBACK_ENT, NULL, MACH_PORT_NULL) != 0)
+                    if(cdhash != NULL)
                     {
-                        /* didn't succeed in rolling back permitives */
-                        abort();
+                        char *foundCdhash = cdhash_of_hdr((const uint8_t*)hdr, 0);
+#if DEBUG
+                        printf("[DYLD:CDHash Verifier] found = %s | foundCdhash = %p | cdhash = %p\n", path, foundCdhash, cdhash);
+#endif /* DEBUG */
+                        if(foundCdhash == NULL ||
+                           cdhash == NULL ||
+                           memcmp(cdhash, foundCdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
+                        {
+#if DEBUG
+                            printf("[DYLD:CDHash Verifier] something is wrong 3:\n");
+#endif /* DEBUG */
+                            if(environment_syscall(SYS_pectl, PECTL_CS_FALLBACK_ENT, NULL, MACH_PORT_NULL) != 0)
+                            {
+                                /* didn't succeed in rolling back permitives */
+                                abort();
+                            }
+                            
+#if DEBUG
+                            printf("[DYLD:CDHash Verifier] safely fell back to no entitlement's\n");
+#endif /* DEBUG */
+                        }
                     }
                     
-#if DEBUG
-                    printf("[DYLD:CDHash Verifier] safely fell back to no entitlement's\n");
-#endif /* DEBUG */
+                    /* now applying LC hooks */
+                    NUDGuestHooksInit();
+                    SecItemGuestHooksInit();
+                    NSFMGuestHooksInit();
+                    UIKitGuestHooksInit();
+                    initDead10ccFix();
+                    DyldHooksInit();
+                    LCInsertLibrariesIfNeeded();
+                    
+                    /*
+                     * now we load the executable of the bundle, as it doesn't
+                     * matter anymore from now on what CF does we can safely
+                     * load it as it is loaded already and complete the safe
+                     * initilization of the bundle swap LCOverwriteExecutablePath
+                     * did. This is necessary cause of NSBundle's internal state,
+                     * it can also fix known issues with the old implementation
+                     * of Duy Tran. Not only the app cares about this bundle,
+                     * the frameworks the app uses do aswell.
+                     */
+                    CFBundleRef bundle = CFBundleGetMainBundle();
+                    if(CFBundleLoadExecutable(bundle))
+                    {
+                        CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
+                    }
+                    
+                    /* give me the cdhash please! */
+                    dyldVerified = YES;
                 }
-                /* give me the cdhash please! */
-                dyldVerified = YES;
+                seenCount++;
             }
-            seenCount++;
         }
+        os_unfair_lock_unlock(&cdlock);
     }
-    os_unfair_lock_unlock(&cdlock);
 
     if(!lockPtrToIgnore)
         lockPtrToIgnore = lock;

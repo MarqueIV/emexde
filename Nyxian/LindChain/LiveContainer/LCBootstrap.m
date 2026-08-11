@@ -149,29 +149,6 @@ static void *LCGetMachOEntryPoint(void *handle)
     return NULL;
 }
 
-static void LCInsertLibrariesIfNeeded(void)
-{
-    const char *librariesToInsert = getenv("DYLD_INSERT_LIBRARIES");
-    if(librariesToInsert == NULL)
-    {
-        return;
-    }
-    
-    NSString *nsLibrariesToInsert = [NSString stringWithCString:librariesToInsert encoding:NSUTF8StringEncoding];
-    NSArray<NSString*> *librariesToInsertArray = [nsLibrariesToInsert componentsSeparatedByString:@":"];
-    
-    for(NSString *library in librariesToInsertArray)
-    {
-        void *handle = dlopen([library UTF8String], RTLD_GLOBAL | RTLD_NOW);
-        if(handle == NULL)
-        {
-            const char *error = dlerror();
-            fprintf(stderr, "%s\n", error);
-            exit(1);
-        }
-    }
-}
-
 int LCBootstrapMain(NSString *executablePath,
                     int argc,
                     char *argv[])
@@ -195,34 +172,8 @@ int LCBootstrapMain(NSString *executablePath,
         return 1;
     }
     
-    /*
-     * now we load the executable of the bundle, as it doesn't
-     * matter anymore from now on what CF does we can safely
-     * load it as it is loaded already and complete the safe
-     * initilization of the bundle swap LCOverwriteExecutablePath
-     * did. This is necessary cause of NSBundle's internal state,
-     * it can also fix known issues with the old implementation
-     * of Duy Tran. Not only the app cares about this bundle,
-     * the frameworks the app uses do aswell.
-     */
-    CFBundleRef bundle = CFBundleGetMainBundle();
-    if(CFBundleLoadExecutable(bundle))
-    {
-        CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
-    }
-    
     /* find main */
     int (*entry)(int, char**) = LCGetMachOEntryPoint(appHandle);
     assert(entry);
-    
-    /* perform other hooks */
-    NUDGuestHooksInit();
-    SecItemGuestHooksInit();
-    NSFMGuestHooksInit();
-    UIKitGuestHooksInit();
-    initDead10ccFix();
-    DyldHooksInit();
-    LCInsertLibrariesIfNeeded();
-    
     return entry(argc, argv);
 }

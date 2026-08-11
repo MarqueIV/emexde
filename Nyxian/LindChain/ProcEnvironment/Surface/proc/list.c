@@ -2,6 +2,7 @@
  SPDX-License-Identifier: AGPL-3.0-or-later
 
  Copyright (C) 2025 - 2026 emexlab
+ Copyright (C) 2026 semvis123
 
  This file is part of Nyxian.
 
@@ -216,13 +217,13 @@ kern_return_t proc_list(ksurface_proc_snapshot_t *proc_copy,
      */
     radix_walk(&(ksurface->proc_info.tree), proc_list_radix_walker_callback, w);
     
+    /* unlocking proc table */
+    proc_table_unlock();
+    
     /* setting count and kp, to prevent memory corruption ^^ */
     *len = w->len;
     *kp = w->kp;
     free(w);
-    
-    /* unlocking proc table */
-    proc_table_unlock();
     
     return KERN_SUCCESS;
 }
