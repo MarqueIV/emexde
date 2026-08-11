@@ -23,7 +23,9 @@
 #import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/Process/PEExtension.h>
+#import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
+#import <Nyxian-Swift.h>
 
 @implementation PEUserspaceManager
 
@@ -57,7 +59,7 @@
     }
 }
 
-- (void)rebootUserspace
+- (void)rebootUserspaceWithType:(PEUserspaceRebootType)type
 {
     /* TODO: prevent spawns from happening, deny any new spawns too */
     klog_log("PEUserspaceManager:reboot", "aquiring proctil lock");
@@ -76,11 +78,69 @@
     klog_log("PEUserspaceManager:reboot", "releasing proctil lock");
     proctil(kProctilActionUnlock);
     
-    klog_log("PEUserspaceManager:reboot", "reloading all launch service entries in registry");
-    klog_log("PEUserspaceManager:reboot", "starting all launch services");
-    [[PELaunchServiceRegistry shared] reloadAllEntries];
+    if(type == kPEUserspaceRebootTypeDefault)
+    {
+        klog_log("PEUserspaceManager:reboot", "reloading all launch service entries to registry");
+        [[PELaunchServiceRegistry shared] reloadAllEntries];
+    }
+    else if(type == kPEUserspaceRebootTypeMinimal)
+    {
+        klog_log("PEUserspaceManager:reboot", "reloading containerd launch service entry to registry");
+        [[PELaunchServiceRegistry shared] loadEntryWithFileName:@"containerd.plist"];
+        /* somehow prevent it from booting installd TM */
+    }
     
     klog_log("PEUserspaceManager:reboot", "userspace rebooted successfully");
+}
+
+- (void)rebootUserspace
+{
+    [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+}
+
+- (void)restore
+{
+    /* needs to be in minimal userspace boot mode to safely begin restoring the container through containerd */
+    klog_log("PEUserspaceManager:restore", "userspace rebooting into minimal mode");
+    [self rebootUserspaceWithType:kPEUserspaceRebootTypeMinimal];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        /* getting all directories needed */
+        klog_log("PEUserspaceManager:restore", "gathering path intel");
+        NSURL *containerRoot = [[PEContainer shared] getContainerRoot];
+        NSURL *containerData = [containerRoot URLByAppendingPathComponent:@"Documents"];
+        NSURL *containerTmp = [containerRoot URLByAppendingPathComponent:@"tmp"];
+        
+        /* getting contents of each */
+        NSArray<NSString*> *containerHomeDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerData path] error:nil];
+        NSArray<NSString*> *containerTmpDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerTmp path] error:nil];
+        klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\n\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories);
+        
+        /* deleting everything */
+        for(NSString *pathComponent in containerHomeDirectories)
+        {
+            NSURL *itemURL = [containerData URLByAppendingPathComponent:pathComponent];
+            if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
+            {
+                klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+            }
+        }
+        for(NSString *pathComponent in containerTmpDirectories)
+        {
+            NSURL *itemURL = [containerTmp URLByAppendingPathComponent:pathComponent];
+            if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
+            {
+                klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+            }
+        }
+        
+        /* clearing app list TODO: make it a actual "client portal" instead */
+        [[ApplicationManagementViewController shared] removeAllApplications];
+        
+        /* we're done, now rebooting back into default mode */
+        [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+        klog_log("PEUserspaceManager:restore", "restored successfully");
+    });
 }
 
 @end

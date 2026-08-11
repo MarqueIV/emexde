@@ -38,6 +38,7 @@
 
 - (void)invalidateAllEntries;
 - (void)reloadAllEntries;
+- (void)loadEntryWithFileName:(NSString*)entryName;
 
 @end
 

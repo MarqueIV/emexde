@@ -29,6 +29,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
 @protocol PEContainerProtocol <NSObject>
 
+- (void)contentsOfDirectoryAtPath:(NSString *)path withReply:(void (^)(NSError*,NSArray<NSString*>*))reply;
 - (void)contentsOfDirectoryAtURL:(NSURL *)url includingPropertiesForKeys:(nullable NSArray<NSURLResourceKey> *)keys options:(NSDirectoryEnumerationOptions)mask withReply:(void (^)(NSError*,NSArray<NSURL*>*))reply;
 - (void)subpathsOfDirectoryAtPath:(NSString *)path withReply:(void (^)(NSError*,NSArray<NSString*>*))reply;
 

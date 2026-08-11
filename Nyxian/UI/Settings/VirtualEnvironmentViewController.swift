@@ -29,17 +29,57 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return 2
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let tableViewCell: UITableViewCell = UITableViewCell()
-        tableViewCell.textLabel?.text = "Userspace Reboot"
+        
+        if indexPath.row == 0 {
+            tableViewCell.textLabel?.text = "Userspace Reboot"
+        } else if indexPath.row == 1 {
+            tableViewCell.textLabel?.text = "Restore"
+        }
         return tableViewCell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        PEUserspaceManager.shared().rebootUserspace()
+        if indexPath.row == 0 {
+            PEUserspaceManager.shared().rebootUserspace()
+        } else if indexPath.row == 1 {
+            let alert = UIAlertController(
+                title: "Restore",
+                message: "All apps, binaries and data containers in the virtual environment will be wiped.",
+                preferredStyle: .alert
+            )
+            
+            alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { _ in
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: nil, message: "Restoring", preferredStyle: .alert)
+                    
+                    let activityIndicator = UIActivityIndicatorView(style: .medium)
+                    activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+                    activityIndicator.startAnimating()
+                    
+                    alert.view.addSubview(activityIndicator)
+                    
+                    NSLayoutConstraint.activate([
+                        activityIndicator.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor),
+                        activityIndicator.trailingAnchor.constraint(equalTo: alert.view.trailingAnchor, constant: -20)
+                    ])
+                    
+                    self.present(alert, animated: true)
+                    
+                    PEUserspaceManager.shared().restore()
+                    
+                    alert.dismiss(animated: true)
+                }
+            })
+            
+            alert.addAction(UIAlertAction(title: "Keep Data", style: .cancel))
+            
+            self.present(alert, animated: true)
+        }
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

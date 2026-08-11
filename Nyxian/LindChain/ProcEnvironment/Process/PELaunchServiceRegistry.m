@@ -107,12 +107,28 @@
     [_launchServices removeAllObjects];
     NSString *plistPath = [[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Shared"] stringByAppendingPathComponent:@"LaunchServices"];
     NSArray<NSString*> *plists = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:plistPath error:nil];
-   
     for(NSString *plist in plists)
     {
-        [_launchServices addObject:[PELaunchService launchServiceWithPlistPath:[plistPath stringByAppendingPathComponent:plist]]];
+        PELaunchService *launchService = [PELaunchService launchServiceWithPlistPath:[plistPath stringByAppendingPathComponent:plist]];
+        if(launchService)
+        {
+            [_launchServices addObject:launchService];
+        }
     }
     _isBooted = YES;
+    os_unfair_lock_unlock(&_lock);
+}
+
+- (void)loadEntryWithFileName:(NSString*)entryName
+{
+    os_unfair_lock_lock(&_lock);
+    NSString *plistPath = [[[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Shared"] stringByAppendingPathComponent:@"LaunchServices"] stringByAppendingPathComponent:entryName];
+    /* TODO: check if the daemon is already loaded */
+    PELaunchService *launchService = [PELaunchService launchServiceWithPlistPath:plistPath];
+    if(launchService)
+    {
+        [_launchServices addObject:launchService];
+    }
     os_unfair_lock_unlock(&_lock);
 }
 

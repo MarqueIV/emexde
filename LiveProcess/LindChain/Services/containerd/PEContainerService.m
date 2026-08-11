@@ -51,6 +51,14 @@
     return;
 }
 
+- (void)contentsOfDirectoryAtPath:(NSString *)path
+                        withReply:(void (^)(NSError*,NSArray<NSString*>*))reply
+{
+    NSError *error = nil;
+    NSArray<NSString*> *contents = [_fileManager contentsOfDirectoryAtPath:path error:&error];
+    reply(error,contents);
+}
+
 - (void)contentsOfDirectoryAtURL:(NSURL *)url
       includingPropertiesForKeys:(nullable NSArray<NSURLResourceKey> *)keys
                          options:(NSDirectoryEnumerationOptions)mask

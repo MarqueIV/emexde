@@ -63,6 +63,30 @@
     return _connection != nil;
 }
 
+- (nullable NSArray<NSString *> *)contentsOfDirectoryAtPath:(NSString *)path
+                                                      error:(NSError **)error
+{
+    [self connect];
+    
+    __block NSArray<NSString *> *contents = nil;
+    __block NSError *expError = nil;
+    dispatch_semaphore_t sema = dispatch_semaphore_create(0);
+
+    PE_PROXY_OR_SIGNAL(sema)
+    else
+    {
+        [proxy contentsOfDirectoryAtPath:path withReply:^(NSError *outError, NSArray<NSString *> *array) {
+            expError = outError;
+            contents = array;
+            dispatch_semaphore_signal(sema);
+        }];
+    }
+
+    PE_WAIT(sema)
+    if (error) *error = expError;
+    return contents;
+}
+
 - (nullable NSArray<NSURL *> *)contentsOfDirectoryAtURL:(NSURL *)url
                              includingPropertiesForKeys:(nullable NSArray<NSURLResourceKey> *)keys
                                                 options:(NSDirectoryEnumerationOptions)mask
@@ -77,10 +101,7 @@
     PE_PROXY_OR_SIGNAL(sema)
     else
     {
-        [proxy contentsOfDirectoryAtURL:url
-                 includingPropertiesForKeys:keys
-                                    options:mask
-                                  withReply:^(NSError *outError, NSArray *array) {
+        [proxy contentsOfDirectoryAtURL:url includingPropertiesForKeys:keys options:mask withReply:^(NSError *outError, NSArray<NSURL *> *array) {
             expError = outError;
             contents = array;
             dispatch_semaphore_signal(sema);

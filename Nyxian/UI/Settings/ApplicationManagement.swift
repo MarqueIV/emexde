@@ -464,4 +464,8 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
             return 70
         }
     }
+    
+    @objc func removeAllApplications() {
+        self.applications = []
+    }
 }

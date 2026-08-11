@@ -24,12 +24,19 @@
 
 #import <Foundation/Foundation.h>
 
+typedef enum: UInt8 {
+    kPEUserspaceRebootTypeDefault,
+    kPEUserspaceRebootTypeMinimal,  /* only containerd launches */
+} PEUserspaceRebootType;
+
 @interface PEUserspaceManager : NSObject
 
 + (instancetype)shared;
 
 - (void)boot;
+- (void)rebootUserspaceWithType:(PEUserspaceRebootType)type;
 - (void)rebootUserspace;
+- (void)restore;
 
 @end
 

@@ -22,8 +22,6 @@
 #import <LindChain/ProcEnvironment/Process/PELaunchService.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
 
-extern int kfd;
-
 @implementation PELaunchService
 
 + (instancetype)launchServiceWithPlistPath:(NSString*)plistPath
@@ -34,16 +32,27 @@ extern int kfd;
 - (instancetype)initWithPlistPath:(NSString*)plistPath
 {
     self = [super init];
-    _lock = OS_UNFAIR_LOCK_INIT;
-    _dictionary = [NSDictionary dictionaryWithContentsOfFile:plistPath];
-    
-    /* TODO: add sanitization */
-    _executablePath = _dictionary[@"PEExecutablePath"];
-    _serviceIdentifier = _dictionary[@"PEServiceIdentifier"];
-    _autoRestart = [((NSNumber*)[_dictionary valueForKey:@"PEShouldAutorestart"]) boolValue];
-    
-    [self ignition];
-    
+    if(self)
+    {
+        _lock = OS_UNFAIR_LOCK_INIT;
+        _dictionary = [NSDictionary dictionaryWithContentsOfFile:plistPath];
+        if(_dictionary == NULL)
+        {
+            return nil;
+        }
+        
+        /* TODO: add sanitization */
+        _executablePath = _dictionary[@"PEExecutablePath"];
+        _serviceIdentifier = _dictionary[@"PEServiceIdentifier"];
+        _autoRestart = [((NSNumber*)[_dictionary valueForKey:@"PEShouldAutorestart"]) boolValue];
+        
+        if(_executablePath == NULL || _serviceIdentifier == NULL)
+        {
+            return nil;
+        }
+        
+        [self ignition];
+    }
     return self;
 }
 
@@ -52,6 +61,7 @@ extern int kfd;
     NSDictionary *dictionary = _dictionary;
     
 #if DEBUG
+    extern int kfd;
     NSMutableDictionary *mutableDictionary = [_dictionary mutableCopy];
     FDMapObject *mapObject = [FDMapObject emptyMap];
     [mapObject appendFileDescriptor:kfd withMappingToLoc:STDOUT_FILENO];
