@@ -177,6 +177,7 @@
 			membershipExceptions = (
 				LindChain/Services/applicationmgmtd/LDEApplicationObject.m,
 				LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.m,
+				LindChain/Services/containerd/MoltenFileManager.m,
 				LindChain/Services/containerd/PEContainer.m,
 			);
 			target = AF9916D82DC8C42200DDF895 /* Nyxian */;

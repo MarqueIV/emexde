@@ -190,6 +190,11 @@ first:
         /* we're done, now rebooting back into default mode */
         klog_log("PEUserspaceManager:restore", "bringing userspace back into normal mode");
         [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+        
+        /* waiting till everything is back */
+        sleep(1);
+        
+        /* TODO: make the entire reboot timing perfect */
     }
 }
 

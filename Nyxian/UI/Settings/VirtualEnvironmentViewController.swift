@@ -29,7 +29,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        return 3
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -39,7 +39,10 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
             tableViewCell.textLabel?.text = "Userspace Reboot"
         } else if indexPath.row == 1 {
             tableViewCell.textLabel?.text = "Restore"
+        } else if indexPath.row == 2 {
+            tableViewCell.textLabel?.text = "Browse File System"
         }
+        
         return tableViewCell
     }
     
@@ -82,6 +85,8 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
             alert.addAction(UIAlertAction(title: "Keep Data", style: .cancel))
             
             self.present(alert, animated: true)
+        } else if indexPath.row == 2 {
+            navigationController?.pushViewController(FileListViewController(isSublink: false, path: PEContainer.shared().containerRoot.path), animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
