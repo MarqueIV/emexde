@@ -174,5 +174,22 @@ int LCBootstrapMain(NSString *executablePath,
     /* find main */
     int (*entry)(int, char**) = LCGetMachOEntryPoint(appHandle);
     assert(entry);
+    
+    /*
+     * now we load the executable of the bundle, as it doesn't
+     * matter anymore from now on what CF does we can safely
+     * load it as it is loaded already and complete the safe
+     * initilization of the bundle swap LCOverwriteExecutablePath
+     * did. This is necessary cause of NSBundle's internal state,
+     * it can also fix known issues with the old implementation
+     * of Duy Tran. Not only the app cares about this bundle,
+     * the frameworks the app uses do aswell.
+     */
+    CFBundleRef bundle = CFBundleGetMainBundle();
+    if(CFBundleLoadExecutable(bundle))
+    {
+        CFBundleSetBinaryType(bundle, __CFBundleDYLDExecutableBinary);
+    }
+    
     return entry(argc, argv);
 }
