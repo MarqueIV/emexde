@@ -26,7 +26,7 @@
 
 /* launch services */
 #define PECTL_LS_SET_ENDPOINT   0b00000000  /* sets the endpoint of a launch service identifier (i.e. com.mycompany.daemon) */
-#define PECTL_LS_GET_ENDPOINT   0b00000001  /* gets the endpoint of a launch service identifier (i.e. com.cr4zy.containerd) */
+#define PECTL_LS_GET_ENDPOINT   0b00000001  /* gets the endpoint of a launch service identifier (i.e. org.emexlabs.containerd) */
 
 /* environment */
 #define PECTL_PE_SET_BAMSET     0b00000010  /* sets background audio mode (i.e Spotify playing music in background) MARK: noop currently */

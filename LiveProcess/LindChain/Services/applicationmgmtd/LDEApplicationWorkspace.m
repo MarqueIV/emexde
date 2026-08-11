@@ -63,7 +63,7 @@
     }
     
     PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
-    _connection = [serviceRegistry connectToService:@"com.cr4zy.installd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
+    _connection = [serviceRegistry connectToService:@"org.emexlabs.installd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
     return _connection != nil;
 }
 

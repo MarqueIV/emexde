@@ -3,16 +3,16 @@
 <plist version="1.0">
 <dict>
 	<key>PEServiceIdentifier</key>
-	<string>com.cr4zy.containerd</string>
+	<string>org.emexlabs.installd</string>
 	<key>PEShouldAutorestart</key>
 	<true/>
 	<key>PEExecutablePath</key>
-	<string>/usr/libexec/containerd</string>
+	<string>/usr/libexec/installd</string>
 	<key>PEUserIdentifier</key>
-	<integer>0</integer>
+	<integer>1</integer>
 	<key>PEGroupIdentifier</key>
-	<integer>0</integer>
+	<integer>1</integer>
 	<key>PEIntegratedServiceClass</key>
-	<string>PEContainerService</string>
+	<string>LDEApplicationWorkspaceProxy</string>
 </dict>
 </plist>

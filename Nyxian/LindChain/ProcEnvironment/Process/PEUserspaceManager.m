@@ -86,7 +86,7 @@
     else if(type == kPEUserspaceRebootTypeMinimal)
     {
         klog_log("PEUserspaceManager:reboot", "reloading containerd launch service entry to registry");
-        [[PELaunchServiceRegistry shared] loadEntryWithFileName:@"containerd.plist"];
+        [[PELaunchServiceRegistry shared] loadEntryWithFileName:@"org.emexlabs.containerd.plist"];
         /* somehow prevent it from booting installd TM */
     }
     
@@ -135,11 +135,12 @@
         }
         
         /* clearing app list TODO: make it a actual "client portal" instead */
+        klog_log("PEUserspaceManager:restore", "restored successfully");
         [[ApplicationManagementViewController shared] removeAllApplications];
         
         /* we're done, now rebooting back into default mode */
+        klog_log("PEUserspaceManager:restore", "bringing userspace back into normal mode");
         [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
-        klog_log("PEUserspaceManager:restore", "restored successfully");
     });
 }
 

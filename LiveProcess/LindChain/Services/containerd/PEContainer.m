@@ -59,7 +59,7 @@
     }
     
     PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
-    _connection = [serviceRegistry connectToService:@"com.cr4zy.containerd" protocol:@protocol(PEContainerProtocol) observer:self observerProtocol:nil];
+    _connection = [serviceRegistry connectToService:@"org.emexlabs.containerd" protocol:@protocol(PEContainerProtocol) observer:self observerProtocol:nil];
     return _connection != nil;
 }
 

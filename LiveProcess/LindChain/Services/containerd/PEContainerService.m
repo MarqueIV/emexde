@@ -33,7 +33,7 @@
 }
 
 + (NSString *)servcieIdentifier {
-    return @"com.cr4zy.containerd";
+    return @"org.emexlabs.containerd";
 }
 
 + (Protocol*)serviceProtocol

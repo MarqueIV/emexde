@@ -81,7 +81,7 @@
         }
     }
     
-    self.workspaceQueue = dispatch_queue_create("com.cr4zy.installd.workspace", DISPATCH_QUEUE_SERIAL);
+    self.workspaceQueue = dispatch_queue_create("org.emexlabs.installd.workspace", DISPATCH_QUEUE_SERIAL);
     
     return self;
 }
@@ -550,7 +550,7 @@ create_home:
 
 + (NSString*)servcieIdentifier
 {
-    return @"com.cr4zy.installd";
+    return @"org.emexlabs.installd";
 }
 
 + (Protocol*)serviceProtocol
