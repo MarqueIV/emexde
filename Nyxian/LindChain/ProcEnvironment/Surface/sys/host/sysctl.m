@@ -523,7 +523,7 @@ DEFINE_SYSCALL_HANDLER(sysctl)
     size_t count = req.namelen;
     if(count > 6)
     {
-        sys_return_failure(E2BIG);
+        sys_return_failure(ENOSYS);
     }
     
     /* copy name array from userspace */
