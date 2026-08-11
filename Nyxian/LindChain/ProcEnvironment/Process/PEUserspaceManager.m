@@ -134,6 +134,10 @@
             }
         }
         
+        /* now we have to restore the default hostname */
+        klog_log("PEUserspaceManager:restore", "resetting hostname");
+        ksurface_sethostname(@"localhost");
+        
         /* clearing app list TODO: make it a actual "client portal" instead */
         klog_log("PEUserspaceManager:restore", "restored successfully");
         [[ApplicationManagementViewController shared] removeAllApplications];
