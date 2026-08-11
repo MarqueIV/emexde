@@ -124,7 +124,8 @@ first:
         
         NSURL *containerData = [containerRoot URLByAppendingPathComponent:@"Documents"];
         NSURL *containerTmp = [containerRoot URLByAppendingPathComponent:@"tmp"];
-        if(containerData == NULL || containerTmp == NULL)
+        NSURL *containerLibrary = [containerRoot URLByAppendingPathComponent:@"Library"];
+        if(containerData == NULL || containerTmp == NULL || containerLibrary == NULL)
         {
             goto retry;
         }
@@ -132,7 +133,8 @@ first:
         /* getting contents of each */
         NSArray<NSString*> *containerHomeDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerData path] error:nil];
         NSArray<NSString*> *containerTmpDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerTmp path] error:nil];
-        klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\n\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories);
+        NSArray<NSString*> *containerLibraryDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerLibrary path] error:nil];
+        klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\n\ninside of %@: %@\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories, containerLibrary, containerLibraryDirectories);
         
         /* deleting everything */
         klog_log("PEUserspaceManager:restore", "restoring container file system");
@@ -152,6 +154,15 @@ first:
             {
                 klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
                 goto retry;
+            }
+        }
+        for(NSString *pathComponent in containerLibraryDirectories)
+        {
+            NSURL *itemURL = [containerLibrary URLByAppendingPathComponent:pathComponent];
+            if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
+            {
+                /* allowed to fail sometimes */
+                klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
             }
         }
         
