@@ -99,6 +99,7 @@ class CreditCell: UITableViewCell {
         label.font = .systemFont(ofSize: 14)
         label.textColor = .secondaryLabel
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 0
         return label
     }()
     
