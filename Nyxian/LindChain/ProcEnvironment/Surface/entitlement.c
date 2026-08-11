@@ -174,3 +174,19 @@ bool entitlement_set_path(const char *path,
     
     return (retval == 0);
 }
+
+PEEntitlement entitlement_sanitize(PEEntitlement base)
+{
+    base &= PEEntitlementAll;   /* making sure no unused bit fields are enabled */
+    
+    /* this will strip all entitlements that don't make sense in the configuration */
+    if(entitlement_got_entitlement(base, PEEntitlementTaskForPid) &&
+       !entitlement_got_entitlement(base, PEEntitlementProcessSpawn) &&
+       !entitlement_got_entitlement(base, PEEntitlementProcessSpawnSignedOnly) &&
+       !entitlement_got_entitlement(base, PEEntitlementProcessEnumeration))
+    {
+        /* you cannot obtain a task port when you cannot see a target at all */
+        entitlement_strip(base, PEEntitlementTaskForPid);
+    }
+    return base;
+}

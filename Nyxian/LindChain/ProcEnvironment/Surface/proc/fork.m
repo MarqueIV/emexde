@@ -129,7 +129,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
          * wants to debug they need to spawn the child process
          * or debug a process in the same session.
          */
-        currentEntitlement &= ~(PEEntitlementPlatform | PEEntitlementPlatformRoot | PEEntitlementTaskForPid | PEEntitlementProcessElevate);
+        entitlement_strip(currentEntitlement, PEEntitlementPlatform | PEEntitlementPlatformRoot | PEEntitlementTaskForPid | PEEntitlementProcessElevate);
     }
     else
     {
@@ -152,7 +152,7 @@ ksurface_proc_t *proc_fork(ksurface_proc_t *parent,
      * now combining the current eneitlements
      * and the entitlements of the executable.
      */
-    PEEntitlement combinedEntitlement = currentEntitlement | entitlement;
+    PEEntitlement combinedEntitlement = entitlement_sanitize(currentEntitlement | entitlement);
     proc_setentitlements(child, combinedEntitlement);
     proc_setmaxentitlements(child, combinedEntitlement);
     

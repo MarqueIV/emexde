@@ -133,11 +133,13 @@ struct ksurface_ent_result {
     bool blob_valid;
 };
 
-#define entitlement_got_entitlement(present,needed) ((present & needed) == needed)
+#define entitlement_got_entitlement(present,needed) (((present) & (needed)) == (needed))
+#define entitlement_strip(present,strip) (present) &= ~(strip)
 
 kern_return_t entitlement_token_mach_gen(ksurface_ent_blob_t *blob, const char *cdhash, PEEntitlement entitlement);
 kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach, uint8_t *pub_key, size_t pub_key_len);
 PEEntitlement entitlement_get_path(const char *path, bool *wasLocallySigned);
 bool entitlement_set_path(const char *path, PEEntitlement entitlement);
+PEEntitlement entitlement_sanitize(PEEntitlement base);
 
 #endif /* PROC_ENTITLEMENT_H */
