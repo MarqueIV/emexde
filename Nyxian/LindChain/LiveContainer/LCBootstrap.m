@@ -165,10 +165,9 @@ int LCBootstrapMain(NSString *executablePath,
     /* makes sure the binary gets loaded that is meant to have the ksurface capabilities */
     void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, ret != 0 ? NULL : cdhash);
     appExecutableHandle = appHandle;
-    const char *dlerr = dlerror();
-    if(!appHandle || (uint64_t)appHandle > 0xf00000000000 || dlerr)
+    if(!appHandle || (uint64_t)appHandle > 0xf00000000000)
     {
-        printf("%s\n", dlerr);
+        printf("%s\n", dlerror());
         return 1;
     }
     
