@@ -67,6 +67,8 @@ void environment_client_connect_to_syscall_proxy(PEMachPort *port)
 
 #pragma mark - Initilizer
 
+#if !HOST_ENV
+
 int environment_init(EnvironmentExec exec,
                      NSString *executablePath,
                      int argc,
@@ -79,14 +81,6 @@ int environment_init(EnvironmentExec exec,
     /* making sure this is only initilized once */
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-#if HOST_ENV
-        /*
-         * initilizes the kernel virtualisation
-         * layer that serves resources and permitives
-         * to other guests.
-         */
-        ksurface_kinit();
-#else
         /*
          * since this is not XNU spawning the process
          * directly for us using fork() + exec() the
@@ -135,8 +129,9 @@ int environment_init(EnvironmentExec exec,
         {
             retval = LCBootstrapMain(executablePath, argc, argv);
         }
-#endif /* HOST_ENV */
     });
     
     return retval;
 }
+
+#endif /* !HOST_ENV */

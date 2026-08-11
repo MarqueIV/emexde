@@ -22,9 +22,30 @@
 #import <LindChain/ProcEnvironment/Process/PEUserspaceManager.h>
 #import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/Process/PEExtension.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 
 @implementation PEUserspaceManager
+
++ (void)load
+{
+    [PEUserspaceManager boot];
+}
+
++ (void)boot
+{
+    static atomic_flag flag = ATOMIC_FLAG_INIT;
+    assert(!atomic_flag_test_and_set(&flag));
+    
+    if(PEGetLiveProcessBundle() != NULL)
+    {
+        klog_log("PEUserspaceManager:boot", "spinning up micro kernel");
+        ksurface_kinit();
+        klog_log("PEUserspaceManager:boot", "spinning up launch services");
+        [PELaunchServiceRegistry shared];
+        klog_log("PEUserspaceManager:boot", "booted");
+    }
+}
 
 + (void)rebootUserspace
 {
@@ -32,7 +53,7 @@
     klog_log("PEUserspaceManager:reboot", "aquiring proctil lock");
     if(proctil(kProctilActionLock) != KERN_SUCCESS)
     {
-        klog_log("PEUserspaceManager:Reboot", "userspace reboot failed, lock couldn't be claimed");
+        klog_log("PEUserspaceManager:reboot", "userspace reboot failed, lock couldn't be claimed");
         return;
     }
     

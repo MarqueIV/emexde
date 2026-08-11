@@ -26,6 +26,7 @@
 
 @interface PEUserspaceManager : NSObject
 
++ (void)boot;
 + (void)rebootUserspace;
 
 @end

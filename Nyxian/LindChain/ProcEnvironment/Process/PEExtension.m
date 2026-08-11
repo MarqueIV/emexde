@@ -182,13 +182,3 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
     
     return process;
 }
-
-__attribute__((constructor))
-static void __PEKickstart(int argc, char *argv[])
-{
-    if(PEGetLiveProcessBundle() != nil)
-    {
-        environment_init(EnvironmentExecCustom, NSBundle.mainBundle.executablePath, argc, argv);
-        [PELaunchServiceRegistry shared]; /* invokes launch services startup*/
-    }
-}
