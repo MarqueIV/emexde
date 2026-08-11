@@ -86,7 +86,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
             
             self.present(alert, animated: true)
         } else if indexPath.row == 2 {
-            navigationController?.pushViewController(FileListViewController(isSublink: false, path: PEContainer.shared().containerRoot.path), animated: true)
+            navigationController?.pushViewController(FileListViewController(isSublink: true, path: PEContainer.shared().containerRoot.path), animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }

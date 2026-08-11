@@ -51,4 +51,3 @@ along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 }
 
 @end
-
