@@ -37,14 +37,16 @@ bool wait4_proc_event_handler(kvobject_event_type_t type,
                               uint64_t val,
                               kvobject_event_t *event)
 {
-    if(val == 0 && type != kvObjEventUnregister && type != kvObjEventDeinit)
-    {
-        return false;
-    }
-    
     ksurface_proc_t *parent = (ksurface_proc_t*)(event->owner);
     wait4_payload_t *payload = (wait4_payload_t*)(event->ctx);
     ksurface_proc_t *child = (ksurface_proc_t*)(uintptr_t)val;
+    
+    if(child == NULL)
+    {
+        mach_port_deallocate(mach_task_self(), payload->task);
+        free(payload);
+        return true;
+    }
     
     pthread_mutex_lock(&(parent->children.mutex));
     kvo_wrlock(child);
