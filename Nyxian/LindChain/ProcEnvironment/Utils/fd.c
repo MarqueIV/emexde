@@ -29,18 +29,22 @@
 void get_all_fds(int *numFDs,
                  struct proc_fdinfo **fdinfo)
 {
-    /* getting our own pid */
     pid_t pid = getpid();
     int bufferSize = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, NULL, 0);
-    if (bufferSize <= 0) return;
+    if(bufferSize <= 0)
+    {
+        return;
+    }
     
-    /* allocating request buffer */
     *fdinfo = malloc(bufferSize);
-    if (!*fdinfo) return;
+    if(!*fdinfo)
+    {
+        return;
+    }
     
     /* getting process identifier information */
     int count = proc_pidinfo(pid, PROC_PIDLISTFDS, 0, *fdinfo, bufferSize);
-    if (count <= 0)
+    if(count <= 0)
     {
         free(*fdinfo);
         return;
@@ -56,7 +60,7 @@ void close_all_fd(void)
     
     get_all_fds(&numFDs, &fdinfo);
 
-    for (int i = 0; i < numFDs; i++)
+    for(int i = 0; i < numFDs; i++)
     {
         if(!fd_is_guarded(fdinfo[i].proc_fd))
         {

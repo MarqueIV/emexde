@@ -84,16 +84,17 @@ void ksurface_kinit_get_keys(void)
      * own virtualised entitlements, which are only
      * valid within the environment.
      */
-    klog_log("ksurface:kinit:kinfo", "get code signature private key");
     if(!get_static_kernel_key(&(ksurface->priv_key), &(ksurface->priv_key_len), &(ksurface->pub_key), &(ksurface->pub_key_len)))
     {
         /* shall never happen */
-        environment_panic("failed to get code signature private key");
+        environment_panic("failed to get code signature key pair");
     }
+    klog_log("ksurface:kinit:kinfo", "got code signature key pair");
 }
 
 static inline void ksurface_kinit_kinfo(void)
 {
+    /* get code signature key pair */
     ksurface_kinit_get_keys();
     
     /*

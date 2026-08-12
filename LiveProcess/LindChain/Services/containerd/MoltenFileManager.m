@@ -25,6 +25,30 @@ along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 #import <LindChain/ProcEnvironment/Surface/trust.h>
 #import <LindChain/Utils/Swizzle.h>
 
+static BOOL MoltenFileManagerIsPathInsideContainer(NSString *path)
+{
+    BOOL isInside = NO;
+    NSString *containerRoot = [[[[PEContainer shared] getContainerRoot] path] stringByStandardizingPath];
+    if(containerRoot != NULL)
+    {
+        path = [path stringByStandardizingPath];
+        isInside = [path isEqualToString:containerRoot] || [path hasPrefix:[containerRoot stringByAppendingString:@"/"]];
+    }
+    return isInside;
+}
+
+static BOOL MoltenFileManagerIsURLInsideContainer(NSURL *url)
+{
+    BOOL isInside = NO;
+    NSString *containerRoot = [[[[PEContainer shared] getContainerRoot] path] stringByStandardizingPath];
+    if(containerRoot != NULL)
+    {
+        NSString *path = [[url path] stringByStandardizingPath];
+        isInside = [path isEqualToString:containerRoot] || [path hasPrefix:[containerRoot stringByAppendingString:@"/"]];
+    }
+    return isInside;
+}
+
 @interface MoltenFileManager : NSObject
 
 @end
@@ -35,19 +59,26 @@ along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 {
     [super load];
     SwizzleObjCMethod(@selector(contentsOfDirectoryAtPath:error:), [NSFileManager class], @selector(hook_contentsOfDirectoryAtPath:error:), [MoltenFileManager class], kSwizzleMethodTypeInstance);
+    SwizzleObjCMethod(@selector(removeItemAtPath:error:), [NSFileManager class], @selector(hook_removeItemAtPath:error:), [MoltenFileManager class], kSwizzleMethodTypeInstance);
+    SwizzleObjCMethod(@selector(removeItemAtURL:error:), [NSFileManager class], @selector(hook_removeItemAtURL:error:), [MoltenFileManager class], kSwizzleMethodTypeInstance);
 }
 
 - (NSArray<NSString *> *)hook_contentsOfDirectoryAtPath:(NSString *)path
                                                   error:(NSError **)error
 {
-    BOOL isInside = NO;
-    NSString *containerRoot = [[[[PEContainer shared] getContainerRoot] path] stringByStandardizingPath];
-    if(containerRoot != NULL)
-    {
-        path = [path stringByStandardizingPath];
-        isInside = [path isEqualToString:containerRoot] || [path hasPrefix:[containerRoot stringByAppendingString:@"/"]];
-    }
-    return isInside ? [[PEContainer shared] contentsOfDirectoryAtPath:path error:error] : [self hook_contentsOfDirectoryAtPath:path error:error];
+    return MoltenFileManagerIsPathInsideContainer(path) ? [[PEContainer shared] contentsOfDirectoryAtPath:path error:error] : [self hook_contentsOfDirectoryAtPath:path error:error];
+}
+
+- (BOOL)hook_removeItemAtPath:(NSString*)path
+                        error:(NSError**)error
+{
+    return MoltenFileManagerIsPathInsideContainer(path) ? [[PEContainer shared] removeItemAtURL:[NSURL fileURLWithPath:path] error:error] : [self hook_removeItemAtPath:path error:error];
+}
+
+- (BOOL)hook_removeItemAtURL:(NSURL*)url
+                       error:(NSError**)error
+{
+    return MoltenFileManagerIsURLInsideContainer(url) ? [[PEContainer shared] removeItemAtURL:url error:error] : [self hook_removeItemAtURL:url error:error];
 }
 
 @end

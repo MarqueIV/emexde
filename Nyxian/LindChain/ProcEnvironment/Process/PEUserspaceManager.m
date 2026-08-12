@@ -174,7 +174,7 @@ first:
         klog_log("PEUserspaceManager:restore", "rebooting userspace into empty mode");
         [self rebootUserspaceWithType:kPEUserspaceRebootTypeEmpty];
         
-        klog_log("PEUserspaceManager:restore", "restoring private keys");
+        klog_log("PEUserspaceManager:restore", "restoring code signature key pair");
         uint8_t *new_priv = NULL, *new_pub = NULL;
         size_t new_priv_len = 0, new_pub_len = 0;
         
