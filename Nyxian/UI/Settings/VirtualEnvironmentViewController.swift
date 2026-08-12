@@ -70,7 +70,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                 if indexPath.row == 0 {
                     PEUserspaceManager.shared().rebootUserspace()
                 } else if indexPath.row == 1 {
-                    PELaunchServiceRegistry.shared().reloadAllEntries()
+                    PEUserspaceManager.shared().reloadDaemons()
                 } else if indexPath.row == 2 {
                     let alert = UIAlertController(
                         title: "Restore",

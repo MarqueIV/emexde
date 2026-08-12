@@ -30,7 +30,15 @@ typedef enum: UInt8 {
     kPEUserspaceRebootTypeEmpty,    /* without daemons, just ksurface */
 } PEUserspaceRebootType;
 
+typedef enum: UInt8 {
+    kPEUserspaceModeDefault,
+    kPEUserspaceModeMinimal,
+    kPEUserspaceModeEmpty,
+} PEUserspaceMode;
+
 @interface PEUserspaceManager : NSObject
+
+@property (readonly) PEUserspaceMode mode;
 
 + (instancetype)shared;
 
@@ -38,6 +46,7 @@ typedef enum: UInt8 {
 - (void)rebootUserspaceWithType:(PEUserspaceRebootType)type;
 - (void)rebootUserspace;
 - (void)restore;
+- (void)reloadDaemons;
 
 @end
 

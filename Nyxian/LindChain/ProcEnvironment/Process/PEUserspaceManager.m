@@ -27,7 +27,9 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <Nyxian-Swift.h>
 
-@implementation PEUserspaceManager
+@implementation PEUserspaceManager {
+    os_unfair_lock _lock;
+}
 
 + (void)load
 {
@@ -42,6 +44,17 @@
         shared = [[PEUserspaceManager alloc] init];
     });
     return shared;
+}
+
+- (instancetype)init
+{
+    self = [super init];
+    if(self)
+    {
+        _lock = OS_UNFAIR_LOCK_INIT;
+        _mode = kPEUserspaceModeDefault;
+    }
+    return self;
 }
 
 - (void)boot
@@ -59,7 +72,7 @@
     }
 }
 
-- (void)rebootUserspaceWithType:(PEUserspaceRebootType)type
+- (void)rebootUserspaceWithType_nolock:(PEUserspaceRebootType)type
 {
     /* TODO: prevent spawns from happening, deny any new spawns too */
     klog_log("PEUserspaceManager:reboot", "aquiring proctil lock");
@@ -78,19 +91,29 @@
     klog_log("PEUserspaceManager:reboot", "releasing proctil lock");
     proctil(kProctilActionUnlock);
     
-    if(type == kPEUserspaceRebootTypeDefault)
+    klog_log("PEUserspaceManager:reboot", "reloading daemons");
+    switch(type)
     {
-        klog_log("PEUserspaceManager:reboot", "reloading all launch service entries to registry");
-        [[PELaunchServiceRegistry shared] reloadAllEntries];
+        case kPEUserspaceRebootTypeDefault:
+            _mode = kPEUserspaceModeDefault;
+            break;
+        case kPEUserspaceRebootTypeMinimal:
+            _mode = kPEUserspaceModeMinimal;
+            break;
+        default:
+            _mode = kPEUserspaceModeEmpty;
+            break;
     }
-    else if(type == kPEUserspaceRebootTypeMinimal)
-    {
-        klog_log("PEUserspaceManager:reboot", "reloading containerd launch service entry to registry");
-        [[PELaunchServiceRegistry shared] loadEntryWithFileName:@"org.emexlabs.containerd.plist"];
-        /* somehow prevent it from booting installd TM */
-    }
+    [[PEUserspaceManager shared] reloadDaemons_nolock];
     
     klog_log("PEUserspaceManager:reboot", "userspace rebooted successfully");
+}
+
+- (void)rebootUserspaceWithType:(PEUserspaceRebootType)type
+{
+    os_unfair_lock_lock(&_lock);
+    [self rebootUserspaceWithType_nolock:type];
+    os_unfair_lock_unlock(&_lock);
 }
 
 - (void)rebootUserspace
@@ -100,6 +123,7 @@
 
 - (void)restore
 {
+    os_unfair_lock_lock(&_lock);
     goto first;
     
 retry:  /* a retry shall not happen, happens tho if something goes wrong */
@@ -109,7 +133,7 @@ first:
     {
         /* needs to be in minimal userspace boot mode to safely begin restoring the container through containerd */
         klog_log("PEUserspaceManager:restore", "rebooting userspace into minimal mode");
-        [self rebootUserspaceWithType:kPEUserspaceRebootTypeMinimal];
+        [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeMinimal];
         
         /* waiting till containerd is back */
         sleep(1);
@@ -172,7 +196,7 @@ first:
         
         /* rebooting into empty mode, to restore the private keys entirely safely */
         klog_log("PEUserspaceManager:restore", "rebooting userspace into empty mode");
-        [self rebootUserspaceWithType:kPEUserspaceRebootTypeEmpty];
+        [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeEmpty];
         
         klog_log("PEUserspaceManager:restore", "restoring code signature key pair");
         uint8_t *new_priv = NULL, *new_pub = NULL;
@@ -200,13 +224,34 @@ first:
         
         /* we're done, now rebooting back into default mode */
         klog_log("PEUserspaceManager:restore", "bringing userspace back into normal mode");
-        [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+        [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeDefault];
         
         /* waiting till everything is back */
         sleep(1);
         
         /* TODO: make the entire reboot timing perfect */
     }
+    os_unfair_lock_unlock(&_lock);
+}
+
+- (void)reloadDaemons_nolock
+{
+    [[PELaunchServiceRegistry shared] invalidateAllEntries];
+    if(_mode == kPEUserspaceModeDefault)
+    {
+        [[PELaunchServiceRegistry shared] reloadAllEntries];
+    }
+    else if(_mode == kPEUserspaceModeMinimal)
+    {
+        [[PELaunchServiceRegistry shared] loadEntryWithFileName:@"org.emexlabs.containerd.plist"];
+    }
+}
+
+- (void)reloadDaemons
+{
+    os_unfair_lock_lock(&_lock);
+    [[PEUserspaceManager shared] reloadDaemons_nolock];
+    os_unfair_lock_unlock(&_lock);
 }
 
 @end
