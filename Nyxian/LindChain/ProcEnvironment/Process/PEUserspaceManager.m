@@ -158,7 +158,7 @@ first:
         NSArray<NSString*> *containerHomeDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerData path] error:nil];
         NSArray<NSString*> *containerTmpDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerTmp path] error:nil];
         NSArray<NSString*> *containerLibraryDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerLibrary path] error:nil];
-        klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\n\ninside of %@: %@\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories, containerLibrary, containerLibraryDirectories);
+        klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\ninside of %@: %@\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories, containerLibrary, containerLibraryDirectories);
         
         /* deleting everything */
         klog_log("PEUserspaceManager:restore", "restoring container file system");
@@ -190,13 +190,13 @@ first:
             }
         }
         
-        /* now we have to restore the default hostname */
-        klog_log("PEUserspaceManager:restore", "restoring hostname");
-        ksurface_sethostname(@"localhost");
-        
         /* rebooting into empty mode, to restore the private keys entirely safely */
         klog_log("PEUserspaceManager:restore", "rebooting userspace into empty mode");
         [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeEmpty];
+        
+        /* now we have to restore the default hostname */
+        klog_log("PEUserspaceManager:restore", "restoring hostname");
+        ksurface_sethostname(@"localhost");
         
         klog_log("PEUserspaceManager:restore", "restoring code signature key pair");
         uint8_t *new_priv = NULL, *new_pub = NULL;
