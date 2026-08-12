@@ -121,12 +121,24 @@
     [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
 }
 
-- (void)restore
+- (BOOL)restore
 {
     os_unfair_lock_lock(&_lock);
+    BOOL inRetry = NO;
     goto first;
     
-retry:  /* a retry shall not happen, happens tho if something goes wrong */
+recoverable_fail:
+    if(inRetry)
+    {
+        goto retry_fail;
+    }
+    /* here we can still return back without consequences */
+    [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeDefault];
+    os_unfair_lock_unlock(&_lock);
+    return NO;
+    
+retry_fail: /* a retry shall not happen, happens tho if something goes wrong */
+    inRetry = YES;
     klog_log("PEUserspaceManager:restore", "failed to restore, reattempt restore");
     
 first:
@@ -143,7 +155,7 @@ first:
         NSURL *containerRoot = [[PEContainer shared] getContainerRoot];
         if(containerRoot == NULL)
         {
-            goto retry;
+            goto recoverable_fail;
         }
         
         NSURL *containerData = [containerRoot URLByAppendingPathComponent:@"Documents"];
@@ -151,7 +163,7 @@ first:
         NSURL *containerLibrary = [containerRoot URLByAppendingPathComponent:@"Library"];
         if(containerData == NULL || containerTmp == NULL || containerLibrary == NULL)
         {
-            goto retry;
+            goto recoverable_fail;
         }
         
         /* getting contents of each */
@@ -159,6 +171,10 @@ first:
         NSArray<NSString*> *containerTmpDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerTmp path] error:nil];
         NSArray<NSString*> *containerLibraryDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerLibrary path] error:nil];
         klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\ninside of %@: %@\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories, containerLibrary, containerLibraryDirectories);
+        if(containerHomeDirectories == NULL || containerTmpDirectories == NULL || containerLibraryDirectories == NULL)
+        {
+            goto recoverable_fail;
+        }
         
         /* deleting everything */
         klog_log("PEUserspaceManager:restore", "restoring container file system");
@@ -168,7 +184,7 @@ first:
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
                 klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
-                goto retry;
+                goto retry_fail;
             }
         }
         for(NSString *pathComponent in containerTmpDirectories)
@@ -177,7 +193,7 @@ first:
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
                 klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
-                goto retry;
+                goto retry_fail;
             }
         }
         for(NSString *pathComponent in containerLibraryDirectories)
@@ -204,7 +220,7 @@ first:
         
         if(!get_kernel_ec_key(&new_priv, &new_priv_len, &new_pub, &new_pub_len))
         {
-            goto retry;
+            goto retry_fail;
         }
         
         int ret = store_kernel_key(new_priv, new_priv_len, new_pub, new_pub_len);
@@ -212,7 +228,7 @@ first:
         free(new_pub);
         if(ret != 0)
         {
-            goto retry;
+            goto retry_fail;
         }
         
         /* regather them */
@@ -232,6 +248,7 @@ first:
         /* TODO: make the entire reboot timing perfect */
     }
     os_unfair_lock_unlock(&_lock);
+    return YES;
 }
 
 - (void)reloadDaemons_nolock

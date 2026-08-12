@@ -45,7 +45,7 @@ typedef enum: UInt8 {
 - (void)boot;
 - (void)rebootUserspaceWithType:(PEUserspaceRebootType)type;
 - (void)rebootUserspace;
-- (void)restore;
+- (BOOL)restore;
 - (void)reloadDaemons;
 
 @end

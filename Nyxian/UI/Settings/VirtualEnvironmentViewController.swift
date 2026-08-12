@@ -78,7 +78,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                         preferredStyle: .alert
                     )
                 
-                    alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { _ in
+                    alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { [weak self] _ in
                         DispatchQueue.main.async {
                             let alert = UIAlertController(title: nil, message: "Restoring", preferredStyle: .alert)
                         
@@ -93,12 +93,35 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                                 activityIndicator.trailingAnchor.constraint(equalTo: alert.view.trailingAnchor, constant: -20)
                             ])
                         
-                            self.present(alert, animated: true)
-                        
-                            DispatchQueue.global().async {
-                                PEUserspaceManager.shared().restore()
-                                DispatchQueue.main.async {
-                                    alert.dismiss(animated: true)
+                            guard let self = self else {
+                                return
+                            }
+                            self.present(alert, animated: true) { [weak self] in
+                                guard let self = self else {
+                                    return
+                                }
+                                DispatchQueue.global().async { [weak self] in
+                                    guard let self = self else {
+                                        return
+                                    }
+                                    let success = PEUserspaceManager.shared().restore()
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else {
+                                            return
+                                        }
+                                        alert.dismiss(animated: true)
+                                        if !success {
+                                            let alert = UIAlertController(
+                                                title: "Error",
+                                                message: "Restore failed",
+                                                preferredStyle: .alert
+                                            )
+                                            
+                                            alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+                                            
+                                            self.present(alert, animated: true)
+                                        }
+                                    }
                                 }
                             }
                         }
