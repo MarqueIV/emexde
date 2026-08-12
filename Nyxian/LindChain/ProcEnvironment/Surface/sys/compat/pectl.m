@@ -328,10 +328,11 @@ DEFINE_SYSCALL_HANDLER(pectl)
             sys_return;
         }
         case PECTL_USREBOOT:
-            if(entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), PEEntitlementPlatform))
+            if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), PEEntitlementPlatform))
             {
-                [[PEUserspaceManager shared] rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+                sys_return_failure(EPERM);
             }
+            [[PEUserspaceManager shared] rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
             sys_return;
         case PECTL_GET_USMODE:
             return [[PEUserspaceManager shared] mode];
