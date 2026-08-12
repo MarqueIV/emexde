@@ -30,9 +30,11 @@ DEFINE_SYSCALL_HANDLER(handoffep)
 {
     sys_need_in_ports(1, MACH_MSG_TYPE_MOVE_RECEIVE);
     
+    kvo_wrlock(sys_proc_);
     if(sys_proc_->task != MACH_PORT_NULL)
     {
         /* Task port's can only be initialized once per process lifecycle. */
+        kvo_unlock(sys_proc_);
         sys_return_failure(EPERM);
     }
     
@@ -47,7 +49,6 @@ DEFINE_SYSCALL_HANDLER(handoffep)
     send_reply((mach_msg_header_t*)*recv_buffer, 0, *out_ports, *out_ports_cnt, true);
     *recv_buffer = NULL;    /* Consuming the mach message header the syscall server uses so it won't attempt to reply. */
     
-    kvo_wrlock(sys_proc_);
     task_t returnedTask = ktfp(exceptionPort);
     if(returnedTask == MACH_PORT_NULL)
     {
