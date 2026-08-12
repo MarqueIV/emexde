@@ -37,7 +37,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
             case 0:
                 return 1
             default:
-                return 2
+                return 3
         }
     }
     
@@ -52,6 +52,8 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                 if indexPath.row == 0 {
                     tableViewCell.textLabel?.text = "Userspace Reboot"
                 } else if indexPath.row == 1 {
+                    tableViewCell.textLabel?.text = "Reload Daemons"
+                } else if indexPath.row == 2 {
                     tableViewCell.textLabel?.text = "Restore"
                     tableViewCell.textLabel?.textColor = .systemRed
                 }
@@ -68,6 +70,8 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                 if indexPath.row == 0 {
                     PEUserspaceManager.shared().rebootUserspace()
                 } else if indexPath.row == 1 {
+                    PELaunchServiceRegistry.shared().reloadAllEntries()
+                } else if indexPath.row == 2 {
                     let alert = UIAlertController(
                         title: "Restore",
                         message: "All apps, binaries and data containers in the virtual environment will be wiped.",
