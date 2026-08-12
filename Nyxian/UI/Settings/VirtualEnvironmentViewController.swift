@@ -28,65 +28,82 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
         view.backgroundColor = .systemBackground
     }
     
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 2
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        switch(section) {
+            case 0:
+                return 1
+            default:
+                return 2
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let tableViewCell: UITableViewCell = UITableViewCell()
         
-        if indexPath.row == 0 {
-            tableViewCell.textLabel?.text = "Userspace Reboot"
-        } else if indexPath.row == 1 {
-            tableViewCell.textLabel?.text = "Restore"
-        } else if indexPath.row == 2 {
-            tableViewCell.textLabel?.text = "Browse File System"
+        switch(indexPath.section) {
+            case 0:
+                tableViewCell.textLabel?.text = "Browse File System"
+                tableViewCell.accessoryType = .disclosureIndicator
+            default:
+                if indexPath.row == 0 {
+                    tableViewCell.textLabel?.text = "Userspace Reboot"
+                } else if indexPath.row == 1 {
+                    tableViewCell.textLabel?.text = "Restore"
+                    tableViewCell.textLabel?.textColor = .systemRed
+                }
         }
         
         return tableViewCell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.row == 0 {
-            PEUserspaceManager.shared().rebootUserspace()
-        } else if indexPath.row == 1 {
-            let alert = UIAlertController(
-                title: "Restore",
-                message: "All apps, binaries and data containers in the virtual environment will be wiped.",
-                preferredStyle: .alert
-            )
-            
-            alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { _ in
-                DispatchQueue.main.async {
-                    let alert = UIAlertController(title: nil, message: "Restoring", preferredStyle: .alert)
-                    
-                    let activityIndicator = UIActivityIndicatorView(style: .medium)
-                    activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-                    activityIndicator.startAnimating()
-                    
-                    alert.view.addSubview(activityIndicator)
-                    
-                    NSLayoutConstraint.activate([
-                        activityIndicator.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor),
-                        activityIndicator.trailingAnchor.constraint(equalTo: alert.view.trailingAnchor, constant: -20)
-                    ])
-                    
-                    self.present(alert, animated: true)
-                    
-                    DispatchQueue.global().async {
-                        PEUserspaceManager.shared().restore()
+        switch(indexPath.section) {
+            case 0:
+                navigationController?.pushViewController(FileListViewController(isSublink: true, path: PEContainer.shared().containerRoot.path), animated: true)
+            default:
+                if indexPath.row == 0 {
+                    PEUserspaceManager.shared().rebootUserspace()
+                } else if indexPath.row == 1 {
+                    let alert = UIAlertController(
+                        title: "Restore",
+                        message: "All apps, binaries and data containers in the virtual environment will be wiped.",
+                        preferredStyle: .alert
+                    )
+                
+                    alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { _ in
                         DispatchQueue.main.async {
-                            alert.dismiss(animated: true)
+                            let alert = UIAlertController(title: nil, message: "Restoring", preferredStyle: .alert)
+                        
+                            let activityIndicator = UIActivityIndicatorView(style: .medium)
+                            activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+                            activityIndicator.startAnimating()
+                        
+                            alert.view.addSubview(activityIndicator)
+                        
+                            NSLayoutConstraint.activate([
+                                activityIndicator.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor),
+                                activityIndicator.trailingAnchor.constraint(equalTo: alert.view.trailingAnchor, constant: -20)
+                            ])
+                        
+                            self.present(alert, animated: true)
+                        
+                            DispatchQueue.global().async {
+                                PEUserspaceManager.shared().restore()
+                                DispatchQueue.main.async {
+                                    alert.dismiss(animated: true)
+                                }
+                            }
                         }
-                    }
+                    })
+                
+                    alert.addAction(UIAlertAction(title: "Keep Data", style: .cancel))
+                
+                    self.present(alert, animated: true)
                 }
-            })
-            
-            alert.addAction(UIAlertAction(title: "Keep Data", style: .cancel))
-            
-            self.present(alert, animated: true)
-        } else if indexPath.row == 2 {
-            navigationController?.pushViewController(FileListViewController(isSublink: true, path: PEContainer.shared().containerRoot.path), animated: true)
         }
         tableView.deselectRow(at: indexPath, animated: true)
     }
