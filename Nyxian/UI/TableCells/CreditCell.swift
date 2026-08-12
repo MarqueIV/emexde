@@ -24,7 +24,7 @@ import UIKit
 struct Credit {
     let name: String
     let role: String
-    let githubURL: String
+    let ghuser: String
 }
 
 class CreditCell: UITableViewCell {

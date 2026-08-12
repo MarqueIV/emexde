@@ -36,22 +36,22 @@ class CreditsViewController: UIThemedTableViewController {
                 Credit(
                     name: "emexLabs",
                     role: "Maintainer",
-                    githubURL: "https://github.com/emexlab"
+                    ghuser: "emexlab"
                 ),
                 Credit(
                     name: "Nyxia",
                     role: "Maintainer",
-                    githubURL: "https://github.com/mach-port-t"
+                    ghuser: "mach-port-t"
                 ),
                 Credit(
                     name: "Catelyn",
                     role: "Developer",
-                    githubURL: "https://github.com/mimalloc"
+                    ghuser: "mimalloc"
                 ),
                 Credit(
                     name: "LucaVmu",
                     role: "Developer",
-                    githubURL: "https://github.com/lucavmu"
+                    ghuser: "lucavmu"
                 ),
             ]
         ),
@@ -62,12 +62,12 @@ class CreditsViewController: UIThemedTableViewController {
                 Credit(
                     name: "semvis123",
                     role: "Security Researcher",
-                    githubURL: "https://github.com/semvis123"
+                    ghuser: "semvis123"
                 ),
                 Credit(
                     name: "zipgod",
                     role: "Security Researcher",
-                    githubURL: "https://github.com/zipgod24"
+                    ghuser: "zipgod24"
                 )
             ]
         ),
@@ -78,27 +78,27 @@ class CreditsViewController: UIThemedTableViewController {
                 Credit(
                     name: "Kyle",
                     role: "Swift Support",
-                    githubURL: "https://github.com/Kyle-Ye"
+                    ghuser: "Kyle-Ye"
                 ),
                 Credit(
                     name: "Vinogradov Daniil",
                     role: "LLVM-On-iOS",
-                    githubURL: "https://github.com/XITRIX"
+                    ghuser: "XITRIX"
                 ),
                 Credit(
                     name: "엄세환",
                     role: "Contributor",
-                    githubURL: "https://github.com/op06072"
+                    ghuser: "op06072"
                 ),
                 Credit(
                     name: "L0tsen",
                     role: "Contributor (What did she contribute again??)",
-                    githubURL: "https://github.com/l0tsen"
+                    ghuser: "l0tsen"
                 ),
                 Credit(
                     name: "Offihito",
                     role: "Contributor (A vibecoder we banned)",
-                    githubURL: "https://github.com/Offihito"
+                    ghuser: "Offihito"
                 )
             ]
         ),
@@ -109,17 +109,17 @@ class CreditsViewController: UIThemedTableViewController {
                 Credit(
                     name: "ayame09",
                     role: "Original Nyxian app icons",
-                    githubURL: "https://github.com/ayayame09"
+                    ghuser: "ayayame09"
                 ),
                 Credit(
                     name: "sxdev",
                     role: "Drawn app icons",
-                    githubURL: "https://github.com/SamoXcZ"
+                    ghuser: "SamoXcZ"
                 ),
                 Credit(
                     name: "xzadik",
                     role: "Nyxcat app icons",
-                    githubURL: "https://github.com/xzadik"
+                    ghuser: "xzadik"
                 )
             ]
         ),
@@ -130,17 +130,17 @@ class CreditsViewController: UIThemedTableViewController {
                 Credit(
                     name: "LiveContainer",
                     role: "LiveContainer",
-                    githubURL: "https://github.com/livecontainer"
+                    ghuser: "livecontainer"
                 ),
                 Credit(
                     name: "LLVM",
                     role: "llvm-project",
-                    githubURL: "https://github.com/llvm"
+                    ghuser: "llvm"
                 ),
                 Credit(
                     name: "The Swift Programming Language",
                     role: "swift",
-                    githubURL: "https://github.com/swiftlang"
+                    ghuser: "swiftlang"
                 )
             ]
         ),
@@ -151,32 +151,32 @@ class CreditsViewController: UIThemedTableViewController {
                 Credit(
                     name: "Duy Tran",
                     role: "The guy who said that NSXPC services don't need to be thread safe.",
-                    githubURL: "https://github.com/khanhduytran0"
+                    ghuser: "khanhduytran0"
                 ),
                 Credit(
                     name: "Simon Støvring",
                     role: "Runestone",
-                    githubURL: "https://github.com/simonbs"
+                    ghuser: "simonbs"
                 ),
                 Credit(
                     name: "light-tech",
                     role: "LLVM-On-iOS",
-                    githubURL: "https://github.com/light-tech"
+                    ghuser: "light-tech"
                 ),
                 Credit(
                     name: "Lars Fröder",
                     role: "Litehook",
-                    githubURL: "https://github.com/opa334"
+                    ghuser: "opa334"
                 ),
                 Credit(
                     name: "lascic",
                     role: "UIOnboarding",
-                    githubURL: "https://github.com/lascic"
+                    ghuser: "lascic"
                 ),
                 Credit(
                     name: "Miguel de Icaza",
                     role: "SwiftTerm",
-                    githubURL: "https://github.com/migueldeicaza"
+                    ghuser: "migueldeicaza"
                 )
             ]
         )
@@ -220,7 +220,7 @@ class CreditsViewController: UIThemedTableViewController {
         cell.nameLabel.text = credit.name
         cell.roleLabel.text = credit.role
         
-        downloadImage(from: "\(credit.githubURL).png") { image in
+        downloadImage(from: "https://avatars.githubusercontent.com/\(credit.ghuser)") { image in
             cell.configureImage(image ?? UIImage(systemName: "person.fill"))
             cell.layoutSubviews()
         }
@@ -246,7 +246,7 @@ class CreditsViewController: UIThemedTableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let credit = sections[indexPath.section].credits[indexPath.row]
         
-        if let url = URL(string: credit.githubURL) {
+        if let url = URL(string: "https://github.com/\(credit.ghuser)") {
             UIApplication.shared.open(url)
         }
         
