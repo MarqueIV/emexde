@@ -179,15 +179,24 @@ PEEntitlement entitlement_sanitize(PEEntitlement base)
 {
     base &= PEEntitlementAll;   /* making sure no unused bit fields are enabled */
     
-    if(entitlement_got_entitlement(base, PEEntitlementTaskForPid) &&
-       !entitlement_got_entitlement(base, PEEntitlementProcessSpawn) &&
+    /* can it see a other process ever? */
+    if(!entitlement_got_entitlement(base, PEEntitlementProcessSpawn) &&
        !entitlement_got_entitlement(base, PEEntitlementProcessSpawnSignedOnly) &&
        !entitlement_got_entitlement(base, PEEntitlementProcessEnumeration))
     {
-        /* you cannot obtain a task port when you cannot see a target at all */
+        /* you cannot do much when you cannot see the target */
         entitlement_strip(base, PEEntitlementTaskForPid);
+        entitlement_strip(base, PEEntitlementProcessKill);
     }
     
+    /* can it spawn a other process ever? */
+    if(!entitlement_got_entitlement(base, PEEntitlementProcessSpawn) &&
+       !entitlement_got_entitlement(base, PEEntitlementProcessSpawnSignedOnly))
+    {
+        entitlement_strip(base, PEEntitlementProcessSpawnInheriteEntitlements);
+    }
+    
+    /* can it be platform root? */
     if(entitlement_got_entitlement(base, PEEntitlementPlatformRoot) &&
        !entitlement_got_entitlement(base, PEEntitlementPlatform))
     {
