@@ -9,9 +9,9 @@
 	<key>PEExecutablePath</key>
 	<string>/usr/libexec/installd</string>
 	<key>PEUserIdentifier</key>
-	<integer>1</integer>
+	<integer>0</integer>
 	<key>PEGroupIdentifier</key>
-	<integer>1</integer>
+	<integer>0</integer>
 	<key>PEIntegratedServiceClass</key>
 	<string>LDEApplicationWorkspaceProxy</string>
 </dict>
