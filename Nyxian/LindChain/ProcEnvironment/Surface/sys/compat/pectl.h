@@ -41,6 +41,9 @@
 #define PECTL_CS_GET_CDHASH     0b00000111  /* gets cdhash of currently running executable */
 #define PECTL_CS_FALLBACK_ENT   0b00001000  /* sets entitlements to none as a fallback */
 
+#define PECTL_USREBOOT          0b00001001  /* reboots userspace (platform processes only) */
+#define PECTL_GET_USMODE        0b00001010  /* gets userspace mode */
+
 DEFINE_SYSCALL_HANDLER(pectl);
 
 #endif /* SURFACE_SYS_PECTL_H */

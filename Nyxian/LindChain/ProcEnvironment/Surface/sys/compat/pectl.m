@@ -24,6 +24,7 @@
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/Process/PEBootstrapRegistry.h>
 #import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/Process/PEUserspaceManager.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <Foundation/Foundation.h>
 #import <LindChain/Services/containerd/PEContainer.h>
@@ -326,6 +327,14 @@ DEFINE_SYSCALL_HANDLER(pectl)
             kvo_unlock(sys_proc_);
             sys_return;
         }
+        case PECTL_USREBOOT:
+            if(entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), PEEntitlementPlatform))
+            {
+                [[PEUserspaceManager shared] rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+            }
+            sys_return;
+        case PECTL_GET_USMODE:
+            return [[PEUserspaceManager shared] mode];
         default:
             sys_return_failure(ENOSYS);
     }
