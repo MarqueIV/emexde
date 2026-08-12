@@ -227,14 +227,18 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
             
             let entitlementsPatchAction = UIAction(title: "Patch Entitlements", image: UIImage(systemName: "bandage.fill")) { _ in
                 guard let application = application else { return }
-                let machOViewController: MachOPatcherViewController = MachOPatcherViewController(machOPath: application.executablePath) {
-                    if PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) != nil {
-                        PEProcessManager.shared().spawnProcess(withBundleIdentifier: application.bundleIdentifier, withItems: [:], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
+                if application.isLaunchAllowed {
+                    let machOViewController: MachOPatcherViewController = MachOPatcherViewController(machOPath: application.executablePath) {
+                        if PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) != nil {
+                            PEProcessManager.shared().spawnProcess(withBundleIdentifier: application.bundleIdentifier, withItems: [:], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
+                        }
                     }
+                    let navMachOViewController: UINavigationController = UINavigationController(rootViewController: machOViewController)
+                    navMachOViewController.modalPresentationStyle = .formSheet
+                    self.present(navMachOViewController, animated: true)
+                } else {
+                    NotificationServer.NotifyUser(level: .error, notification: "\"\(application.localizedName ?? "Unknown")\" Is No Longer Available")
                 }
-                let navMachOViewController: UINavigationController = UINavigationController(rootViewController: machOViewController)
-                navMachOViewController.modalPresentationStyle = .formSheet
-                self.present(navMachOViewController, animated: true)
             }
             
             let clearContainerAction = UIAction(title: "Clear Data Container", image: UIImage(systemName: "arrow.up.trash.fill")) { _ in
