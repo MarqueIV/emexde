@@ -79,7 +79,6 @@ static const env_sys_entry_t *find_syscall_entry(uint32_t syscall_num)
     return NULL;
 }
 
-__attribute__((visibility("default")))
 int64_t environment_syscall(uint32_t syscall_num, ...)
 {
     /* starting variadic argument parse */
