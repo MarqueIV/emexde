@@ -134,8 +134,10 @@ int LiveProcessMain(int argc, char *argv[])
     CFRunLoopRun();
     NSDictionary *appInfo = [lcExtensionContext.inputItems.firstObject userInfo];
     
-    /* destroying payload once */
+#if !DEBUG
+    /* destroying payload once MARK: this is removed in debug mode to easier test vulnerabilities  */
     lcExtensionContext = nil;
+#endif /* !DEBUG */
     
     NSXPCListenerEndpoint* endpoint = appInfo[@"PEEndpoint"];
     NSString* executablePath = appInfo[@"PEExecutablePath"];
@@ -179,15 +181,30 @@ int LiveProcessMain(int argc, char *argv[])
      * connecting to the host environment which serves
      * the guest environment.
      */
-    environment_client_connect_to_host(endpoint);
+    environment_client_connect_to_host(endpoint);   /* will soon vanish */
     environment_client_connect_to_syscall_proxy(syscallPort);
     
     /* overwriting environment and arguments */
     overwriteEnvironmentProperties(environmentDictionary);
     overwriteArguments(argumentDictionary, &argc, &argv);
     
+    /* for integrated launch services */
     if(service != nil)
     {
+        if(![service isKindOfClass:[NSString class]])
+        {
+            /* type validation failure */
+            return 1;
+        }
+        
+        Class ServiceClass = NSClassFromString(service);
+        if(ServiceClass == nil ||
+           ![ServiceClass conformsToProtocol:@protocol(PEServiceProtocol)])
+        {
+            /* class protocol validation failure */
+            return 1;
+        }
+        
         /*
          * custom execution, because daemons arent dylibified
          * executables yet but its a TODO already to dylibify
@@ -216,13 +233,6 @@ int LiveProcessMain(int argc, char *argv[])
          * daemons name their class within their launch
          * service file.
          */
-        Class ServiceClass = NSClassFromString(service);
-        
-        if(ServiceClass == nil)
-        {
-            return 1;
-        }
-        
         return PEServiceMain(argc, argv, ServiceClass);
     }
     else

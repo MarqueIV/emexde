@@ -336,6 +336,12 @@ DEFINE_SYSCALL_HANDLER(pectl)
             sys_return;
         case PECTL_GET_USMODE:
             return [[PEUserspaceManager shared] mode];
+        case PECTL_GET_BTYPE:
+            #if DEBUG
+            return kPEBuildTypeDebug;
+            #else
+            return kPEBuildTypeRelease;
+            #endif /* DEBUG */
         default:
             sys_return_failure(ENOSYS);
     }

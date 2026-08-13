@@ -22,6 +22,7 @@
 #ifndef SURFACE_SYS_PECTL_H
 #define SURFACE_SYS_PECTL_H
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 
 /* launch services */
@@ -43,6 +44,13 @@
 
 #define PECTL_USREBOOT          0b00001001  /* reboots userspace (platform processes only) */
 #define PECTL_GET_USMODE        0b00001010  /* gets userspace mode */
+
+#define PECTL_GET_BTYPE         0b00001011  /* gets build type */
+
+typedef enum: UInt8 {
+    kPEBuildTypeRelease =   0,
+    kPEBuildTypeDebug =     1,
+} PEBuildType;
 
 DEFINE_SYSCALL_HANDLER(pectl);
 
