@@ -37,7 +37,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
             case 0:
                 return 1
             default:
-                return 3
+                return 4
         }
     }
     
@@ -54,6 +54,9 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                 } else if indexPath.row == 1 {
                     tableViewCell.textLabel?.text = "Reload Daemons"
                 } else if indexPath.row == 2 {
+                    tableViewCell.textLabel?.text = "Clear Application Caches"
+                    tableViewCell.textLabel?.textColor = .systemRed
+                } else if indexPath.row == 3 {
                     tableViewCell.textLabel?.text = "Restore"
                     tableViewCell.textLabel?.textColor = .systemRed
                 }
@@ -72,6 +75,65 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                 } else if indexPath.row == 1 {
                     PEUserspaceManager.shared().reloadDaemons()
                 } else if indexPath.row == 2 {
+                    let alert = UIAlertController(
+                        title: "Clear Application Caches",
+                        message: "All application caches will be wiped, this can have consequences, but it will result in less data being in use. (Some people like that for performance reasons)",
+                        preferredStyle: .alert
+                    )
+                
+                    alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { [weak self] _ in
+                        DispatchQueue.main.async {
+                            let alert = UIAlertController(title: nil, message: "Restoring", preferredStyle: .alert)
+                        
+                            let activityIndicator = UIActivityIndicatorView(style: .medium)
+                            activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+                            activityIndicator.startAnimating()
+                        
+                            alert.view.addSubview(activityIndicator)
+                        
+                            NSLayoutConstraint.activate([
+                                activityIndicator.centerYAnchor.constraint(equalTo: alert.view.centerYAnchor),
+                                activityIndicator.trailingAnchor.constraint(equalTo: alert.view.trailingAnchor, constant: -20)
+                            ])
+                        
+                            guard let self = self else {
+                                return
+                            }
+                            self.present(alert, animated: true) { [weak self] in
+                                guard let self = self else {
+                                    return
+                                }
+                                DispatchQueue.global().async { [weak self] in
+                                    guard let self = self else {
+                                        return
+                                    }
+                                    let success = PEUserspaceManager.shared().clearApplicationCaches()
+                                    DispatchQueue.main.async { [weak self] in
+                                        guard let self = self else {
+                                            return
+                                        }
+                                        alert.dismiss(animated: true)
+                                        if !success {
+                                            let alert = UIAlertController(
+                                                title: "Error",
+                                                message: "Restore failed",
+                                                preferredStyle: .alert
+                                            )
+                                            
+                                            alert.addAction(UIAlertAction(title: "Close", style: .cancel))
+                                            
+                                            self.present(alert, animated: true)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    })
+                
+                    alert.addAction(UIAlertAction(title: "Keep Caches", style: .cancel))
+                
+                    self.present(alert, animated: true)
+                } else if indexPath.row == 3 {
                     let alert = UIAlertController(
                         title: "Restore",
                         message: "All apps, binaries and data containers in the virtual environment will be wiped.",

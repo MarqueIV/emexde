@@ -81,6 +81,11 @@ class CreditsViewController: UIThemedTableViewController {
                     ghuser: "Kyle-Ye"
                 ),
                 Credit(
+                    name: "Ruri",
+                    role: "Clearing application caches",
+                    ghuser: "ruri1208"
+                ),
+                Credit(
                     name: "Vinogradov Daniil",
                     role: "LLVM-On-iOS",
                     ghuser: "XITRIX"
@@ -92,12 +97,12 @@ class CreditsViewController: UIThemedTableViewController {
                 ),
                 Credit(
                     name: "L0tsen",
-                    role: "Contributor (What did she contribute again??)",
+                    role: "Contributor",
                     ghuser: "l0tsen"
                 ),
                 Credit(
                     name: "Offihito",
-                    role: "Contributor (A vibecoder we banned)",
+                    role: "Contributor",
                     ghuser: "Offihito"
                 )
             ]
@@ -148,11 +153,6 @@ class CreditsViewController: UIThemedTableViewController {
         CreditSection(
             title: "Externals",
             credits: [
-                Credit(
-                    name: "Duy Tran",
-                    role: "The guy who said that NSXPC services don't need to be thread safe.",
-                    ghuser: "khanhduytran0"
-                ),
                 Credit(
                     name: "Simon Støvring",
                     role: "Runestone",

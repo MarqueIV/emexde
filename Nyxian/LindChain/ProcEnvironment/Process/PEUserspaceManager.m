@@ -2,6 +2,7 @@
  SPDX-License-Identifier: AGPL-3.0-or-later
 
  Copyright (C) 2025 - 2026 emexlab
+ Copyright (C) 2026 ruri1208
 
  This file is part of Nyxian.
 
@@ -104,7 +105,7 @@
             _mode = kPEUserspaceModeEmpty;
             break;
     }
-    [[PEUserspaceManager shared] reloadDaemons_nolock];
+    [self reloadDaemons_nolock];
     
     klog_log("PEUserspaceManager:reboot", "userspace rebooted successfully");
 }
@@ -267,8 +268,52 @@ first:
 - (void)reloadDaemons
 {
     os_unfair_lock_lock(&_lock);
-    [[PEUserspaceManager shared] reloadDaemons_nolock];
+    [self reloadDaemons_nolock];
     os_unfair_lock_unlock(&_lock);
+}
+
+- (BOOL)clearApplicationCaches
+{
+    const char *domain = "PEUserspaceManager:clearApplicationCaches";
+    
+    os_unfair_lock_lock(&_lock);
+    klog_log(domain, "rebooting to default (without apps)");
+    [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeMinimal];
+    
+    /* waiting till containerd is back */
+    sleep(1);   /* FIXME: waiting shall not be necessary */
+    
+    /* getting containers */
+    NSURL *containerRoot = [[PEContainer shared] getContainerRoot];
+    if(containerRoot == NULL)
+    {
+        klog_log(domain, "failed to get stable connection with containerd");
+        os_unfair_lock_unlock(&_lock);
+        return NO;
+    }
+    
+    NSError *error;
+    NSArray<NSString*> *containers = [[PEContainer shared] contentsOfDirectoryAtPath:[[containerRoot URLByAppendingPathComponent:@"/Documents/Data/Application"] path] error:&error];
+    if(containers == NULL)
+    {
+        klog_log(domain, "failed to get all applications containers: \"%@\"", error);
+        os_unfair_lock_unlock(&_lock);
+        return NO;
+    }
+    
+    /* now we gotta clear all caches */
+    for(NSString *containerPath in containers)
+    {
+        NSString *cachesPath = [[containerRoot path] stringByAppendingPathComponent:[@"/Documents/Data/Application" stringByAppendingPathComponent:[containerPath stringByAppendingPathComponent:@"/Library/Caches"]]];
+        [[PEContainer shared] removeItemAtURL:[NSURL fileURLWithPath:cachesPath] error:nil];
+    }
+    
+    klog_log(domain, "rebooting back to normal (without apps)");
+    [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeDefault];
+    
+    /* userspace in usable state anyways */
+    os_unfair_lock_unlock(&_lock);
+    return YES;
 }
 
 @end
