@@ -63,36 +63,39 @@
     static atomic_flag flag = ATOMIC_FLAG_INIT;
     assert(!atomic_flag_test_and_set(&flag));
     
+    const char *domain = "PEUserspaceManager:boot";
     if(PEGetLiveProcessBundle() != NULL)
     {
-        klog_log("PEUserspaceManager:boot", "spinning up micro kernel");
+        klog_log(domain, "spinning up micro kernel");
         ksurface_kinit();
         
-        klog_log("PEUserspaceManager:boot", "spinning up launch services");
+        klog_log(domain, "spinning up launch services");
         [PELaunchServiceRegistry shared];
     }
 }
 
 - (void)rebootUserspaceWithType_nolock:(PEUserspaceRebootType)type
 {
+    const char *domain = "PEUserspaceManager:reboot";
+    
     /* TODO: prevent spawns from happening, deny any new spawns too */
-    klog_log("PEUserspaceManager:reboot", "aquiring proctil lock");
+    klog_log(domain, "aquiring proctil lock");
     if(proctil(kProctilActionLock) != KERN_SUCCESS)
     {
-        klog_log("PEUserspaceManager:reboot", "userspace reboot failed, lock couldn't be claimed");
+        klog_log(domain, "userspace reboot failed, lock couldn't be claimed");
         return;
     }
     
-    klog_log("PEUserspaceManager:reboot", "invalidating all launch service entries in registry");
+    klog_log(domain, "invalidating all launch service entries in registry");
     [[PELaunchServiceRegistry shared] invalidateAllEntries];    /* causes reignition to fail in launch services, so killing will not automatically restart them */
     
-    klog_log("PEUserspaceManager:reboot", "killing all running processes");
+    klog_log(domain, "killing all running processes");
     [[PEProcessManager shared] killAllRunningProcesses];
     
-    klog_log("PEUserspaceManager:reboot", "releasing proctil lock");
+    klog_log(domain, "releasing proctil lock");
     proctil(kProctilActionUnlock);
     
-    klog_log("PEUserspaceManager:reboot", "reloading daemons");
+    klog_log(domain, "reloading daemons");
     switch(type)
     {
         case kPEUserspaceRebootTypeDefault:
@@ -107,7 +110,7 @@
     }
     [self reloadDaemons_nolock];
     
-    klog_log("PEUserspaceManager:reboot", "userspace rebooted successfully");
+    klog_log(domain, "userspace rebooted successfully");
 }
 
 - (void)rebootUserspaceWithType:(PEUserspaceRebootType)type
@@ -124,6 +127,8 @@
 
 - (BOOL)restore
 {
+    const char *domain = "PEUserspaceManager:restore";
+    
     os_unfair_lock_lock(&_lock);
     BOOL inRetry = NO;
     goto first;
@@ -140,19 +145,19 @@ recoverable_fail:
     
 retry_fail: /* a retry shall not happen, happens tho if something goes wrong */
     inRetry = YES;
-    klog_log("PEUserspaceManager:restore", "failed to restore, reattempt restore");
+    klog_log(domain, "failed to restore, reattempt restore");
     
 first:
     {
         /* needs to be in minimal userspace boot mode to safely begin restoring the container through containerd */
-        klog_log("PEUserspaceManager:restore", "rebooting userspace into minimal mode");
+        klog_log(domain, "rebooting userspace into minimal mode");
         [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeMinimal];
         
         /* waiting till containerd is back */
         sleep(1);
         
         /* getting all directories needed */
-        klog_log("PEUserspaceManager:restore", "gathering path intel");
+        klog_log(domain, "gathering path intel");
         NSURL *containerRoot = [[PEContainer shared] getContainerRoot];
         if(containerRoot == NULL)
         {
@@ -171,20 +176,20 @@ first:
         NSArray<NSString*> *containerHomeDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerData path] error:nil];
         NSArray<NSString*> *containerTmpDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerTmp path] error:nil];
         NSArray<NSString*> *containerLibraryDirectories = [[PEContainer shared] contentsOfDirectoryAtPath:[containerLibrary path] error:nil];
-        klog_log("PEUserspaceManager:restore", "directories to tear down \ninside of %@: %@\ninside of %@: %@\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories, containerLibrary, containerLibraryDirectories);
+        klog_log(domain, "directories to tear down \ninside of %@: %@\ninside of %@: %@\ninside of %@: %@", containerData, containerHomeDirectories, containerTmp, containerTmpDirectories, containerLibrary, containerLibraryDirectories);
         if(containerHomeDirectories == NULL || containerTmpDirectories == NULL || containerLibraryDirectories == NULL)
         {
             goto recoverable_fail;
         }
         
         /* deleting everything */
-        klog_log("PEUserspaceManager:restore", "restoring container file system");
+        klog_log(domain, "restoring container file system");
         for(NSString *pathComponent in containerHomeDirectories)
         {
             NSURL *itemURL = [containerData URLByAppendingPathComponent:pathComponent];
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
-                klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+                klog_log(domain, "tearing down %@ failed", itemURL);
                 goto retry_fail;
             }
         }
@@ -193,7 +198,7 @@ first:
             NSURL *itemURL = [containerTmp URLByAppendingPathComponent:pathComponent];
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
-                klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+                klog_log(domain, "tearing down %@ failed", itemURL);
                 goto retry_fail;
             }
         }
@@ -203,19 +208,19 @@ first:
             if(![[PEContainer shared] removeItemAtURL:itemURL error:nil])
             {
                 /* allowed to fail sometimes */
-                klog_log("PEUserspaceManager:restore", "tearing down %@ failed", itemURL);
+                klog_log(domain, "tearing down %@ failed", itemURL);
             }
         }
         
         /* rebooting into empty mode, to restore the private keys entirely safely */
-        klog_log("PEUserspaceManager:restore", "rebooting userspace into empty mode");
+        klog_log(domain, "rebooting userspace into empty mode");
         [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeEmpty];
         
         /* now we have to restore the default hostname */
-        klog_log("PEUserspaceManager:restore", "restoring hostname");
+        klog_log(domain, "restoring hostname");
         ksurface_sethostname(@"localhost");
         
-        klog_log("PEUserspaceManager:restore", "restoring code signature key pair");
+        klog_log(domain, "restoring code signature key pair");
         uint8_t *new_priv = NULL, *new_pub = NULL;
         size_t new_priv_len = 0, new_pub_len = 0;
         
@@ -236,11 +241,11 @@ first:
         ksurface_kinit_get_keys();
         
         /* clearing app list TODO: make it a actual "client portal" instead */
-        klog_log("PEUserspaceManager:restore", "restored successfully");
+        klog_log(domain, "restored successfully");
         [[ApplicationManagementViewController shared] removeAllApplications];
         
         /* we're done, now rebooting back into default mode */
-        klog_log("PEUserspaceManager:restore", "bringing userspace back into normal mode");
+        klog_log(domain, "bringing userspace back into normal mode");
         [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeDefault];
         
         /* waiting till everything is back */

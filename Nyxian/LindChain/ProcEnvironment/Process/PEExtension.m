@@ -140,8 +140,6 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
      */
     NSError *error;
     NSUUID *identifier = [extension beginExtensionRequestWithInputItems:@[item] error:&error];
-    
-    /* checking if execution it self suceeded */
     if(error != nil || identifier == nil)
     {
         [extension _kill:SIGKILL];
