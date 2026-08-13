@@ -54,6 +54,7 @@ static NSExtensionContext *lcExtensionContext;
     /* returns control back to LiveContainerMain */
     CFRunLoopStop(CFRunLoopGetMain());
 }
+
 @end
 
 extern char **environ;

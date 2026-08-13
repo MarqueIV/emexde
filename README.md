@@ -55,3 +55,4 @@ To start using Nyxian view the [Installation Guide](https://emexlabs.org/emexDE/
   - [x] Signing executables
   - [x] NSBundle think it is loaded **as a binary**
   - [x] Actually make iOS apps and binaries use the version as DYLD version they have been made for
+  - [ ] File permissions in guest file system (probably by delegating all requests to the host file system or any kind of apple trickery)
