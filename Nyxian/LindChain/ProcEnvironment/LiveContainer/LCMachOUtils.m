@@ -24,8 +24,8 @@
 #import <Foundation/Foundation.h>
 #import <sys/stat.h>
 #import <libgen.h>
-#import <LindChain/litehook/litehook.h>
-#import <LindChain/LiveContainer/LCUtils.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
 
 static uint32_t rnd32(uint32_t v,
                       uint32_t r)

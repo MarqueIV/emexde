@@ -31,9 +31,9 @@
 #import <LindChain/Utils/Utils.h>
 
 /* LiveContainer Headers */
-#import <LindChain/LiveContainer/LCUtils.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
-#import <LindChain/LiveContainer/ZSign/zsigner.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/ZSign/zsigner.h>
 #import <LindChain/ProcEnvironment/Surface/trust.h>
 
 /* Daemon Interfaces Headers */

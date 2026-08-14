@@ -22,7 +22,7 @@
 
 #import <LindChain/ProcEnvironment/Surface/trust.h>
 #import <LindChain/ProcEnvironment/Surface/entitlement.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/cdhash.h>
 #include <stdio.h>
 #include <stdlib.h>

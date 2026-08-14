@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LindChain/litehook/litehook.h>
+#include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <LindChain/ProcEnvironment/cred.h>
 #include <LindChain/ProcEnvironment/syscall.h>
 #include <unistd.h>

@@ -26,13 +26,13 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#import <LindChain/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
 #import "LCMachOUtils.h"
 #import "../utils.h"
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/syscall.h>
 #import <LindChain/ProcEnvironment/Surface/cdhash.h>
-#import <LindChain/LiveContainer/Tweaks/Tweaks.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #import <LindChain/Utils/CFTools.h>
 
 typedef struct {

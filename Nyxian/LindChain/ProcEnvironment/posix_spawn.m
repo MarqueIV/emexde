@@ -24,10 +24,10 @@
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/proxy.h>
 #import <LindChain/ProcEnvironment/posix_spawn.h>
-#import <LindChain/litehook/litehook.h>
-#import <LindChain/LiveContainer/LCUtils.h>
-#import <LindChain/LiveContainer/ZSign/zsigner.h>
-#import <LindChain/LiveContainer/Tweaks/libproc.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/ZSign/zsigner.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
 #import <LindChain/ProcEnvironment/syscall.h>
 #import <fcntl.h>

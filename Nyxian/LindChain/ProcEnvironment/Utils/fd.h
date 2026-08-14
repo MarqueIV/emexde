@@ -22,7 +22,7 @@
 #ifndef PROCENVIRONMENT_FD_H
 #define PROCENVIRONMENT_FD_H
 
-#import <LindChain/LiveContainer/Tweaks/libproc.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <LindChain/Private/mach/fileport.h>
 #include <mach/mach.h>
 #include <stdbool.h>

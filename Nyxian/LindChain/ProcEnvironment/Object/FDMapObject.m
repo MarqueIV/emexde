@@ -20,7 +20,7 @@
 */
 
 #import <LindChain/ProcEnvironment/Object/FDMapObject.h>
-#import <LindChain/LiveContainer/Tweaks/libproc.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <xpc/xpc.h>
 #include <LindChain/ProcEnvironment/Utils/fd.h>
 

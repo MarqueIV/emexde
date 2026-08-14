@@ -20,7 +20,7 @@
 */
 
 #include <LindChain/ProcEnvironment/tfp.h>
-#include <LindChain/litehook/litehook.h>
+#include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #include <LindChain/ProcEnvironment/syscall.h>
 #include <LindChain/ProcEnvironment/Utils/ktfp.h>

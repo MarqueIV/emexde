@@ -30,7 +30,7 @@
 #include <sys/mount.h>
 #include <stdint.h>
 
-#include <LindChain/LiveContainer/Tweaks/proc_info.h>
+#include <LindChain/ProcEnvironment/LiveContainer/Tweaks/proc_info.h>
 
 #ifndef PROC_PIDTASKINFO
 #define PROC_PIDTASKINFO     4

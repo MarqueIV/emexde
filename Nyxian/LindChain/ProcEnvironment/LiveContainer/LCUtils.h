@@ -24,7 +24,7 @@
 #define LIVECONTAINER_LCUTILS_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 
 int dyld_get_program_sdk_version(void);
 

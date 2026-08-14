@@ -22,7 +22,7 @@
 
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
-#import <LindChain/litehook/litehook.h>
+#include <LindChain/ProcEnvironment/litehook/litehook.h>
 
 NSMutableDictionary *SecItemPrepare(CFDictionaryRef query)
 {

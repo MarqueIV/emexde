@@ -22,7 +22,7 @@
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/syscall.h>
 #import <LindChain/ProcEnvironment/Surface/extra/relax.h>
-#import <LindChain/LiveContainer/LCBootstrap.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
 #include <dlfcn.h>
 
 #if !HOST_ENV

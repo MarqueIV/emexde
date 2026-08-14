@@ -21,8 +21,8 @@
 */
 
 #import <LindChain/Private/FoundationPrivate.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
-#import <LindChain/LiveContainer/utils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/utils.h>
 
 #include <mach/mach.h>
 #include <mach-o/dyld.h>
@@ -34,13 +34,13 @@
 #include <signal.h>
 #include <sys/mman.h>
 #include <stdlib.h>
-#import <LindChain/litehook/litehook.h>
-#import <LindChain/LiveContainer/Tweaks/Tweaks.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #include <mach-o/ldsyms.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationObject.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
-#import <LindChain/LiveContainer/LCBootstrap.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
 #import <malloc/malloc.h>
 #import <LindChain/Utils/CFTools.h>
 #import <LindChain/ProcEnvironment/syscall.h>

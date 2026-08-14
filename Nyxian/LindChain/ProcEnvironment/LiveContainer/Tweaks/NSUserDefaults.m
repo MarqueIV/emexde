@@ -21,10 +21,10 @@
 */
 
 #import <LindChain/Private/FoundationPrivate.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
-#import <LindChain/LiveContainer/utils.h>
-#import <LindChain/litehook/litehook.h>
-#include <LindChain/LiveContainer/Tweaks/Tweaks.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/utils.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #import <LindChain/Utils/Swizzle.h>
 
 NSString* appContainerPath = nil;

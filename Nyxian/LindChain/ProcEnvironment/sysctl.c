@@ -21,7 +21,7 @@
 
 #include <LindChain/ProcEnvironment/sysctl.h>
 #include <LindChain/ProcEnvironment/syscall.h>
-#include <LindChain/litehook/litehook.h>
+#include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <sys/sysctl.h>
 #include <errno.h>

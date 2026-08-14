@@ -23,7 +23,7 @@
 #include <LindChain/ProcEnvironment/vfork.h>
 #include <LindChain/ProcEnvironment/posix_spawn.h>
 #include <LindChain/ProcEnvironment/syscall.h>
-#include <LindChain/litehook/litehook.h>
+#include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <mach/mach.h>
 #include <pthread.h>
 #include <stdarg.h>

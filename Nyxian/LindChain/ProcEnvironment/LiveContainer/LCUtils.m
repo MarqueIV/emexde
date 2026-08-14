@@ -20,9 +20,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/LiveContainer/LCUtils.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
-#import <LindChain/LiveContainer/ZSign/zsigner.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/ZSign/zsigner.h>
 #import <LindChain/Private/FoundationPrivate.h>
 #import <Security/Security.h>
 #import <Foundation/Foundation.h>

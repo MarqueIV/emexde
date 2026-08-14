@@ -21,7 +21,7 @@
 
 #include <LindChain/ProcEnvironment/ioctl.h>
 #include <LindChain/ProcEnvironment/syscall.h>
-#include <LindChain/litehook/litehook.h>
+#include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <errno.h>

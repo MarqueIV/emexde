@@ -20,9 +20,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Private/FoundationPrivate.h>
 #import <Foundation/Foundation.h>
-#import <LindChain/LiveContainer/Tweaks/Tweaks.h>
+#import <LindChain/Private/FoundationPrivate.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #import <LindChain/Utils/Swizzle.h>
 
 // NSFileManager simulate app group

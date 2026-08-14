@@ -20,7 +20,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/LiveContainer/utils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/utils.h>
 
 #define ASM(...) __asm__(#__VA_ARGS__)
 

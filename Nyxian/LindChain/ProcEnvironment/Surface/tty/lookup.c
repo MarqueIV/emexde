@@ -21,7 +21,7 @@
 
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <LindChain/ProcEnvironment/Surface/tty/lookup.h>
-#include <LindChain/LiveContainer/Tweaks/libproc.h>
+#include <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 
 kern_return_t tty_for_port(fileport_t port,
                            ksurface_tty_t **tty)

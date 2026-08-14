@@ -22,7 +22,7 @@
 #import <LindChain/ProcEnvironment/panic.h>
 #import <LindChain/ProcEnvironment/Surface/tty/tty.h>
 #import <LindChain/ProcEnvironment/Surface/proc/list.h>
-#import <LindChain/LiveContainer/Tweaks/libproc.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Process/PEProcessManager.h>

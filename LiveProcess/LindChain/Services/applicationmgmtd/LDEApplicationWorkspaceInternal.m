@@ -26,7 +26,7 @@
 #import <Security/Security.h>
 #import <LindChain/ProcEnvironment/Object/FDMapObject.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceProtocol.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 
 @interface LDEApplicationWorkspaceInternal ()
 

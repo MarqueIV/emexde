@@ -21,9 +21,9 @@
 
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
-#import <LindChain/LiveContainer/LCUtils.h>
-#import <LindChain/LiveContainer/LCMachOUtils.h>
-#import <LindChain/LiveContainer/ZSign/zsigner.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/ZSign/zsigner.h>
 
 @implementation MachOObject
 

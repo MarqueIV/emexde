@@ -23,7 +23,7 @@
 #import <UIKit/UIKit.h>
 #import <mach-o/dyld.h>
 #import <objc/runtime.h>
-#import <LindChain/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/proxy.h>
 #import <LindChain/ProcEnvironment/posix_spawn.h>
