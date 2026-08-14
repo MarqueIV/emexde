@@ -276,7 +276,7 @@
     }
     else
     {
-        [_connection.remoteObjectProxy fastpathUtility:[FDObject objectForFileAtPath:utilityPath] withName:[utilityPath lastPathComponent] withReply:^(NSString *fastPathRet, BOOL fastSigned){
+        [_connection.remoteObjectProxy fastpathUtility:[PEFileHandle objectForFileAtPath:utilityPath] withName:[utilityPath lastPathComponent] withReply:^(NSString *fastPathRet, BOOL fastSigned){
             fastpath = fastSigned ? fastPathRet : nil;
             dispatch_semaphore_signal(sema);
         }];

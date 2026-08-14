@@ -209,12 +209,12 @@
     reply([_fileManager contentsEqualAtPath:path1 andPath:path2]);
 }
 
-- (void)fdObjectForItemAtPath:(NSString *)path
-                    withFlags:(int)flags
-                     withMode:(mode_t)mode
-                    withReply:(void (^)(FDObject*))reply
+- (void)fileHandleForItemAtPath:(NSString *)path
+                     withFlags:(int)flags
+                      withMode:(mode_t)mode
+                     withReply:(void (^)(PEFileHandle*))reply
 {
-    reply([FDObject objectForFileAtPath:path withFlags:flags withPermissions:mode]);
+    reply([PEFileHandle objectForFileAtPath:path withFlags:flags withPermissions:mode]);
 }
 
 - (void)containerRootWithReply:(void (^)(NSURL*))reply

@@ -30,7 +30,7 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/FDObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations
@@ -54,7 +54,7 @@
     This property is typically managed internally by `FDMapObject`
     and should not be modified directly by clients.
  */
-@property (nonatomic) NSMutableDictionary<NSNumber*,FDObject*> *fd_map;
+@property (nonatomic) NSMutableDictionary<NSNumber*,PEFileHandle*> *fd_map;
 
 /*!
  @method `currentMap`

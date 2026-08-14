@@ -30,13 +30,13 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/FDObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations
  * -------------------------------------------------------------------- */
 
-@interface ArchiveObject : FDObject
+@interface ArchiveObject : PEFileHandle
 
 @property (nonatomic,strong) NSString *temporaryZipArchivePath;
 

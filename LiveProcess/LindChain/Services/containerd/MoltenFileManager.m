@@ -71,7 +71,7 @@ static BOOL MoltenFileManagerTransfer(NSURL *srcURL,
             return NO;
         }
         
-        FDObject *containerObject = [[PEContainer shared] fdObjectForItemAtPath:[containerURL path] withFlags:O_RDWR withMode:0];
+        PEFileHandle *containerObject = [[PEContainer shared] fileHandleForItemAtPath:[containerURL path] withFlags:O_RDWR withMode:0];
         if(![containerObject writeOut:[hostURL path]])
         {
             return NO;
@@ -90,7 +90,7 @@ static BOOL MoltenFileManagerTransfer(NSURL *srcURL,
             return NO;
         }
         
-        FDObject *containerObject = [[PEContainer shared] fdObjectForItemAtPath:[containerURL path] withFlags:O_RDWR | O_CREAT | O_TRUNC withMode:0777];
+        PEFileHandle *containerObject = [[PEContainer shared] fileHandleForItemAtPath:[containerURL path] withFlags:O_RDWR | O_CREAT | O_TRUNC withMode:0777];
         if(![containerObject writeIn:[hostURL path]])
         {
             return NO;

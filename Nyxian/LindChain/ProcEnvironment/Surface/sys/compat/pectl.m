@@ -228,9 +228,9 @@ DEFINE_SYSCALL_HANDLER(pectl)
                 sys_return_failure(ENOMEM);
             }
             
-            /* asking containerd for a object */
-            FDObject *object = [[PEContainer shared] fdObjectForItemAtPath:nsPath withFlags:O_RDWR withMode:0];
-            if(object == nil)
+            /* asking containerd for a file handle */
+            PEFileHandle *fileHandle = [[PEContainer shared] fileHandleForItemAtPath:nsPath withFlags:O_RDWR withMode:0];
+            if(fileHandle == nil)
             {
                 sys_return_failure(ENOENT);
             }
@@ -240,7 +240,7 @@ DEFINE_SYSCALL_HANDLER(pectl)
              * on return the file descriptor is destroyed by default
              * by ARC on the PEObject
              */
-            MachOObject *machOObject = [MachOObject objectForFDObject:object];
+            MachOObject *machOObject = [MachOObject objectForFileHandle:fileHandle];
             if(machOObject == NULL)
             {
                 sys_return_failure(ENOEXEC);

@@ -19,12 +19,12 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Object/FDObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
 #include <LindChain/ProcEnvironment/Utils/fd.h>
 #include <fcntl.h>
 #include <copyfile.h>
 
-@implementation FDObject
+@implementation PEFileHandle
 
 - (instancetype)init
 {
@@ -39,7 +39,7 @@
         return nil;
     }
     
-    FDObject *object = [[self alloc] init];
+    PEFileHandle *object = [[self alloc] init];
     if(object != nil)
     {
         object.fd = xpc_fd_create(fd);
@@ -50,16 +50,13 @@
 + (instancetype)objectForFilePort:(fileport_t)fp
 {
     int fd = fileport_makefd(fp);
-    
     if(fd < 0)
     {
         return nil;
     }
     
-    FDObject *object = [self objectForFileDescriptor:fd];
-    
+    PEFileHandle *object = [self objectForFileDescriptor:fd];
     close(fd);
-    
     return object;
 }
 
@@ -68,16 +65,13 @@
                     withPermissions:(int)perm
 {
     int fd = open([path UTF8String], flags, perm);
-    
     if(fd < 0)
     {
         return nil;
     }
     
-    FDObject *object = [self objectForFileDescriptor:fd];
-    
+    PEFileHandle *object = [self objectForFileDescriptor:fd];
     close(fd);
-    
     return object;
 }
 
@@ -212,7 +206,7 @@
 
 - (id)copyWithZone:(NSZone *)zone
 {
-    FDObject *copy = [[[self class] allocWithZone:zone] init];
+    PEFileHandle *copy = [[[self class] allocWithZone:zone] init];
     copy.fd = [self.fd copy];
     return copy;
 }

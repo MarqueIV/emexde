@@ -74,14 +74,13 @@
     for(int i = 0; i < numFDs; i++)
     {
         int fd = fdinfo[i].proc_fd;
-        FDObject *fdObject = [FDObject objectForFileDescriptor:fd];
-        
-        if(fdObject == nil)
+        PEFileHandle *fileHandle = [PEFileHandle objectForFileDescriptor:fd];
+        if(fileHandle == nil)
         {
             continue;
         }
         
-        [self.fd_map setObject:fdObject forKey:@(fd)];
+        [self.fd_map setObject:fileHandle forKey:@(fd)];
     }
 
     free(fdinfo);
@@ -104,11 +103,10 @@
             continue;
         }
         
-        FDObject *fdObject = _fd_map[key];
-        
-        if(fdObject != nil)
+        PEFileHandle *fileHandle = _fd_map[key];
+        if(fileHandle != nil)
         {
-            [fdObject dup2:[key intValue]];
+            [fileHandle dup2:[key intValue]];
         }
     }
 }
@@ -123,8 +121,7 @@
         return -1;
     }
     
-    FDObject *object = [FDObject objectForFileDescriptor:fd];
-    
+    PEFileHandle *object = [PEFileHandle objectForFileDescriptor:fd];
     if(object == nil)
     {
         errno = EBADF;
@@ -145,8 +142,7 @@
         return -1;
     }
     
-    FDObject *object = [FDObject objectForFilePort:fp];
-    
+    PEFileHandle *object = [PEFileHandle objectForFilePort:fp];
     if(object == nil)
     {
         errno = EBADF;
@@ -206,16 +202,15 @@
     if (!_fd_map) return -1;
 
     /* find object in reference to oldFD */
-    FDObject *fdObject = [_fd_map objectForKey:@(oldFd)];
-    
-    if(fdObject == nil)
+    PEFileHandle *fileHandle = [_fd_map objectForKey:@(oldFd)];
+    if(fileHandle == nil)
     {
         errno = EBADF;
         return -1;
     }
     
     /* re-add at new location */
-    [_fd_map setObject:fdObject forKey:@(newFd)];
+    [_fd_map setObject:fileHandle forKey:@(newFd)];
     
     return 0;
 }
@@ -236,7 +231,7 @@
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder
 {
     self = [super init];
-    NSDictionary *dictionary = [coder decodeObjectOfClasses:[NSSet setWithObjects:[NSDictionary class], [NSNumber class], [FDObject class], nil] forKey:@"fd_map"];
+    NSDictionary *dictionary = [coder decodeObjectOfClasses:[NSSet setWithObjects:[NSDictionary class], [NSNumber class], [PEFileHandle class], nil] forKey:@"fd_map"];
     if(dictionary != nil)
     {
         _fd_map = [dictionary mutableCopy];

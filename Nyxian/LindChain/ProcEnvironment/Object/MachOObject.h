@@ -30,15 +30,15 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/FDObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations
  * -------------------------------------------------------------------- */
 
-@interface MachOObject : FDObject
+@interface MachOObject : PEFileHandle
 
-+ (instancetype)objectForFDObject:(FDObject*)object;
++ (instancetype)objectForFileHandle:(PEFileHandle*)fileHandle;
 + (BOOL)isBinarySignedAtPath:(NSString*)path;
 + (BOOL)signBinaryAtPath:(NSString*)path;
 - (BOOL)signAndWriteBack;

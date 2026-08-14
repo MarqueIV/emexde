@@ -567,29 +567,29 @@
     return result;
 }
 
-- (FDObject *)fdObjectForItemAtPath:(NSString *)path
-                          withFlags:(int)flags
-                           withMode:(mode_t)mode
+- (PEFileHandle*)fileHandleForItemAtPath:(NSString *)path
+                               withFlags:(int)flags
+                                withMode:(mode_t)mode
 {
     [self connect];
     
-    __block FDObject *fdObject = nil;
+    __block PEFileHandle *fileHandle = nil;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
 
     PE_PROXY_OR_SIGNAL(sema)
     else
     {
-        [proxy fdObjectForItemAtPath:path
-                           withFlags:flags
-                            withMode:mode
-                           withReply:^(FDObject *outFDObject) {
-            fdObject = outFDObject;
+        [proxy fileHandleForItemAtPath:path
+                             withFlags:flags
+                              withMode:mode
+                             withReply:^(PEFileHandle *outFileHandle) {
+            fileHandle = outFileHandle;
             dispatch_semaphore_signal(sema);
         }];
     }
 
     PE_WAIT(sema)
-    return fdObject;
+    return fileHandle;
 }
 
 - (NSURL *)getContainerRoot
@@ -641,7 +641,7 @@
      * opens a security hole for a TOCTOU vulnerability
      * but we might be able to fix that in the future.
      */
-    FDObject *object = [self fdObjectForItemAtPath:path withFlags:O_RDONLY withMode:0];
+    PEFileHandle *object = [self fileHandleForItemAtPath:path withFlags:O_RDONLY withMode:0];
     if(object == nil)
     {
         return false;
@@ -682,7 +682,7 @@
      * opens a security hole for a TOCTOU vulnerability
      * but we might be able to fix that in the future.
      */
-    FDObject *object = [self fdObjectForItemAtPath:path withFlags:O_RDONLY withMode:0];
+    PEFileHandle *object = [self fileHandleForItemAtPath:path withFlags:O_RDONLY withMode:0];
     if(object == nil)
     {
         return PEEntitlementNone;
@@ -717,7 +717,7 @@
 - (BOOL)setEntitlements:(PEEntitlement)entitlement
     forExecutableAtPath:(NSString*)path
 {
-    FDObject *object = [self fdObjectForItemAtPath:path withFlags:O_RDWR withMode:0];
+    PEFileHandle *object = [self fileHandleForItemAtPath:path withFlags:O_RDWR withMode:0];
     if(object == nil)
     {
         return false;

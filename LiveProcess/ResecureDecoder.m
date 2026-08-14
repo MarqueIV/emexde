@@ -53,7 +53,7 @@ void ResecureDecoder(void)
                               [ArchiveObject class],
                               [FDMapObject class],
                               [PEMachPort class],
-                              [FDObject class],
+                              [PEFileHandle class],
                               nil];
         });
         

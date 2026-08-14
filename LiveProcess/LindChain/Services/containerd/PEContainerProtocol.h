@@ -23,7 +23,7 @@
 #define PECONTAINERPROTOCOL_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/Object/FDObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
@@ -55,7 +55,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 - (void)contentsAtPath:(NSString *)path withReply:(void (^)(NSData *))reply;
 - (void)contentsEqualAtPath:(NSString *)path1 andPath:(NSString *)path2 withReply:(void (^)(BOOL))reply;
 
-- (void)fdObjectForItemAtPath:(NSString *)path withFlags:(int)flags withMode:(mode_t)mode  withReply:(void (^)(FDObject*))reply;
+- (void)fileHandleForItemAtPath:(NSString *)path withFlags:(int)flags withMode:(mode_t)mode  withReply:(void (^)(PEFileHandle*))reply;
 
 - (void)containerRootWithReply:(void (^)(NSURL*))reply;
 - (void)containerHomeWithReply:(void (^)(NSURL*))reply;

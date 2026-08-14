@@ -27,10 +27,10 @@
 
 @implementation MachOObject
 
-+ (instancetype)objectForFDObject:(FDObject*)object
++ (instancetype)objectForFileHandle:(PEFileHandle*)fileHandle
 {
     MachOObject *mobject = [[self alloc] init];
-    mobject.fd = object.fd;
+    mobject.fd = fileHandle.fd;
     return mobject;
 }
 

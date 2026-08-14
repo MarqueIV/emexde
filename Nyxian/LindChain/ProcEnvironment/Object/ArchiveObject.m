@@ -34,7 +34,6 @@
     }
     
     ArchiveObject *archiveObject = [self objectForFileAtPath:temporaryZipArchivePath];
-    
     if(archiveObject == nil)
     {
         [[NSFileManager defaultManager] removeItemAtPath:temporaryZipArchivePath error:nil];

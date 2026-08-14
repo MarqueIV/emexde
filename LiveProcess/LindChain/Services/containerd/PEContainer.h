@@ -23,7 +23,7 @@
 #define PECONTAINER_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/Object/FDObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
 #import <LindChain/ProcEnvironment/Surface/entitlement.h>
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
@@ -64,7 +64,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 - (nullable NSData *)contentsAtPath:(NSString *)path;
 - (BOOL)contentsEqualAtPath:(NSString *)path1 andPath:(NSString *)path2;
 
-- (FDObject*)fdObjectForItemAtPath:(NSString *)path withFlags:(int)flags withMode:(mode_t)mode;
+- (PEFileHandle*)fileHandleForItemAtPath:(NSString *)path withFlags:(int)flags withMode:(mode_t)mode;
 - (PEEntitlement)entitlementForExecutableAtPath:(NSString*)path;
 - (BOOL)entitlementBlobForExecutableAtPath:(NSString*)path withResult:(ksurface_ent_result_t*)result;
 - (BOOL)setEntitlements:(PEEntitlement)entitlement forExecutableAtPath:(NSString*)path;

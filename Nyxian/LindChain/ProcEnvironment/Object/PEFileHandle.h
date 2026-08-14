@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PROCENVIRONMENT_FDOBJECT_H
-#define PROCENVIRONMENT_FDOBJECT_H
+#ifndef PEFILEHANDLE_H
+#define PEFILEHANDLE_H
 
 /* ----------------------------------------------------------------------
  *  Apple API Headers
@@ -33,21 +33,21 @@
  * -------------------------------------------------------------------- */
 
 /*!
- @class `FDObject`
+ @class `PEFileHandle`
  @abstract Manages a single file descriptor.
  @discussion
-    `FDObject` provides an Objective-C interface for copying,
+    `PEFileHandle` provides an Objective-C interface for copying,
     applying, and manipulating the file descriptor of a process.
     It is designed to be passed across XPC boundaries and supports
     `NSSecureCoding` for safe serialization.
  */
-@interface FDObject : NSObject <NSSecureCoding,NSCopying>
+@interface PEFileHandle : NSObject <NSSecureCoding,NSCopying>
 
 /*!
  @property `fd`
  @abstract The underlying XPC object representing the file descriptor.
  @discussion
-    This property is typically managed internally by `FDObject`
+    This property is typically managed internally by `PEFileHandle`
     and should not be modified directly by clients.
  */
 @property (nonatomic,strong) NSObject<OS_xpc_object> *fd;
@@ -56,7 +56,7 @@
  @method `objectForFileDescriptor:`
  @abstract Creates a object for a file descriptor.
  @param fd
-    file descriptor at wish to be converted to a FDObject.
+    file descriptor at wish to be converted to a `PEFileHandle`.
  @return
     A instance that is referencing the current file descriptor passed.
  */
@@ -66,7 +66,7 @@
  @method `objectForFilePort:`
  @abstract Creates a object for a file descriptor.
  @param fp
-    file port at wish to be converted to a FDObject.
+    file port at wish to be converted to a `PEFileHandle`.
  @return
     A instance that is referencing the current file descriptor passed.
  */
@@ -97,7 +97,7 @@
 
 /*!
  @method `dup`
- @abstract Converts the object back to a file descriptor.
+ @abstract Converts the `PEFileHandle` back to a file descriptor.
  @return
     Returns file descriptor duplication is successful.
  */
@@ -125,4 +125,4 @@
 
 @end
 
-#endif /* PROCENVIRONMENT_FDOBJECT_H */
+#endif /* PEFILEHANDLE_H */

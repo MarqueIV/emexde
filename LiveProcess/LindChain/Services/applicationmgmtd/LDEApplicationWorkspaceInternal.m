@@ -521,7 +521,7 @@ create_home:
     reply([[LDEApplicationWorkspaceInternal shared] clearContainerForBundleID:bundleID]);
 }
 
-- (void)fastpathUtility:(FDObject*)object
+- (void)fastpathUtility:(PEFileHandle*)object
                withName:(NSString*)name
               withReply:(void (^)(NSString*,BOOL))reply;
 {
