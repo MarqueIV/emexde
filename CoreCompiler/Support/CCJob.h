@@ -28,7 +28,7 @@
 #include <CoreCompiler/CCBase.h>
 #include <CoreCompiler/CCDiagnostic.h>
 
-typedef struct opaque_ccjob *CCJobRef;
+typedef struct __CCJob *CCJobRef;
 
 CC_EXPORT CFTypeID CCJobGetTypeID(void);
 

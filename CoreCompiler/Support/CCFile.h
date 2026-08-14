@@ -27,8 +27,8 @@
 
 #include <CoreCompiler/CCBase.h>
 
-typedef struct opaque_ccfile *CCFileRef;
-typedef struct opaque_ccfile *CCMutableFileRef;
+typedef struct __CCFile *CCFileRef;
+typedef struct __CCFile *CCMutableFileRef;
 
 CC_EXPORT CFTypeID CCFileGetTypeID(void);
 

@@ -26,7 +26,7 @@
 
 static CFTypeID gCCDiagnosticTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccdiag {
+struct __CCDiagnostic {
     CFRuntimeBase _base;
     CCDiagnosticType type;
     CCDiagnosticLevel level;
@@ -149,7 +149,7 @@ CC_EXPORT CCDiagnosticRef CCDiagnosticCreate(CFAllocatorRef allocator,
 {
     assert(message != nil && mainSource != nil);
     
-    CCDiagnosticRef diagnostic = (CCDiagnosticRef)_CFRuntimeCreateInstance(allocator, CCDiagnosticGetTypeID(), sizeof(struct opaque_ccdiag) - sizeof(CFRuntimeBase), NULL);
+    CCDiagnosticRef diagnostic = (CCDiagnosticRef)_CFRuntimeCreateInstance(allocator, CCDiagnosticGetTypeID(), sizeof(struct __CCDiagnostic) - sizeof(CFRuntimeBase), NULL);
     if(diagnostic == nil)
     {
         return nil;

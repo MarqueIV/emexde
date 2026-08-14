@@ -30,8 +30,8 @@
 #include <CoreCompiler/CCFile.h>
 #include <CoreCompiler/CCFileSourceLocation.h>
 
-typedef struct opaque_ccastunit *CCMutableASTUnitRef;
-typedef struct opaque_ccastunit *CCASTUnitRef;
+typedef struct __CCASTUnit *CCASTUnitRef;
+typedef struct __CCASTUnit *CCMutableASTUnitRef;
 
 CC_EXPORT CFTypeID CCASTUnitGetTypeID(void);
 

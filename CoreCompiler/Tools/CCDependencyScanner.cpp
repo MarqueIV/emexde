@@ -33,7 +33,7 @@ using namespace clang::tooling::dependencies;
 
 static CFTypeID gCCDependencyScannerTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccdependencyscanner {
+struct __CCDependencyScanner {
     CFRuntimeBase _base;
     DependencyScanningService service;
     std::vector<std::string> BaseArgs;
@@ -88,7 +88,7 @@ CCDependencyScannerRef CCDependencyScannerCreate(CFAllocatorRef allocator,
 {
     assert(arguments != nullptr);
     
-    CCDependencyScannerRef dependencyScanner = (CCDependencyScannerRef)_CFRuntimeCreateInstance(allocator, CCDependencyScannerGetTypeID(), sizeof(struct opaque_ccdependencyscanner) - sizeof(CFRuntimeBase), NULL);
+    CCDependencyScannerRef dependencyScanner = (CCDependencyScannerRef)_CFRuntimeCreateInstance(allocator, CCDependencyScannerGetTypeID(), sizeof(struct __CCDependencyScanner) - sizeof(CFRuntimeBase), NULL);
     if(dependencyScanner == nullptr)
     {
         return nullptr;

@@ -34,7 +34,7 @@ typedef CF_ENUM(uint8_t, CCSDKOSType) {
     /* doesn't matter */
 };
 
-typedef struct opaque_ccsdk *CCSDKRef;
+typedef struct __CCSDK *CCSDKRef;
 
 CC_EXPORT CFTypeID CCSDKGetTypeID(void);
 

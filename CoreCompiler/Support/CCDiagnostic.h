@@ -28,7 +28,7 @@
 #include <CoreCompiler/CCBase.h>
 #include <CoreCompiler/CCFileSourceLocation.h>
 
-typedef struct opaque_ccdiag *CCDiagnosticRef;
+typedef struct __CCDiagnostic *CCDiagnosticRef;
 
 CC_EXPORT CFTypeID CCDiagnosticGetTypeID(void);
 

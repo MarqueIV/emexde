@@ -28,7 +28,7 @@
 #include <CoreCompiler/CCBase.h>
 #include <CoreCompiler/CCSourceLocation.h>
 
-typedef struct opaque_ccfilesourcelocation *CCFileSourceLocationRef;
+typedef struct __CCFileSourceLocation *CCFileSourceLocationRef;
 
 CC_EXPORT CFTypeID CCFileSourceLocationGetTypeID(void);
 

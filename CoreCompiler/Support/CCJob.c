@@ -30,7 +30,7 @@
 
 static CFTypeID gCCJobTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccjob {
+struct __CCJob {
     CFRuntimeBase _base;
     CCJobType type;
     CFArrayRef arguments;
@@ -81,7 +81,7 @@ CCJobRef CCJobCreate(CFAllocatorRef allocator,
 {
     assert(CC1Arguments != nil);
     
-    CCJobRef jobRef = (CCJobRef)_CFRuntimeCreateInstance(allocator, CCJobGetTypeID(), sizeof(struct opaque_ccjob) - sizeof(CFRuntimeBase), NULL);
+    CCJobRef jobRef = (CCJobRef)_CFRuntimeCreateInstance(allocator, CCJobGetTypeID(), sizeof(struct __CCJob) - sizeof(CFRuntimeBase), NULL);
     if(jobRef == nil)
     {
         return nil;

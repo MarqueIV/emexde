@@ -28,7 +28,7 @@
 #include <CoreCompiler/CCBase.h>
 #include <CoreCompiler/CCFile.h>
 
-typedef struct opaque_ccdependencyscanner *CCDependencyScannerRef;
+typedef struct __CCDependencyScanner *CCDependencyScannerRef;
 
 CC_EXPORT CFTypeID CCDependencyScannerGetTypeID(void);
 

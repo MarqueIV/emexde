@@ -26,7 +26,7 @@
 
 static CFTypeID gCCFileSourceLocationTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccfilesourcelocation {
+struct __CCFileSourceLocation {
     CFRuntimeBase _base;
     CFURLRef fileURL;
     CCSourceLocation location;
@@ -107,7 +107,7 @@ CCFileSourceLocationRef CCFileSourceLocationCreate(CFAllocatorRef allocator,
 {
     assert(fileURL != nil);
 
-    CCFileSourceLocationRef fileSourceLocation = (CCFileSourceLocationRef)_CFRuntimeCreateInstance(allocator, CCFileSourceLocationGetTypeID(), sizeof(struct opaque_ccfilesourcelocation) - sizeof(CFRuntimeBase), NULL);
+    CCFileSourceLocationRef fileSourceLocation = (CCFileSourceLocationRef)_CFRuntimeCreateInstance(allocator, CCFileSourceLocationGetTypeID(), sizeof(struct __CCFileSourceLocation) - sizeof(CFRuntimeBase), NULL);
     if(fileSourceLocation == nil)
     {
         return nil;

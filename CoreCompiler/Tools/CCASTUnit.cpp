@@ -37,7 +37,7 @@ using namespace clang::driver;
 
 static CFTypeID gCCASTUnitTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccastunit {
+struct __CCASTUnit {
     CFRuntimeBase _base;
     Boolean isMutable;
     std::vector<std::string> BaseArgs;
@@ -224,7 +224,7 @@ Boolean _CCASTUnitRefillDiagnosticArray(CCMutableASTUnitRef mutableUnit)
 
 CCMutableASTUnitRef CCASTUnitCreateMutable(CFAllocatorRef allocator)
 {
-    return (CCMutableASTUnitRef)_CFRuntimeCreateInstance(allocator, CCASTUnitGetTypeID(), sizeof(opaque_ccastunit) - sizeof(CFRuntimeBase), nullptr);
+    return (CCMutableASTUnitRef)_CFRuntimeCreateInstance(allocator, CCASTUnitGetTypeID(), sizeof(__CCASTUnit) - sizeof(CFRuntimeBase), nullptr);
 }
 
 CCASTUnitRef CCASTUnitCreateWithASTUnit(CFAllocatorRef allocator,
@@ -246,7 +246,7 @@ CCASTUnitRef CCASTUnitCreateWithASTUnit(CFAllocatorRef allocator,
         return nullptr;
     }
     
-    CCMutableASTUnitRef unit = (CCMutableASTUnitRef)_CFRuntimeCreateInstance(allocator, CCASTUnitGetTypeID(), sizeof(opaque_ccastunit) - sizeof(CFRuntimeBase), nullptr);
+    CCMutableASTUnitRef unit = (CCMutableASTUnitRef)_CFRuntimeCreateInstance(allocator, CCASTUnitGetTypeID(), sizeof(__CCASTUnit) - sizeof(CFRuntimeBase), nullptr);
     if(unit == nullptr)
     {
         CFRelease(file);

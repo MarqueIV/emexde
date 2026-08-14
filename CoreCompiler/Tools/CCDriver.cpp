@@ -57,7 +57,7 @@ using namespace llvm::opt;
 
 static CFTypeID gCCDriverTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccdriver {
+struct __CCDriver {
     CFRuntimeBase _base;
     CCDriverType type;
 
@@ -153,7 +153,7 @@ CCDriverRef CCDriverCreate(CFAllocatorRef allocator,
 {
     assert(arguments != nullptr);
 
-    CCDriverRef driverRef = (CCDriverRef)_CFRuntimeCreateInstance(allocator, CCDriverGetTypeID(), sizeof(struct opaque_ccdriver) + sizeof(CFRuntimeBase), NULL);
+    CCDriverRef driverRef = (CCDriverRef)_CFRuntimeCreateInstance(allocator, CCDriverGetTypeID(), sizeof(struct __CCDriver) + sizeof(CFRuntimeBase), NULL);
     if(!driverRef)
     {
         return nullptr;

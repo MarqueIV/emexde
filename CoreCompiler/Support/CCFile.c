@@ -26,7 +26,7 @@
 
 static CFTypeID gCCFileTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccfile {
+struct __CCFile {
     CFRuntimeBase _base;
     Boolean isMutable;
     CFURLRef fileURL;
@@ -106,7 +106,7 @@ CCFileRef CCFileCreate(CFAllocatorRef allocator,
 {
     assert(fileURL != nil);
 
-    CCFileRef file = (CCFileRef)_CFRuntimeCreateInstance(allocator, CCFileGetTypeID(), sizeof(struct opaque_ccfile) - sizeof(CFRuntimeBase), NULL);
+    CCFileRef file = (CCFileRef)_CFRuntimeCreateInstance(allocator, CCFileGetTypeID(), sizeof(struct __CCFile) - sizeof(CFRuntimeBase), NULL);
     if(file == nil)
     {
         return nil;
@@ -153,7 +153,7 @@ CCMutableFileRef CCFileCreateMutable(CFAllocatorRef allocator,
 {
     assert(fileURL != nil);
 
-    CCMutableFileRef mutableFile = (CCMutableFileRef)_CFRuntimeCreateInstance(allocator, CCFileGetTypeID(), sizeof(struct opaque_ccfile) - sizeof(CFRuntimeBase), NULL);
+    CCMutableFileRef mutableFile = (CCMutableFileRef)_CFRuntimeCreateInstance(allocator, CCFileGetTypeID(), sizeof(struct __CCFile) - sizeof(CFRuntimeBase), NULL);
     if(mutableFile == nil)
     {
         return nil;
@@ -184,7 +184,7 @@ static CCFileRef _CCFileCreateCopy(CFAllocatorRef allocator,
 {
     assert(file != nil);
 
-    CCFileRef newFile = (CCFileRef)_CFRuntimeCreateInstance(allocator, CCFileGetTypeID(), sizeof(struct opaque_ccfile) - sizeof(CFRuntimeBase), NULL);
+    CCFileRef newFile = (CCFileRef)_CFRuntimeCreateInstance(allocator, CCFileGetTypeID(), sizeof(struct __CCFile) - sizeof(CFRuntimeBase), NULL);
     if(newFile == nil)
     {
         return nil;

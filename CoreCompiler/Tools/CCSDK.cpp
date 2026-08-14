@@ -31,7 +31,7 @@ using namespace llvm;
 
 static CFTypeID gCCSDKTypeID = _kCFRuntimeNotATypeID;
 
-struct opaque_ccsdk {
+struct __CCSDK {
     CFRuntimeBase _base;
     CFURLRef directoryURL;
     std::unique_ptr<clang::DarwinSDKInfo>(sdkInfo);
@@ -78,7 +78,7 @@ CCSDKRef CCSDKCreateWithDirectoryURL(CFAllocatorRef allocator,
 {
     assert(directoryURL != nullptr);
     
-    CCSDKRef sdkRef = (CCSDKRef)_CFRuntimeCreateInstance(allocator, CCSDKGetTypeID(), sizeof(struct opaque_ccsdk) - sizeof(CFRuntimeBase), NULL);
+    CCSDKRef sdkRef = (CCSDKRef)_CFRuntimeCreateInstance(allocator, CCSDKGetTypeID(), sizeof(struct __CCSDK) - sizeof(CFRuntimeBase), NULL);
     if(sdkRef == nullptr)
     {
         return nullptr;
