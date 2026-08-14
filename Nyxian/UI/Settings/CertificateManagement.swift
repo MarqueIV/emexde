@@ -38,7 +38,7 @@ class CertificateController: UITableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.row == 1 {
             let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-            cell.textLabel?.text = "Import Certificate"
+            cell.textLabel?.text = "Set Up Signing"
             cell.textLabel?.textColor = .label
             cell.textLabel?.textAlignment = .left
             cell.selectionStyle = .default

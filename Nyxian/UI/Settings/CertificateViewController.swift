@@ -25,13 +25,8 @@ import UniformTypeIdentifiers
 class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
     var textField: NXTextFieldTableCell?
     
-    var cert: ImportTableCell?
+    var cert: ComplexImportTableCell?
     let callback: () -> Void
-    
-    let sectionTitles: [String] = [
-        "Certificate",
-        "Password"
-    ]
     
     init(style: UITableView.Style,
          callback: @escaping () -> Void) {
@@ -46,13 +41,23 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = "Import Certificate"
+        self.title = "Set Up Signing"
         
         let barbutton: UIBarButtonItem = UIBarButtonItem()
-        barbutton.title = "Submit"
+        barbutton.title = "Import"
         barbutton.target = self
-        barbutton.action = #selector(importButton)
+        barbutton.action = #selector(submitButton)
+        if #available(iOS 26.0, *) {
+            barbutton.style = .prominent
+        }
+        
+        let cancelButton: UIBarButtonItem = UIBarButtonItem()
+        cancelButton.title = "Cancel"
+        cancelButton.target = self
+        cancelButton.action = #selector(closeButton)
+        
         navigationItem.rightBarButtonItem = barbutton
+        navigationItem.leftBarButtonItem = cancelButton
         
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
         self.tableView.isScrollEnabled = false
@@ -78,20 +83,16 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
         return 1
     }
     
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        return sectionTitles[section]
-    }
-    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: UITableViewCell
         
         switch indexPath.section {
         case 0:
-            cert = ImportTableCell(parent: self)
+            cert = ComplexImportTableCell(parent: self)
             cell = cert!
             break
         case 1:
-            textField = NXTextFieldTableCell(title: "", hint: "i.e 123456", key: nil, defaultValue: "")
+            textField = NXTextFieldTableCell(title: "Password", hint: "i.e 123456", key: nil, defaultValue: "")
             cell = textField!
             break
         default:
@@ -115,7 +116,7 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
         return true
     }
     
-    @objc func importButton() {
+    @objc func submitButton() {
         do {
             if let cert = cert,
                let url = cert.url {
@@ -127,6 +128,12 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
             NotificationServer.NotifyUser(level: .error, notification: "Something went wrong importing the certificate! \(error.localizedDescription)")
         }
         
+        self.dismiss(animated: true)
+        
+        callback()
+    }
+    
+    @objc func closeButton() {
         self.dismiss(animated: true)
         
         callback()
