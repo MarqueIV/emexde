@@ -100,7 +100,7 @@
         }];
     }
     
-    dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     return result;
 }
 
@@ -130,7 +130,7 @@
         }];
     }
     
-    dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
     return result;
 }
 
