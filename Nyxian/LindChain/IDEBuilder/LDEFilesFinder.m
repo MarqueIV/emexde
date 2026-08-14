@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Core/LDEFilesFinder.h>
+#import <LindChain/IDEBuilder/LDEFilesFinder.h>
 
 static BOOL LDEPathIsIgnored(NSString *relativePath,
                              NSSet<NSString *> *ignorePaths)

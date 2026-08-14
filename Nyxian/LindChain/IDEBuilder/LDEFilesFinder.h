@@ -19,6 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+/* very old history of the LeafDevelopmentEnvironment */
+
 #ifndef LDEFILESFINDER_H
 #define LDEFILESFINDER_H
 

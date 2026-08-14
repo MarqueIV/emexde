@@ -19,42 +19,15 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+/* Objective-C UI Headers */
+#import <UI/XCodeButton.h>
+
 /* Apple Private API Headers */
 #import <LindChain/Private/UIKitPrivate.h>
 
-/* LindChain Core Headers */
-#import <LindChain/Synpush/Synpush.h>
-#import <LindChain/Downloader/fdownload.h>
-#import <LindChain/Core/LDEFilesFinder.h>
-#import <LindChain/Utils/Zip.h>
-#import <LindChain/Utils/LDEDebouncer.h>
-#import <LindChain/Utils/Utils.h>
-
-/* LiveContainer Headers */
-#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
-#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
-#import <LindChain/ProcEnvironment/LiveContainer/ZSign/zsigner.h>
-#import <LindChain/ProcEnvironment/Surface/trust.h>
-
-/* Daemon Interfaces Headers */
-#import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
-#import <LindChain/Services/containerd/PEContainer.h>
-
-/* Multitask Headers */
-#import <LindChain/WindowServer/NXWindowServer.h>
-#import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
-#import <LindChain/WindowServer/Session/NXWindowSessionTerminal.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
-#import <LindChain/ProcEnvironment/Process/PEExtension.h>
-#import <LindChain/ProcEnvironment/Process/PEUserspaceManager.h>
-
-/* Kernel Virtualisation Layer Headers */
-#import <LindChain/ProcEnvironment/Utils/klog.h>
-#import <LindChain/ProcEnvironment/Surface/surface.h>
-#import <LindChain/ProcEnvironment/Object/MachOObject.h>
-
-/* Project Headers */
+/* IDE Headers */
+#import <LindChain/IDEBuilder/LDEFilesFinder.h>
+#import <LindChain/IDEConsole/NXConsoleView.h>
 #import <LindChain/IDEFoundation/NXUser.h>
 #import <LindChain/IDEFoundation/NXCodeTemplate.h>
 #import <LindChain/IDEFoundation/NXPlist.h>
@@ -63,6 +36,29 @@
 #import <LindChain/IDEFoundation/NXUtils.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 
-/* UI Headers */
-#import <UI/XCodeButton.h>
-#import <LindChain/IDEConsole/NXConsoleView.h>
+/* LindChain Core Headers */
+#import <LindChain/Synpush/Synpush.h>
+#import <LindChain/Downloader/fdownload.h>
+#import <LindChain/Utils/Zip.h>
+#import <LindChain/Utils/LDEDebouncer.h>
+#import <LindChain/Utils/Utils.h>
+
+/* Micro Kernel Headers */
+#import <LindChain/WindowServer/NXWindowServer.h>
+#import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
+#import <LindChain/WindowServer/Session/NXWindowSessionTerminal.h>
+#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/Process/PEExtension.h>
+#import <LindChain/ProcEnvironment/Process/PEUserspaceManager.h>
+#import <LindChain/ProcEnvironment/Utils/klog.h>
+#import <LindChain/ProcEnvironment/Surface/surface.h>
+#import <LindChain/ProcEnvironment/Object/MachOObject.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/ZSign/zsigner.h>
+#import <LindChain/ProcEnvironment/Surface/trust.h>
+
+/* Daemon Interfaces Headers */
+#import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
+#import <LindChain/Services/containerd/PEContainer.h>
