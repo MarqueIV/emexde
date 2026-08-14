@@ -162,14 +162,14 @@ static BOOL MoltenFileManagerTransfer(NSURL *srcURL,
                      toPath:(NSString*)destPath
                       error:(NSError**)error
 {
-    return (!MoltenFileManagerIsPathInsideContainer(srcPath) && !MoltenFileManagerIsPathInsideContainer(destPath)) ? [self hook_moveItemAtPath:srcPath toPath:destPath error:error] : MoltenFileManagerTransfer([NSURL fileURLWithPath:srcPath], [NSURL fileURLWithPath:destPath], NO, error);
+    return (!MoltenFileManagerIsPathInsideContainer(srcPath) && !MoltenFileManagerIsPathInsideContainer(destPath)) ? [self hook_copyItemAtPath:srcPath toPath:destPath error:error] : MoltenFileManagerTransfer([NSURL fileURLWithPath:srcPath], [NSURL fileURLWithPath:destPath], NO, error);
 }
 
 - (BOOL)hook_copyItemAtURL:(NSURL*)srcURL
                      toURL:(NSURL*)destURL
                      error:(NSError**)error
 {
-    return (!MoltenFileManagerIsURLInsideContainer(srcURL) && !MoltenFileManagerIsURLInsideContainer(destURL)) ? [self hook_moveItemAtURL:srcURL toURL:destURL error:error] : MoltenFileManagerTransfer(srcURL, destURL, NO, error);
+    return (!MoltenFileManagerIsURLInsideContainer(srcURL) && !MoltenFileManagerIsURLInsideContainer(destURL)) ? [self hook_copyItemAtURL:srcURL toURL:destURL error:error] : MoltenFileManagerTransfer(srcURL, destURL, NO, error);
 }
 
 - (NSDictionary<NSFileAttributeKey, id> *)hook_attributesOfItemAtPath:(NSString *)path
