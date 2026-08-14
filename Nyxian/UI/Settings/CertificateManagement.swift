@@ -53,7 +53,6 @@ class CertificateController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row == 1 {
-            // run your action
             importCertificate()
         }
         tableView.deselectRow(at: indexPath, animated: true)
@@ -90,7 +89,7 @@ class CertificateController: UITableViewController {
             LCUtils.validateCertificate { status, experiationDate, someWords in
                 DispatchQueue.main.async {
                     certificateStateCell.textLabel?.textColor = status == 0 ? UIColor.systemGreen : UIColor.systemRed
-                    certificateStateCell.textLabel?.text = status == 0 ? "Certificate Valid Till \(experiationDate?.formatted() ?? "Unknown")" : "Certificate Invalid"
+                    certificateStateCell.textLabel?.text = status == 0 ? "Certificate Valid Till \(experiationDate?.formatted() ?? "Unknown")" : someWords
                     certificateStateCell.selectionStyle = .none
                 }
             }

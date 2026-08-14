@@ -15,6 +15,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/asn1.h>
+#import <openssl/cms.h>
 #include "timer.h"
 #include "common/log.h"
 
@@ -214,6 +215,164 @@ NSString* getTeamId(NSData *prov,
     return teamId;
 }
 
+static NSDictionary *DecodeProvisioningProfile(NSData *prov,
+                                               NSString **errorOut)
+{
+    if(!prov || prov.length == 0)
+    {
+        if(errorOut)
+        {
+            *errorOut = @"Provisioning profile is empty.";
+        }
+        return nil;
+    }
+    
+    const unsigned char *bytes = (const unsigned char *)prov.bytes;
+    CMS_ContentInfo *cms = d2i_CMS_ContentInfo(NULL, &bytes, (long)prov.length);
+    if(!cms)
+    {
+        if(errorOut)
+        {
+            *errorOut = @"Unable to decode provisioning profile CMS.";
+        }
+        return nil;
+    }
+    
+    BIO *output = BIO_new(BIO_s_mem());
+    if(!output)
+    {
+        CMS_ContentInfo_free(cms);
+        if(errorOut)
+        {
+            *errorOut = @"Unable to allocate provisioning profile buffer.";
+        }
+        return nil;
+    }
+    
+    unsigned int flags = CMS_BINARY | CMS_NO_SIGNER_CERT_VERIFY | CMS_NO_ATTR_VERIFY | CMS_NO_CONTENT_VERIFY;
+    int result = CMS_verify(cms, NULL, NULL, NULL, output, flags);
+    if(result != 1)
+    {
+        BIO_free(output);
+        CMS_ContentInfo_free(cms);
+        if(errorOut)
+        {
+            *errorOut = @"Unable to extract provisioning profile payload.";
+        }
+        return nil;
+    }
+    
+    BUF_MEM *buffer = NULL;
+    BIO_get_mem_ptr(output, &buffer);
+    if(!buffer || !buffer->data || buffer->length == 0)
+    {
+        BIO_free(output);
+        CMS_ContentInfo_free(cms);
+        if(errorOut)
+        {
+            *errorOut = @"Provisioning profile contains no payload.";
+        }
+        return nil;
+    }
+    
+    NSData *plistData = [NSData dataWithBytes:buffer->data length:buffer->length];
+    NSError *plistError = nil;
+    
+    id plist = [NSPropertyListSerialization propertyListWithData:plistData options:NSPropertyListImmutable format:NULL error:&plistError];
+    
+    BIO_free(output);
+    CMS_ContentInfo_free(cms);
+    
+    if(![plist isKindOfClass:[NSDictionary class]])
+    {
+        if(errorOut)
+        {
+            *errorOut = plistError.localizedDescription ?: @"Invalid provisioning profile property list.";
+        }
+        return nil;
+    }
+    
+    return (NSDictionary *)plist;
+}
+
+static BOOL ProvisionContainsCertificate(NSData *prov,
+                                         X509 *certificate,
+                                         NSString **errorOut)
+{
+    if(!certificate)
+    {
+        if(errorOut)
+        {
+            *errorOut = @"Certificate is missing.";
+        }
+        return NO;
+    }
+    
+    NSDictionary *profile = DecodeProvisioningProfile(prov, errorOut);
+    
+    if(!profile)
+    {
+        return NO;
+    }
+    
+    NSArray *developerCertificates = profile[@"DeveloperCertificates"];
+    
+    if(![developerCertificates isKindOfClass:[NSArray class]])
+    {
+        if(errorOut)
+        {
+            *errorOut = @"Provisioning profile does not contain DeveloperCertificates.";
+        }
+        
+        return NO;
+    }
+    
+    int derLength = i2d_X509(certificate, NULL);
+    
+    if(derLength <= 0)
+    {
+        if(errorOut)
+        {
+            *errorOut = @"Unable to encode certificate.";
+        }
+        return NO;
+    }
+    
+    NSMutableData *certificateData = [NSMutableData dataWithLength:derLength];
+    
+    unsigned char *der = (unsigned char *)certificateData.mutableBytes;
+    
+    int written = i2d_X509(certificate, &der);
+    if(written != derLength)
+    {
+        if(errorOut)
+        {
+            *errorOut = @"Unable to encode certificate.";
+        }
+        return NO;
+    }
+    
+    for(id item in developerCertificates)
+    {
+        if(![item isKindOfClass:[NSData class]])
+        {
+            continue;
+        }
+        NSData *profileCertificate = (NSData *)item;
+        if([profileCertificate isEqualToData:certificateData])
+        {
+            return YES;
+        }
+    }
+    
+    if(errorOut)
+    {
+        *errorOut = @"The provisioning profile does not include this certificate.";
+    }
+    
+    return NO;
+}
+
 int checkCert(NSData *prov,
               NSData *key,
               NSString *pass,
@@ -339,7 +498,15 @@ int checkCert(NSData *prov,
 
             int status, reason;
             if (OCSP_resp_find_status(basic, cert_id, &status, &reason, NULL, NULL, NULL)) {
-                completionHandler(status, expirationDate, nil);
+                NSString *profileError = nil;
+                if(!ProvisionContainsCertificate(prov, cert, &profileError))
+                {
+                    completionHandler(-1, nil, profileError ?: @"Certificate does not match provisioning profile.");
+                }
+                else
+                {
+                    completionHandler(status, expirationDate, nil);
+                }
             } else {
                 completionHandler(2, expirationDate, nil);
             }
@@ -348,7 +515,6 @@ int checkCert(NSData *prov,
             OCSP_BASICRESP_free(basic);
             OCSP_RESPONSE_free(resp);
             
-            
         } else {
             completionHandler(2, nil, @"Invalid response or no data");
             return;
@@ -356,6 +522,7 @@ int checkCert(NSData *prov,
     }];
 
     [task resume];
+    
     return 1;
 }
 
