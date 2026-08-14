@@ -182,6 +182,12 @@
         settings.persistenceIdentifier = [NSString stringWithFormat:@"sceneID:%@-%@", @"LiveProcess", [NSUUID.UUID UUIDString]];
         settings.statusBarDisabled = true;
         settings.frame = self.view.frame;
+        if(UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone)
+        {
+            UIEdgeInsets insets = settings.safeAreaInsetsPortrait;
+            insets.bottom = NXWindowServer.shared.safeAreaInsets.bottom;
+            settings.safeAreaInsetsPortrait = insets;
+        }
     };
     void (^updateSceneClientSettings)(id) = ^void(UIMutableApplicationSceneClientSettings *clientSettings) {
         clientSettings.interfaceOrientation = UIInterfaceOrientationPortrait;
