@@ -467,5 +467,8 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
     
     @objc func removeAllApplications() {
         self.applications = []
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
+        }
     }
 }
