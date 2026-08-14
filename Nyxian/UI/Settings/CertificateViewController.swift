@@ -92,7 +92,9 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
             cell = cert!
             break
         case 1:
-            textField = NXTextFieldTableCell(title: "Password", hint: "i.e 123456", key: nil, defaultValue: "")
+            textField = NXTextFieldTableCell(title: "Password", hint: "Enter certificate password", key: nil, defaultValue: "")
+            textField!.textField.isSecureTextEntry = true
+            textField!.textField.textContentType = .password
             cell = textField!
             break
         default:
@@ -101,6 +103,15 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
         }
         
         return cell
+    }
+    
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+        switch section {
+            case 1:
+                return "The password is only used to sign apps on your behave, they will not be send to any server."
+            default:
+                return nil
+        }
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
