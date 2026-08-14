@@ -208,7 +208,6 @@
 				LindChain/ProcEnvironment/Object/FDMapObject.m,
 				LindChain/ProcEnvironment/Object/FDObject.m,
 				LindChain/ProcEnvironment/Object/PEMachPort.m,
-				LindChain/ProcEnvironment/Object/PEObject.m,
 				LindChain/ProcEnvironment/panic.m,
 				LindChain/ProcEnvironment/posix_spawn.m,
 				LindChain/ProcEnvironment/proxy.m,

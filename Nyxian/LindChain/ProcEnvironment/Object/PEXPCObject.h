@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PROCENVIRONMENT_PEOBJECT_H
-#define PROCENVIRONMENT_PEOBJECT_H
+#ifndef PEXPCOBJECT_H
+#define PEXPCOBJECT_H
 
 /* ----------------------------------------------------------------------
  *  Apple API Headers
@@ -28,21 +28,14 @@
 #import <Foundation/Foundation.h>
 
 /* ----------------------------------------------------------------------
- *  Class Declarations
+ *  Protocol Declarations
  * -------------------------------------------------------------------- */
 
 /*!
- @class `PEObject`
- @abstract The object wrapper for any ProcessEnvironment object.
+ @protocol `PEXPCObject`
+ @abstract The object wrapper for any XPC ProcessEnvironment object.
  */
-@interface PEObject : NSObject <NSSecureCoding>
-
-/*!
- @method `deinit`
- @abstract handles deinitilization.
- */
-- (void)deinit;
-
+@protocol PEXPCObject <NSSecureCoding>
 @end
 
-#endif /* PROCENVIRONMENT_PEOBJECT_H */
+#endif /* PEXPCOBJECT_H */

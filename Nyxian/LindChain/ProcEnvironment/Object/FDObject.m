@@ -196,18 +196,14 @@
 
 - (void)encodeWithCoder:(nonnull NSCoder *)coder
 {
-    if([coder respondsToSelector:@selector(encodeXPCObject:forKey:)])
-    {
-        [(id)coder encodeXPCObject:_fd forKey:@"fd"];
-    }
-    
+    [(id)coder encodeXPCObject:_fd forKey:@"fd"];
     return;
 }
 
 - (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder
 {
     self = [super init];
-    if([coder respondsToSelector:@selector(decodeXPCObjectOfType:forKey:)])
+    if(self)
     {
         _fd = [(id)coder decodeXPCObjectOfType:XPC_TYPE_FD forKey:@"fd"];
     }

@@ -31,13 +31,13 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEObject.h>
+#import <LindChain/ProcEnvironment/Object/PEXPCObject.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations
  * -------------------------------------------------------------------- */
 
-@interface PEMachPort : PEObject <NSCopying>
+@interface PEMachPort : NSObject <PEXPCObject, NSCopying>
 
 @property (nonatomic, readonly) mach_port_t port;
 @property (nonatomic, readonly, getter=isUsable) BOOL usable;

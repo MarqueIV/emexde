@@ -31,7 +31,7 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEObject.h>
+#import <LindChain/ProcEnvironment/Object/PEXPCObject.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations
@@ -46,7 +46,7 @@
     It is designed to be passed across XPC boundaries and supports
     `NSSecureCoding` for safe serialization.
  */
-@interface FDObject : PEObject <NSCopying>
+@interface FDObject : NSObject <NSCopying,PEXPCObject>
 
 /*!
  @property `fd`

@@ -64,9 +64,8 @@
     return destinationPath;
 }
 
-- (void)deinit
+- (void)dealloc
 {
-    [super deinit];
     if(_temporaryZipArchivePath)
     {
         [[NSFileManager defaultManager] removeItemAtPath:_temporaryZipArchivePath error:nil];
