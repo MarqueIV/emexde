@@ -84,7 +84,7 @@ struct ProjectCreationSheetView: View {
     private var controls: some View {
         HStack(spacing: 12) {
             Button("Cancel", action: onCancel)
-                .buttonStyle(ProjectCreationSecondaryButtonStyle())
+                .projectCreationSecondaryButtonStyle()
             
             Spacer(minLength: 12)
             
@@ -92,7 +92,7 @@ struct ProjectCreationSheetView: View {
                 Button("Previous") {
                     withAnimation(.snappy) { model.step = .template }
                 }
-                .buttonStyle(ProjectCreationSecondaryButtonStyle())
+                .projectCreationSecondaryButtonStyle()
             }
             
             Button(model.step == .template ? "Next" : "Create") {
@@ -102,7 +102,7 @@ struct ProjectCreationSheetView: View {
                     onCreate()
                 }
             }
-            .buttonStyle(ProjectCreationPrimaryButtonStyle())
+            .projectCreationPrimaryButtonStyle()
         }
         .controlSize(.large)
         .padding(.horizontal, 20)
@@ -110,9 +110,9 @@ struct ProjectCreationSheetView: View {
     }
 }
 
-private struct ProjectCreationPrimaryButtonStyle: ButtonStyle {
+private struct ProjectCreationLegacyPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
@@ -127,19 +127,39 @@ private struct ProjectCreationPrimaryButtonStyle: ButtonStyle {
                     .opacity(buttonOpacity(isPressed: configuration.isPressed))
             }
     }
-    
+
     private func buttonOpacity(isPressed: Bool) -> Double {
         if !isEnabled {
             return 0.25
         }
-        
+
         return isPressed ? 0.72 : 1
     }
 }
 
-private struct ProjectCreationSecondaryButtonStyle: ButtonStyle {
+private struct ProjectCreationPrimaryButtonModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .foregroundStyle(Color(uiColor: currentTheme!.textColor.inverted))
+                .buttonStyle(.glassProminent)
+        } else {
+            content
+                .buttonStyle(ProjectCreationLegacyPrimaryButtonStyle())
+        }
+    }
+}
+
+extension View {
+    func projectCreationPrimaryButtonStyle() -> some View {
+        modifier(ProjectCreationPrimaryButtonModifier())
+    }
+}
+
+private struct ProjectCreationLegacySecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
-    
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.body.weight(.semibold))
@@ -161,9 +181,58 @@ private struct ProjectCreationSecondaryButtonStyle: ButtonStyle {
                     .opacity(buttonOpacity(isPressed: configuration.isPressed))
             }
     }
-    
+
     private func buttonOpacity(isPressed: Bool) -> Double {
         if !isEnabled { return 0.25 }
         return isPressed ? 0.72 : 1
     }
 }
+
+private struct ProjectCreationSecondaryButtonModifier: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, *) {
+            content
+                .buttonStyle(.glass)
+        } else {
+            content
+                .buttonStyle(ProjectCreationLegacySecondaryButtonStyle())
+        }
+    }
+}
+
+extension View {
+    func projectCreationSecondaryButtonStyle() -> some View {
+        modifier(ProjectCreationSecondaryButtonModifier())
+    }
+}
+
+private extension UIColor {
+    var inverted: UIColor {
+        UIColor { traits in
+            let resolved = self.resolvedColor(with: traits)
+
+            var red: CGFloat = 0
+            var green: CGFloat = 0
+            var blue: CGFloat = 0
+            var alpha: CGFloat = 0
+
+            guard resolved.getRed(
+                &red,
+                green: &green,
+                blue: &blue,
+                alpha: &alpha
+            ) else {
+                return .label
+            }
+
+            return UIColor(
+                red: 1 - red,
+                green: 1 - green,
+                blue: 1 - blue,
+                alpha: alpha
+            )
+        }
+    }
+}
+
