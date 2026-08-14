@@ -19,6 +19,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifndef NXBRIDGE_H
+#define NXBRIDGE_H
+
 /* Objective-C UI Headers */
 #import <UI/XCodeButton.h>
 
@@ -62,3 +65,5 @@
 /* Daemon Interfaces Headers */
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
+
+#endif /* NXBRIDGE_H */
