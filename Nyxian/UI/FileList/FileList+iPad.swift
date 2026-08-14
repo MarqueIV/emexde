@@ -242,21 +242,21 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                     os_unfair_lock_unlock(&self.lock)
                     
                     if result {
-                        let fdMapObject: FDMapObject = FDMapObject.emptyMap()
+                        let fileTable: PEFileTable = PEFileTable.empty()
                         
                         if let logView = detailVC.logView {
-                            fdMapObject.appendFileDescriptor(logView.pipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDOUT_FILENO)
-                            fdMapObject.appendFileDescriptor(logView.pipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDERR_FILENO)
-                            fdMapObject.appendFileDescriptor(logView.stdinPipe.fileHandleForReading.fileDescriptor, withMappingToLoc: STDIN_FILENO)
+                            fileTable.appendFileDescriptor(logView.pipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDOUT_FILENO)
+                            fileTable.appendFileDescriptor(logView.pipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDERR_FILENO)
+                            fileTable.appendFileDescriptor(logView.stdinPipe.fileHandleForReading.fileDescriptor, withMappingToLoc: STDIN_FILENO)
                             
-                            fdMapObject.appendFileDescriptor(logView.pipe.fileHandleForReading.fileDescriptor, withMappingToLoc: 100)
-                            fdMapObject.appendFileDescriptor(logView.stdinPipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: 101)
+                            fileTable.appendFileDescriptor(logView.pipe.fileHandleForReading.fileDescriptor, withMappingToLoc: 100)
+                            fileTable.appendFileDescriptor(logView.stdinPipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: 101)
                         }
                         
                         var processIdentifier: pid_t = -1
                         
                         if project.projectConfig.schemeKind == .app {
-                            processIdentifier = PEProcessManager.shared().spawnProcess(withBundleIdentifier: project.projectConfig.bundleid, withItems: ["PEMapObject":fdMapObject], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
+                            processIdentifier = PEProcessManager.shared().spawnProcess(withBundleIdentifier: project.projectConfig.bundleid, withItems: ["PEFileTable":fileTable], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
                         } else if project.projectConfig.schemeKind == .utility, let execPath = execPath {
                             guard let homePath: String = LDEApplicationWorkspace.shared().utilityHomePath() else {
                                 return
@@ -273,7 +273,7 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                                     "TMPDIR": (homePath as NSString).appendingPathComponent("/Tmp")
                                 ],
                                 "PEWorkingDirectory": homePath,
-                                "PEMapObject": fdMapObject,
+                                "PEFileTable": fileTable,
                             ], withKernelSurfaceProcess: nil)
                         }
                         

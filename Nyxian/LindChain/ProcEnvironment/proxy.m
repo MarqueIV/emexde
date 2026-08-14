@@ -52,11 +52,11 @@ static int64_t sync_call_with_timeout_int64(void (^invoke)(void (^reply)(int64_t
 int64_t environment_proxy_spawn_process_at_path(NSString *path,
                                                 NSArray *arguments,
                                                 NSDictionary *environment,
-                                                FDMapObject *mapObject,
+                                                PEFileTable *fileTable,
                                                 NSString *workingDirectory)
 {
     return sync_call_with_timeout_int64(PROXY_TYPE_REPLY(int64_t){
-        [hostProcessProxy spawnProcessWithPath:path withArguments:arguments withEnvironmentVariables:environment withMapObject:mapObject withWorkingDirectory:workingDirectory withReply:reply];
+        [hostProcessProxy spawnProcessWithPath:path withArguments:arguments withEnvironmentVariables:environment withFileTable:fileTable withWorkingDirectory:workingDirectory withReply:reply];
     });
 }
 

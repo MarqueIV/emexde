@@ -89,17 +89,16 @@
     kvo_retain(tty);
     _tty = tty;
     
-    FDMapObject *mapObject = [FDMapObject emptyMap];
-    
-    if(mapObject == nil)
+    PEFileTable *fileTable = [PEFileTable emptyTable];
+    if(fileTable == nil)
     {
         kvo_release(tty);
         return NO;
     }
     
-    [mapObject appendFileDescriptor:tty->userspacefd[SLAVEFD] withMappingToLoc:STDIN_FILENO];
-    [mapObject appendFileDescriptor:tty->userspacefd[SLAVEFD] withMappingToLoc:STDOUT_FILENO];
-    [mapObject appendFileDescriptor:tty->userspacefd[SLAVEFD] withMappingToLoc:STDERR_FILENO];
+    [fileTable appendFileDescriptor:tty->userspacefd[SLAVEFD] withMappingToLoc:STDIN_FILENO];
+    [fileTable appendFileDescriptor:tty->userspacefd[SLAVEFD] withMappingToLoc:STDOUT_FILENO];
+    [fileTable appendFileDescriptor:tty->userspacefd[SLAVEFD] withMappingToLoc:STDERR_FILENO];
     
     NSString *homePath = [[LDEApplicationWorkspace shared] utilityHomePath];
     if(homePath == nil)
@@ -117,7 +116,7 @@
             @"TMPDIR": [homePath stringByAppendingPathComponent:@"/Tmp"]
         },
         @"PEWorkingDirectory": homePath,
-        @"PEMapObject": mapObject
+        @"PEFileTable": fileTable
     } withKernelSurfaceProcess:kernel_proc_];
     PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:pid];
     

@@ -69,7 +69,7 @@
 - (void)spawnProcessWithPath:(NSString*)path
                withArguments:(NSArray<NSObject<NSSecureCoding,NSCopying>*>*)arguments
     withEnvironmentVariables:(NSDictionary *)environment
-               withMapObject:(FDMapObject*)mapObject
+               withFileTable:(PEFileTable*)fileTable
         withWorkingDirectory:(NSString *)workingDirectory
                    withReply:(void (^)(int64_t))reply
 {
@@ -94,9 +94,9 @@
             @"PEWorkingDirectory": workingDirectory,
         }];
         
-        if(mapObject != nil)
+        if(fileTable != nil)
         {
-            [mutableItems setObject:mapObject forKey:@"PEMapObject"];
+            [mutableItems setObject:fileTable forKey:@"PEFileTable"];
         }
         
         /* invoking spawn */

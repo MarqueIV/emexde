@@ -26,7 +26,7 @@
 #import <LindChain/Private/FoundationPrivate.h>
 #import <LindChain/Private/UIKitPrivate.h>
 #import <LindChain/WindowServer/NXWindowServer.h>
-#import <LindChain/ProcEnvironment/Object/FDMapObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
 
 @class NXWindowSessionApplication;

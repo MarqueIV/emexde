@@ -24,7 +24,7 @@
 #import <LindChain/ProcEnvironment/syscall.h>
 #import <LindChain/Utils/Zip.h>
 #import <Security/Security.h>
-#import <LindChain/ProcEnvironment/Object/FDMapObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceProtocol.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 

@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PROCENVIRONMENT_FDMAPOBJECT_H
-#define PROCENVIRONMENT_FDMAPOBJECT_H
+#ifndef PEFILETABLE_H
+#define PEFILETABLE_H
 
 /* ----------------------------------------------------------------------
  *  Apple API Headers
@@ -37,56 +37,46 @@
  * -------------------------------------------------------------------- */
 
 /*!
- @class `FDMapObject`
+ @class `PEFileTable`
  @abstract Manages file descriptor mappings for process initilization.
  @discussion
-    `FDMapObject` provides an Objective-C interface for copying,
+    `PEFileTable` provides an Objective-C interface for copying,
     applying, and manipulating the file descriptor table of a process.
     It is designed to be passed across XPC boundaries and supports
     `NSSecureCoding` for safe serialization.
  */
-@interface FDMapObject : NSObject <NSSecureCoding>
+@interface PEFileTable : NSObject <NSSecureCoding>
 
 /*!
  @property `fd_map`
  @abstract The underlying NS object representing the file descriptor map.
  @discussion
-    This property is typically managed internally by `FDMapObject`
+    This property is typically managed internally by `PEFileTable`
     and should not be modified directly by clients.
  */
 @property (nonatomic) NSMutableDictionary<NSNumber*,PEFileHandle*> *fd_map;
 
 /*!
- @method `currentMap`
- @abstract Returns a instance that is referencing the current FD map of the process.
+ @method `currentTable`
+ @abstract Returns a instance that is referencing the current file descriptor table of the process.
  */
-+ (instancetype)currentMap;
++ (instancetype)currentTable;
 
 /*!
- @method `emptyMap*
+ @method `emptyTable`
  @abstract Returns a instance of a empty file descriptor table.
  */
-+ (instancetype)emptyMap;
++ (instancetype)emptyTable;
 
 /*!
- @method `copy_fd_map`
- @abstract Copies the file descriptor map of the current process.
- @discussion
-    This method captures the current process’s file descriptor table
-    into the receiver’s `fd_map` property. The copied state can later
-    be applied to another process.
- */
-- (void)copy_fd_map;
-
-/*!
- @method `apply_fd_map`
+ @method `apply`
  @abstract Applies the stored file descriptor map to the current process.
  @discussion
     This method overwrites the process’s current file descriptor table
     with the stored `fd_map`. Intended for initializing a new process
     with a specific descriptor layout.
  */
-- (void)apply_fd_map;
+- (void)apply;
 
 /*!
  @method `appendFileDescriptor:withMappingToLoc:`
@@ -94,7 +84,7 @@
  @param fd
     The integer representing the file descriptor to apend.
  @param loc
-    The file descriptor it shall get applied to when calling [FDMapObject apply_fd_map].
+    The file descriptor it shall get applied to when calling [PEFileTable apply].
  */
 - (int)appendFileDescriptor:(int)fd withMappingToLoc:(int)loc;
 
@@ -104,7 +94,7 @@
  @param fp
     The integer representing the file port to apend.
  @param loc
-    The file descriptor it shall get applied to when calling [FDMapObject apply_fd_map].
+    The file descriptor it shall get applied to when calling [PEFileTable apply].
  */
 - (int)appendFilePort:(fileport_t)fp withMappingToLoc:(int)loc;
 
@@ -142,4 +132,4 @@
 
 @end
 
-#endif /* PROCENVIRONMENT_FDMAPOBJECT_H */
+#endif /* PEFILETABLE_H */

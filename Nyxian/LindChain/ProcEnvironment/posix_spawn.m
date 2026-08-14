@@ -20,7 +20,7 @@
 */
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/Object/FDMapObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 #import <LindChain/ProcEnvironment/environment.h>
 #import <LindChain/ProcEnvironment/proxy.h>
 #import <LindChain/ProcEnvironment/posix_spawn.h>
@@ -206,12 +206,12 @@ int environment_posix_spawn(pid_t *process_identifier,
     }
     
     /*
-     * create new map object of all current file descriptors,
+     * create new file table of all current file descriptors,
      * because they are by default inherited by the new child
      * process which is expected behaviour. the file actions
      * can alter that stabily.
      */
-    FDMapObject *mapObject = [FDMapObject currentMap];
+    PEFileTable *fileTable = [PEFileTable currentTable];
     
     /*
      * nullified cwd buffer, because of the case where a posix
@@ -239,19 +239,19 @@ int environment_posix_spawn(pid_t *process_identifier,
         switch((*faPtr)->psfa_act_acts[i].psfaa_type)
         {
             case PSFA_OPEN:
-                [mapObject openWithFileDescriptor:action->psfaa_filedes withPath:action->psfaa_openargs.psfao_path withFlags:action->psfaa_openargs.psfao_oflag withMode:action->psfaa_openargs.psfao_mode];
+                [fileTable openWithFileDescriptor:action->psfaa_filedes withPath:action->psfaa_openargs.psfao_path withFlags:action->psfaa_openargs.psfao_oflag withMode:action->psfaa_openargs.psfao_mode];
                 break;
             case PSFA_CLOSE:
-                [mapObject closeWithFileDescriptor:action->psfaa_filedes];
+                [fileTable closeWithFileDescriptor:action->psfaa_filedes];
                 break;
             case PSFA_DUP2:
-                [mapObject dup2WithOldFileDescriptor:action->psfaa_filedes withNewFileDescriptor:action->psfaa_dup2args.psfad_newfiledes];
+                [fileTable dup2WithOldFileDescriptor:action->psfaa_filedes withNewFileDescriptor:action->psfaa_dup2args.psfad_newfiledes];
                 break;
             case PSFA_INHERIT:
-                [mapObject appendFileDescriptor:action->psfaa_filedes];
+                [fileTable appendFileDescriptor:action->psfaa_filedes];
                 break;
             case PSFA_FILEPORT_DUP2:
-                [mapObject appendFilePort:action->psfaa_fileport withMappingToLoc:action->psfaa_dup2args.psfad_newfiledes];
+                [fileTable appendFilePort:action->psfaa_fileport withMappingToLoc:action->psfaa_dup2args.psfad_newfiledes];
                 break;
             case PSFA_CHDIR:
                 /* not available on iOS but shrug, add it anyways */
@@ -291,7 +291,7 @@ skip_fileactions:
      * trying to spawn process via old ass ServerSession API, which
      * then triggers the subsystem LDEProcess on the host side.
      */
-    int64_t pid = environment_proxy_spawn_process_at_path([NSString stringWithCString:resolved encoding:NSUTF8StringEncoding], NSArrayFromCArray(argv), NSDictionaryFromCDictionary(envp), mapObject, nsCwd);
+    int64_t pid = environment_proxy_spawn_process_at_path([NSString stringWithCString:resolved encoding:NSUTF8StringEncoding], NSArrayFromCArray(argv), NSDictionaryFromCDictionary(envp), fileTable, nsCwd);
     if(pid < 0)
     {
         /* lacking entitlements? */

@@ -19,12 +19,12 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Object/FDMapObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <xpc/xpc.h>
 #include <LindChain/ProcEnvironment/Utils/fd.h>
 
-@implementation FDMapObject
+@implementation PEFileTable
 
 - (instancetype)init
 {
@@ -35,7 +35,6 @@
     }
     
     self.fd_map = [[NSMutableDictionary alloc] init];
-    
     if(self.fd_map == nil)
     {
         return nil;
@@ -43,23 +42,21 @@
     return self;
 }
 
-+ (instancetype)currentMap
++ (instancetype)currentTable
 {
-    FDMapObject *map = [[self alloc] init];
-    
-    if(map == nil)
+    PEFileTable *table = [[self alloc] init];
+    if(table == nil)
     {
         return nil;
     }
     
-    [map copy_fd_map];
-    return map;
+    [table copy_fd_map];
+    return table;
 }
 
-+ (instancetype)emptyMap
++ (instancetype)emptyTable
 {
-    FDMapObject *map = [[self alloc] init];
-    return map;
+    return [[self alloc] init];
 }
 
 #pragma mark - Copying and applying file descriptor map (Unlike NSFileHandle this is used to transfer entire file descriptor maps)
@@ -88,7 +85,7 @@
 }
 
 /// Intended for a brand new process, overmapping the current fd map
-- (void)apply_fd_map
+- (void)apply
 {
     close_all_fd();
     if(!_fd_map)

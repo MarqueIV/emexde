@@ -23,7 +23,7 @@
 #import <objc/runtime.h>
 #import <ResecureDecoder.h>
 #import <LindChain/ProcEnvironment/Object/ArchiveObject.h>
-#import <LindChain/ProcEnvironment/Object/FDMapObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 #import <LindChain/ProcEnvironment/Object/PEMachPort.h>
 
 void ResecureDecoder(void)
@@ -48,13 +48,7 @@ void ResecureDecoder(void)
         static NSSet *allowedClasses = nil;
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            allowedClasses = [NSSet setWithObjects:
-                              [NSXPCListenerEndpoint class],
-                              [ArchiveObject class],
-                              [FDMapObject class],
-                              [PEMachPort class],
-                              [PEFileHandle class],
-                              nil];
+            allowedClasses = [NSSet setWithObjects: [NSXPCListenerEndpoint class], [ArchiveObject class], [PEMachPort class], [PEFileTable class], [PEFileHandle class], nil];
         });
         
         if([allowedClasses containsObject:cls])

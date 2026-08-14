@@ -28,7 +28,7 @@
 #import <LindChain/ProcEnvironment/proxy.h>
 #import <LindChain/ProcEnvironment/posix_spawn.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
-#import <LindChain/ProcEnvironment/Object/FDMapObject.h>
+#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 
 #import <LindChain/ServiceKit/Service.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceInternal.h>
@@ -145,7 +145,7 @@ int LiveProcessMain(int argc, char *argv[])
     NSString *service = appInfo[@"PEIntegratedServiceClass"];
     NSDictionary *environmentDictionary = appInfo[@"PEEnvironment"];
     NSArray *argumentDictionary = appInfo[@"PEArguments"];
-    FDMapObject *mapObject = appInfo[@"PEMapObject"];
+    PEFileTable *fileTable = appInfo[@"PEFileTable"];
     PEMachPort *syscallPort = appInfo[@"PESyscallPort"];
     NSString *workingDirectory = appInfo[@"PEWorkingDirectory"];
     uid_t serviceUserIdentifier = [appInfo[@"PEUserIdentifier"] unsignedIntValue];
@@ -169,11 +169,10 @@ int LiveProcessMain(int argc, char *argv[])
         chdir([[NSHomeDirectory() stringByAppendingPathComponent:@"/Documents"] UTF8String]);
     }
     
-    if(mapObject != nil &&
-       [mapObject isKindOfClass:[FDMapObject class]])
+    if([fileTable isKindOfClass:[PEFileTable class]])
     {
         /* apply file descriptor map passed from host environment */
-        [mapObject apply_fd_map];
+        [fileTable apply];
         setvbuf(stdout, NULL, _IONBF, 0);
         setvbuf(stderr, NULL, _IONBF, 0);
     }

@@ -63,10 +63,10 @@
 #if DEBUG
     extern int kfd;
     NSMutableDictionary *mutableDictionary = [_dictionary mutableCopy];
-    FDMapObject *mapObject = [FDMapObject emptyMap];
-    [mapObject appendFileDescriptor:kfd withMappingToLoc:STDOUT_FILENO];
-    [mapObject appendFileDescriptor:kfd withMappingToLoc:STDERR_FILENO];
-    [mutableDictionary setObject:mapObject forKey:@"PEMapObject"];
+    PEFileTable *fileTable = [PEFileTable emptyTable];
+    [fileTable appendFileDescriptor:kfd withMappingToLoc:STDOUT_FILENO];
+    [fileTable appendFileDescriptor:kfd withMappingToLoc:STDERR_FILENO];
+    [mutableDictionary setObject:fileTable forKey:@"PEFileTable"];
     dictionary = [mutableDictionary copy];
 #endif /* DEBUG */
     
