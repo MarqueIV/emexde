@@ -70,14 +70,14 @@
     dictionary = [mutableDictionary copy];
 #endif /* DEBUG */
     
+    /* getting lock */
+    os_unfair_lock_lock(&_lock);
     pid_t pid = [[PEProcessManager shared] spawnProcessWithItems:dictionary withKernelSurfaceProcess:kernel_proc_];
     if(pid < 0)
     {
         [self ignition];
     }
     
-    /* getting lock */
-    os_unfair_lock_lock(&_lock);
     _process = [[PEProcessManager shared] processForProcessIdentifier:pid];
     if(_process == nil)
     {

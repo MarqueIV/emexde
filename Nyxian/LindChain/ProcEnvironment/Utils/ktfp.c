@@ -23,12 +23,21 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/syscall.h>
 
+typedef struct {
+    union {
+        __Request__exception_raise_t v;
+        uint8_t pad[1024];
+    };
+} __Request__exception_raise_large_t;
+
 __attribute__((optnone))
-task_t ktfp(mach_port_t exceptionPort)
+kern_return_t ktfp(mach_port_t exceptionPort, task_t *task)
 {
     kern_return_t kr;
     
 #if !HOST_ENV
+    bool success = false;
+    
     /*
      * constructing the exception port and
      * setting it to our task for the host,
@@ -50,7 +59,7 @@ task_t ktfp(mach_port_t exceptionPort)
     kr = mach_port_construct(mach_task_self(), &opt, 0, &exceptionPort);
     if(kr != KERN_SUCCESS)
     {
-        return MACH_PORT_NULL;
+        return KERN_FAILURE;
     }
     
     kr = task_set_exception_ports(mach_task_self(), EXC_MASK_BREAKPOINT, exceptionPort, EXCEPTION_DEFAULT, ARM_THREAD_STATE64);
@@ -60,7 +69,10 @@ task_t ktfp(mach_port_t exceptionPort)
     }
     
     /* handing off receive right to host environment */
-    environment_syscall(SYS_handoffep, exceptionPort);
+    if(environment_syscall(SYS_handoffep, exceptionPort) != 0)
+    {
+        goto out_dealloc;
+    }
     
     /*
      * this causes EXC_BREAKPOINT, which causes
@@ -69,7 +81,8 @@ task_t ktfp(mach_port_t exceptionPort)
      * receive right of meaning the host will
      * handle this pseudo exception.
      */
-    __builtin_trap();
+    __asm__ volatile ("brk #1" ::: "memory");
+    success = true; /* handoff should have succeeded */
     
 out_dealloc:
     /*
@@ -87,22 +100,23 @@ out_dealloc:
     }
     
     mach_port_deallocate(mach_task_self(), exceptionPort);
-    return MACH_PORT_NULL;
+    return success ? KERN_SUCCESS : KERN_FAILURE;
     
 #else
+    assert(task != NULL);
     
     /* will carry request buffer */
-    __Request__exception_raise_t request;
-    size_t request_size = round_page(sizeof(request));
+    __Request__exception_raise_large_t request;
+    mach_msg_size_t request_size = sizeof(request);
     mach_msg_return_t mr;
     
     /* receiving pseudo exception caused by guest */
-    request.Head.msgh_local_port = exceptionPort;
-    request.Head.msgh_size = (mach_msg_size_t)request_size;
-    mr = mach_msg(&(request.Head), MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TIMEOUT, 0, request.Head.msgh_size, exceptionPort, 1000, MACH_PORT_NULL);
-    task_t exportedTask = MACH_PORT_NULL;
+    request.v.Head.msgh_local_port = exceptionPort;
+    request.v.Head.msgh_size = (mach_msg_size_t)request_size;
+    mr = mach_msg(&(request.v.Head), MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TIMEOUT, 0, request_size, exceptionPort, 1000, MACH_PORT_NULL);
     if(mr != MACH_MSG_SUCCESS)
     {
+        printf("%s\n", mach_error_string(mr));
         klog_log("ktfp", "failed receiving task port");
         goto out_destroy_request;
     }
@@ -110,7 +124,7 @@ out_dealloc:
     /* task port validation */
     ipc_info_object_type_t type;
     mach_vm_address_t address;
-    kr = mach_port_kobject(mach_task_self(), request.task.name, &type, &address);
+    kr = mach_port_kobject(mach_task_self(), request.v.task.name, &type, &address);
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed getting the kobject type");
@@ -120,7 +134,7 @@ out_dealloc:
     /* checking for ipc object type */
     if(type != IPC_OTYPE_TASK_CONTROL)  /* also known as IKOT_TASK.. aka kernel task port */
     {
-        klog_log("ktfp", "port %d holding ipc object with type %d is not a IKOT_TASK", request.task.name, type);
+        klog_log("ktfp", "port %d holding ipc object with type %d is not a IKOT_TASK", request.v.task.name, type);
         goto out_destroy_request;
     }
     
@@ -133,7 +147,7 @@ out_dealloc:
      */
     arm_thread_state64_t state;
     mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
-    kr = thread_get_state(request.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, &count);
+    kr = thread_get_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, &count);
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to get thread state");
@@ -143,29 +157,29 @@ out_dealloc:
     /* skipping over __builtin_trap */
     state.__pc += 4;
     
-    kr = thread_set_state(request.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
+    kr = thread_set_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to restore thread state");
         goto out_destroy_request;
     }
     
-    kr = mach_port_mod_refs(mach_task_self(), request.task.name, MACH_PORT_RIGHT_SEND, 1);
+    kr = mach_port_mod_refs(mach_task_self(), request.v.task.name, MACH_PORT_RIGHT_SEND, 1);
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to increment task port send right");
         goto out_destroy_request;
     }
     
-    exportedTask = request.task.name;
+    *task = request.v.task.name;
     
     /* after replying the kernel will happily continue executing the task */
     __Reply__exception_raise_t reply;
     memset(&reply, 0, sizeof(reply));
-    reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request.Head.msgh_bits), 0);
-    reply.Head.msgh_id = request.Head.msgh_id + 100;
+    reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request.v.Head.msgh_bits), 0);
+    reply.Head.msgh_id = request.v.Head.msgh_id + 100;
     reply.Head.msgh_local_port = MACH_PORT_NULL;
-    reply.Head.msgh_remote_port = request.Head.msgh_remote_port;
+    reply.Head.msgh_remote_port = request.v.Head.msgh_remote_port;
     reply.Head.msgh_size = sizeof(reply);
     reply.NDR = NDR_record;
     reply.RetCode = kr;
@@ -177,7 +191,7 @@ out_dealloc:
     }
     
 out_destroy_request:
-    mach_msg_destroy(&(request.Head));
-    return exportedTask;
+    mach_msg_destroy(&(request.v.Head));
+    return *task == MACH_PORT_NULL ? KERN_FAILURE : KERN_SUCCESS;
 #endif /* HOST_ENV */
 }

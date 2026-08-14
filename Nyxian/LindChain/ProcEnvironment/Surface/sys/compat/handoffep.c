@@ -33,30 +33,30 @@ DEFINE_SYSCALL_HANDLER(handoffep)
     kvo_wrlock(sys_proc_);
     if(sys_proc_->task != MACH_PORT_NULL)
     {
-        /* Task port's can only be initialized once per process lifecycle. */
+        /* task port's can only be initialized once per process lifecycle. */
         kvo_unlock(sys_proc_);
         sys_return_failure(EPERM);
     }
     
-    /* Consuming the exception port so it won't be released by the send_reply symbol. */
+    /* consuming the exception port so it won't be released by the send_reply symbol. */
     mach_port_t exceptionPort = sys_in_ports[0];
     sys_in_ports[0] = MACH_PORT_NULL;
     
     /*
-     * Reply to the guest process so that it can trigger the
+     * reply to the guest process so that it can trigger the
      * pseudo exception using __builtin_trap.
      */
     send_reply((mach_msg_header_t*)*recv_buffer, 0, *out_ports, *out_ports_cnt, true);
-    *recv_buffer = NULL;    /* Consuming the mach message header the syscall server uses so it won't attempt to reply. */
+    *recv_buffer = NULL;    /* consuming the mach message header the syscall server uses so it won't attempt to reply. */
     
-    task_t returnedTask = ktfp(exceptionPort);
-    if(returnedTask == MACH_PORT_NULL)
+    task_t returnedTask;
+    if(ktfp(exceptionPort, &returnedTask) != KERN_SUCCESS)
     {
         kvo_unlock(sys_proc_);
         sys_return;
     }
     
-    /* Validating the identity of the task behind the port. */
+    /* validating the identity of the process behind the task port. */
     pid_t pid;
     kern_return_t kr = pid_for_task(returnedTask, &pid);
     if(kr != KERN_SUCCESS || pid != proc_getpid(sys_proc_snapshot_))

@@ -24,6 +24,6 @@
 
 #include <mach/mach.h>
 
-task_t ktfp(mach_port_t exceptionPort);
+kern_return_t ktfp(mach_port_t exceptionPort, task_t *task);
 
 #endif /* KTFP_KTFP_H */

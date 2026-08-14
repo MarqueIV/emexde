@@ -63,7 +63,7 @@ DEFINE_HOOK(task_name_for_pid, kern_return_t, (mach_port_name_t tp_in,
 void environment_tfp_init(void)
 {
     /* handing new task control port right off to host */
-    ktfp(MACH_PORT_NULL);
+    assert(ktfp(MACH_PORT_NULL, NULL) == KERN_SUCCESS);
     
     /* hooking tfp api */
     DO_HOOK_GLOBAL(task_for_pid);
