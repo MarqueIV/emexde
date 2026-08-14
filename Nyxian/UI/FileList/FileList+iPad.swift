@@ -299,7 +299,7 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
     var lock: os_unfair_lock = os_unfair_lock()
     var process: FBProcess? = nil
     
-    var logView: LogTextView?
+    var logView: NXConsoleView?
     var logViewHeightConstraint: NSLayoutConstraint?
     var logViewHeight: CGFloat = 300
     let resizeHandle = {
@@ -549,7 +549,7 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
         self.view.backgroundColor = currentTheme?.gutterBackgroundColor
         
         /* setting up logview */
-        logView = LogTextView()
+        logView = NXConsoleView()
         logView!.isEditable = true
         logView!.isSelectable = true
         if #available(iOS 26.0, *) {

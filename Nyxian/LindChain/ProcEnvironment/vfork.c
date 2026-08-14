@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Debugger/Utils.h>
+#import <LindChain/IDEConsole/Utils.h>
 #include <LindChain/ProcEnvironment/vfork.h>
 #include <LindChain/ProcEnvironment/posix_spawn.h>
 #include <LindChain/ProcEnvironment/syscall.h>

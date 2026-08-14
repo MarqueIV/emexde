@@ -185,7 +185,7 @@
 		79BF9A972E62BB6900C60D4C /* Exceptions for "Nyxian" folder in "LiveProcess" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				LindChain/Debugger/Utils.c,
+				LindChain/IDEConsole/Utils.c,
 				LindChain/Private/mach/fileport.m,
 				LindChain/ProcEnvironment/application.m,
 				LindChain/ProcEnvironment/attrstrnilfix.m,

@@ -19,13 +19,13 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LINDCHAIN_DEBUGGER_LOGGER_H
-#define LINDCHAIN_DEBUGGER_LOGGER_H
+#ifndef NXCONSOLEVIEW_H
+#define NXCONSOLEVIEW_H
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface LogTextView : UITextView
+@interface NXConsoleView : UITextView
 
 @property (nonatomic,strong,readonly) NSPipe *pipe;
 @property (nonatomic,strong,readonly) NSPipe *stdinPipe;
@@ -37,4 +37,4 @@
 
 @end
 
-#endif /* LINDCHAIN_DEBUGGER_LOGGER_H */
+#endif /* NXCONSOLEVIEW_H */

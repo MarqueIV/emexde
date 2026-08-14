@@ -19,17 +19,17 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Debugger/Logger.h>
+#import <LindChain/IDEConsole/NXConsoleView.h>
 #import <Nyxian-Swift.h>
 
 static const CGFloat kAutoScrollThreshold = 20.0;
 
 static NSString *const IDEFullLineHighlightAttributeName = @"IDEFullLineHighlightAttributeName";
 
-@interface IDEConsoleLayoutManager : NSLayoutManager
+@interface NXConsoleLayoutManager : NSLayoutManager
 @end
 
-@implementation IDEConsoleLayoutManager
+@implementation NXConsoleLayoutManager
 
 - (void)drawBackgroundForGlyphRange:(NSRange)glyphsToShow
                             atPoint:(CGPoint)origin
@@ -76,7 +76,7 @@ static NSString *const IDEFullLineHighlightAttributeName = @"IDEFullLineHighligh
 
 @end
 
-@implementation LogTextView {
+@implementation NXConsoleView {
     BOOL _followTail;
     NSUInteger _inputStartLocation;
     BOOL _isAppendingOutput;
@@ -85,7 +85,7 @@ static NSString *const IDEFullLineHighlightAttributeName = @"IDEFullLineHighligh
 - (instancetype)init
 {
     NSTextStorage *textStorage = [[NSTextStorage alloc] init];
-    IDEConsoleLayoutManager *layoutManager = [[IDEConsoleLayoutManager alloc] init];
+    NXConsoleLayoutManager *layoutManager = [[NXConsoleLayoutManager alloc] init];
     [textStorage addLayoutManager:layoutManager];
     
     NSTextContainer *textContainer = [[NSTextContainer alloc] initWithSize:CGSizeZero];
@@ -94,30 +94,32 @@ static NSString *const IDEFullLineHighlightAttributeName = @"IDEFullLineHighligh
     [layoutManager addTextContainer:textContainer];
     
     self = [super initWithFrame:CGRectZero textContainer:textContainer];
-    self.textContainerInset = UIEdgeInsetsZero;
-    _pipe = [NSPipe pipe];
-    _stdinPipe = [NSPipe pipe];
-    _followTail = YES;
-    _inputStartLocation = 0;
-    _isAppendingOutput = NO;
-
-    self.font = [UIFont monospacedSystemFontOfSize:12 weight:UIFontWeightRegular];
-    self.backgroundColor = [UIColor systemGray6Color];
-    self.editable = YES;
-    self.selectable = YES;
-    self.text = @"";
-    self.translatesAutoresizingMaskIntoConstraints = NO;
-    self.alwaysBounceVertical = YES;
-    self.autocorrectionType = UITextAutocorrectionTypeNo;
-    self.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    self.spellCheckingType = UITextSpellCheckingTypeNo;
-    self.keyboardType = UIKeyboardTypeASCIICapable;
-    self.returnKeyType = UIReturnKeySend;
-
-    self.delegate = (id<UITextViewDelegate>)self;
-
-    [_pipe.fileHandleForReading readInBackgroundAndNotify];
-    
+    if(self)
+    {
+        self.textContainerInset = UIEdgeInsetsZero;
+        _pipe = [NSPipe pipe];
+        _stdinPipe = [NSPipe pipe];
+        _followTail = YES;
+        _inputStartLocation = 0;
+        _isAppendingOutput = NO;
+        
+        self.font = [UIFont monospacedSystemFontOfSize:12 weight:UIFontWeightRegular];
+        self.backgroundColor = [UIColor systemGray6Color];
+        self.editable = YES;
+        self.selectable = YES;
+        self.text = @"";
+        self.translatesAutoresizingMaskIntoConstraints = NO;
+        self.alwaysBounceVertical = YES;
+        self.autocorrectionType = UITextAutocorrectionTypeNo;
+        self.autocapitalizationType = UITextAutocapitalizationTypeNone;
+        self.spellCheckingType = UITextSpellCheckingTypeNo;
+        self.keyboardType = UIKeyboardTypeASCIICapable;
+        self.returnKeyType = UIReturnKeySend;
+        
+        self.delegate = (id<UITextViewDelegate>)self;
+        
+        [_pipe.fileHandleForReading readInBackgroundAndNotify];
+    }
     return self;
 }
 

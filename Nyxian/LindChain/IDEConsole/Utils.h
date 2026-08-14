@@ -19,8 +19,10 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LINDCHAIN_DEBUGGER_UTILS_H
-#define LINDCHAIN_DEBUGGER_UTILS_H
+/* TODO: this needs a better place */
+
+#ifndef IDECONSOLE_UTILS_H
+#define IDECONSOLE_UTILS_H
 
 #include <stdlib.h>
 #include <mach/mach.h>
@@ -42,4 +44,4 @@ struct arm64_thread_full_state {
 struct arm64_thread_full_state* thread_save_state_arm64(thread_act_t thread);
 bool thread_restore_state_arm64(thread_act_t thread, struct arm64_thread_full_state* state);
 
-#endif /* LINDCHAIN_DEBUGGER_UTILS_H */
+#endif /* IDECONSOLE_UTILS_H */

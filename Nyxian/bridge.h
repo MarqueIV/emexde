@@ -65,4 +65,4 @@
 
 /* UI Headers */
 #import <UI/XCodeButton.h>
-#import <LindChain/Debugger/Logger.h>
+#import <LindChain/IDEConsole/NXConsoleView.h>

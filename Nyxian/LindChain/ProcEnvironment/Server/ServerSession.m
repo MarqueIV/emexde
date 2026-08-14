@@ -23,7 +23,6 @@
 #import <LindChain/ProcEnvironment/Server/ServerSession.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/WindowServer/NXWindowServer.h>
-#import <LindChain/Debugger/Logger.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
 #import <LindChain/ProcEnvironment/Surface/permit.h>
 #import <LindChain/ProcEnvironment/Surface/entitlement.h>
