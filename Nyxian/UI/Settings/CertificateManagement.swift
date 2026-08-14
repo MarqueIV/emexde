@@ -90,6 +90,7 @@ class CertificateController: UITableViewController {
                 DispatchQueue.main.async {
                     certificateStateCell.textLabel?.textColor = status == 0 ? UIColor.systemGreen : UIColor.systemRed
                     certificateStateCell.textLabel?.text = status == 0 ? "Certificate Valid Till \(experiationDate?.formatted() ?? "Unknown")" : someWords
+                    certificateStateCell.textLabel?.numberOfLines = 0
                     certificateStateCell.selectionStyle = .none
                 }
             }
