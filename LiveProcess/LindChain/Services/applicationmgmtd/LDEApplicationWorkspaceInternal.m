@@ -386,6 +386,16 @@ create_container:
 
 @implementation LDEApplicationWorkspaceProxy
 
+- (instancetype)init
+{
+    self = [super init];
+    if(self)
+    {
+        [LDEApplicationWorkspaceInternal shared];
+    }
+    return self;
+}
+
 - (void)ping
 {
     return;
