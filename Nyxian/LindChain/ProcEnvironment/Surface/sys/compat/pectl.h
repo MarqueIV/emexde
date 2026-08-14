@@ -46,6 +46,7 @@
 #define PECTL_GET_USMODE        0b00001010  /* gets userspace mode */
 
 #define PECTL_GET_BTYPE         0b00001011  /* gets build type */
+#define PECTL_GET_ALLENT        0b00001100  /* gets a entitlements mask with all currently supported entitlements */
 
 typedef enum: UInt8 {
     kPEBuildTypeRelease =   0,

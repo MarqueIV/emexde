@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LDEPROCESSMANAGER_H
-#define LDEPROCESSMANAGER_H
+#ifndef PEPROCESSMANAGER_H
+#define PEPROCESSMANAGER_H
 
 #import <Foundation/Foundation.h>
 #import <LindChain/ProcEnvironment/Process/PEProcess.h>
@@ -42,4 +42,4 @@
 
 @end
 
-#endif /* LDEPROCESSMANAGER_H */
+#endif /* PEPROCESSMANAGER_H */

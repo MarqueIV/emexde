@@ -342,6 +342,8 @@ DEFINE_SYSCALL_HANDLER(pectl)
             #else
             return kPEBuildTypeRelease;
             #endif /* DEBUG */
+        case PECTL_GET_ALLENT:
+            return PEEntitlementAll;
         default:
             sys_return_failure(ENOSYS);
     }
