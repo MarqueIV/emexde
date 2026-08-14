@@ -25,7 +25,7 @@ import Runestone
 import MobileDevelopmentKit
 
 // MARK: - COORDINATOR
-class Coordinator: NSObject, TextViewDelegate {
+class CodeEditorCoordinator: NSObject, TextViewDelegate {
     private(set) weak var parent: CodeEditorViewController?
     private var entries: [CFIndex:(NeoButton?,UIView?)] = [:]
     
@@ -266,7 +266,7 @@ class Coordinator: NSObject, TextViewDelegate {
         var textView: UITextView
         var heigth: CGFloat = 0.0
 
-        init(parent: Coordinator, frame: CGRect, message: String, color: UIColor, minH: CGFloat) {
+        init(parent: CodeEditorCoordinator, frame: CGRect, message: String, color: UIColor, minH: CGFloat) {
             textView = UITextView()
             super.init(frame: .zero)
 

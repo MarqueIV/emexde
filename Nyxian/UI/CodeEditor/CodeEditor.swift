@@ -44,7 +44,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
     private(set) var textView: TextView
     private(set) var project: NXProject?
     private(set) var languageServer: NXLanguageServer?
-    private(set) var coordinator: Coordinator?
+    private(set) var coordinator: CodeEditorCoordinator?
     private(set) var database: DebugDatabase?
     private(set) var location: CCSourceLocation?
     private(set) var floatingToolbar: UIToolbar?
@@ -260,7 +260,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
             }
         }
         
-        self.coordinator = Coordinator(parent: self)
+        self.coordinator = CodeEditorCoordinator(parent: self)
         self.textView.editorDelegate = self.coordinator
         
         self.goto(location: self.location)

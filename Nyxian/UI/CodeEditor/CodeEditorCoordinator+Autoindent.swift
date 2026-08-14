@@ -21,7 +21,7 @@
 
 import Runestone
 
-extension Coordinator {
+extension CodeEditorCoordinator {
     func textView(_ textView: TextView,
                   shouldChangeTextIn range: NSRange,
                   replacementText text: String) -> Bool {
