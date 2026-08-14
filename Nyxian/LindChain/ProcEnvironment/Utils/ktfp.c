@@ -107,17 +107,14 @@ out_dealloc:
     
     /* will carry request buffer */
     __Request__exception_raise_large_t request;
-    mach_msg_size_t request_size = sizeof(request);
-    mach_msg_return_t mr;
     
     /* receiving pseudo exception caused by guest */
     request.v.Head.msgh_local_port = exceptionPort;
-    request.v.Head.msgh_size = (mach_msg_size_t)request_size;
-    mr = mach_msg(&(request.v.Head), MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TIMEOUT, 0, request_size, exceptionPort, 1000, MACH_PORT_NULL);
+    request.v.Head.msgh_size = (mach_msg_size_t)sizeof(request);
+    mach_msg_return_t mr = mach_msg(&(request.v.Head), MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TIMEOUT, 0, sizeof(request), exceptionPort, 1000, MACH_PORT_NULL);
     if(mr != MACH_MSG_SUCCESS)
     {
-        printf("%s\n", mach_error_string(mr));
-        klog_log("ktfp", "failed receiving task port");
+        klog_log("ktfp", "failed receiving task port: %s", mach_error_string(mr));
         goto out_destroy_request;
     }
     
@@ -127,7 +124,7 @@ out_dealloc:
     kr = mach_port_kobject(mach_task_self(), request.v.task.name, &type, &address);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed getting the kobject type");
+        klog_log("ktfp", "failed getting the kobject type: %s", mach_error_string(kr));
         goto out_destroy_request;
     }
     
@@ -150,7 +147,7 @@ out_dealloc:
     kr = thread_get_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, &count);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to get thread state");
+        klog_log("ktfp", "failed to get thread state: %s", mach_error_string(kr));
         goto out_destroy_request;
     }
     
@@ -160,14 +157,14 @@ out_dealloc:
     kr = thread_set_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to restore thread state");
+        klog_log("ktfp", "failed to restore thread state: %s", mach_error_string(kr));
         goto out_destroy_request;
     }
     
     kr = mach_port_mod_refs(mach_task_self(), request.v.task.name, MACH_PORT_RIGHT_SEND, 1);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to increment task port send right");
+        klog_log("ktfp", "failed to increment task port send right: %s", mach_error_string(kr));
         goto out_destroy_request;
     }
     
@@ -184,10 +181,9 @@ out_dealloc:
     reply.NDR = NDR_record;
     reply.RetCode = kr;
     mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-    
     if(mr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to reply back to guest");
+        klog_log("ktfp", "failed to reply back to guest: %s", mach_error_string(mr));
     }
     
 out_destroy_request:
