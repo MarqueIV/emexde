@@ -140,14 +140,8 @@ private struct ProjectCreationLegacyPrimaryButtonStyle: ButtonStyle {
 private struct ProjectCreationPrimaryButtonModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .foregroundStyle(Color(uiColor: currentTheme!.textColor.inverted))
-                .buttonStyle(.glassProminent)
-        } else {
-            content
-                .buttonStyle(ProjectCreationLegacyPrimaryButtonStyle())
-        }
+        content
+            .buttonStyle(ProjectCreationLegacyPrimaryButtonStyle())
     }
 }
 
@@ -191,13 +185,8 @@ private struct ProjectCreationLegacySecondaryButtonStyle: ButtonStyle {
 private struct ProjectCreationSecondaryButtonModifier: ViewModifier {
     @ViewBuilder
     func body(content: Content) -> some View {
-        if #available(iOS 26.0, *) {
-            content
-                .buttonStyle(.glass)
-        } else {
-            content
-                .buttonStyle(ProjectCreationLegacySecondaryButtonStyle())
-        }
+        content
+            .buttonStyle(ProjectCreationLegacySecondaryButtonStyle())
     }
 }
 
@@ -206,33 +195,3 @@ extension View {
         modifier(ProjectCreationSecondaryButtonModifier())
     }
 }
-
-private extension UIColor {
-    var inverted: UIColor {
-        UIColor { traits in
-            let resolved = self.resolvedColor(with: traits)
-
-            var red: CGFloat = 0
-            var green: CGFloat = 0
-            var blue: CGFloat = 0
-            var alpha: CGFloat = 0
-
-            guard resolved.getRed(
-                &red,
-                green: &green,
-                blue: &blue,
-                alpha: &alpha
-            ) else {
-                return .label
-            }
-
-            return UIColor(
-                red: 1 - red,
-                green: 1 - green,
-                blue: 1 - blue,
-                alpha: alpha
-            )
-        }
-    }
-}
-
