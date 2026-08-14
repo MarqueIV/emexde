@@ -492,7 +492,13 @@ import UniformTypeIdentifiers
                 }
             }
             
-            return UIMenu(children: [UIMenu(options: .displayInline, children: self.isReadOnly ? [copyAction] : [copyAction, moveAction, renameAction]), UIMenu(options: .displayInline, children: [shareAction])])
+            var children: [UIMenu] = []
+            children.append(UIMenu(options: .displayInline, children: self.isReadOnly ? [copyAction] : [copyAction, moveAction, renameAction]))
+            children.append(UIMenu(options: .displayInline, children: [shareAction]))
+            if !self.isReadOnly {
+                children.append(UIMenu(options: .displayInline, children: [deleteAction]))
+            }
+            return UIMenu(children: children)
         }
     }
     
