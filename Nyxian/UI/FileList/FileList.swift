@@ -480,11 +480,13 @@ import UniformTypeIdentifiers
                 guard let self = self else { return }
                 let entry = self.entries[indexPath.row]
                 let fileUrl: URL = URL(fileURLWithPath: "\(self.path)/\(entry.name)")
-                if ((try? FileManager.default.removeItem(at: fileUrl)) != nil), let project = self.project {
-                    let database: DebugDatabase = DebugDatabase.getDatabase(ofPath: project.cacheURL.appendingPathComponent("debug.json").path)
-                    NotificationCenter.default.post(name: Notification.Name("FileListAct"), object: ["close",fileUrl.path])
-                    database.removeFileDebug(ofPath: fileUrl.path)
-                    database.saveDatabase(toPath: project.cacheURL.appendingPathComponent("debug.json").path)
+                if ((try? FileManager.default.removeItem(at: fileUrl)) != nil) {
+                    if let project = self.project {
+                        let database: DebugDatabase = DebugDatabase.getDatabase(ofPath: project.cacheURL.appendingPathComponent("debug.json").path)
+                        NotificationCenter.default.post(name: Notification.Name("FileListAct"), object: ["close",fileUrl.path])
+                        database.removeFileDebug(ofPath: fileUrl.path)
+                        database.saveDatabase(toPath: project.cacheURL.appendingPathComponent("debug.json").path)
+                    }
                     if let masterIndex = self.entries.firstIndex(where: { $0.path == entry.path }) {
                         self.entries.remove(at: masterIndex)
                     }
