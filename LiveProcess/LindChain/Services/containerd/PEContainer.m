@@ -415,7 +415,7 @@
     else
     {
         [proxy fileExistsAtPath:path
-                      withReply:^(BOOL outExists, BOOL outIsDirectory) {
+                      withReply:^(BOOL outIsDirectory, BOOL outExists) {
             exists = outExists;
             isDir = outIsDirectory;
             dispatch_semaphore_signal(sema);
