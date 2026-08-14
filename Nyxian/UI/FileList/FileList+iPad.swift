@@ -248,6 +248,9 @@ class MainSplitViewController: UISplitViewController, UISplitViewControllerDeleg
                             fdMapObject.appendFileDescriptor(logView.pipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDOUT_FILENO)
                             fdMapObject.appendFileDescriptor(logView.pipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: STDERR_FILENO)
                             fdMapObject.appendFileDescriptor(logView.stdinPipe.fileHandleForReading.fileDescriptor, withMappingToLoc: STDIN_FILENO)
+                            
+                            fdMapObject.appendFileDescriptor(logView.pipe.fileHandleForReading.fileDescriptor, withMappingToLoc: 100)
+                            fdMapObject.appendFileDescriptor(logView.stdinPipe.fileHandleForWriting.fileDescriptor, withMappingToLoc: 101)
                         }
                         
                         var processIdentifier: pid_t = -1
