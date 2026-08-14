@@ -574,8 +574,6 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
             UIView.animate(withDuration: duration) {
                 self.floatingToolbarBottomConstraint?.constant = 100
                 self.view.layoutIfNeeded()
-            } completion: { _ in
-                floatingToolbar.isHidden = true
             }
         }
     }
