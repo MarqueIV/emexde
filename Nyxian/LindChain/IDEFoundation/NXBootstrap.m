@@ -19,13 +19,13 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <NXBootstrap.h>
-#import <UI/XCodeButton.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 #import <LindChain/Utils/Zip.h>
 #import <LindChain/Downloader/fdownload.h>
 #import <LindChain/ProcEnvironment/Surface/extra/relax.h>
-#import <Nyxian-Swift.h>
 #import <MobileDevelopmentKit/MDKThreadPool.h>
+#import <UI/XCodeButton.h>
+#import <Nyxian-Swift.h>
 
 @interface NXBootstrap ()
 

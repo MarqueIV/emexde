@@ -19,11 +19,11 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXProject.h>
+#import <LindChain/IDEFoundation/NXProject.h>
 #import <LindChain/Utils/Utils.h>
-#import <LindChain/Project/NXCodeTemplate.h>
-#import <LindChain/Project/NXUser.h>
-#import <LindChain/Project/NXUtils.h>
+#import <LindChain/IDEFoundation/NXCodeTemplate.h>
+#import <LindChain/IDEFoundation/NXUser.h>
+#import <LindChain/IDEFoundation/NXUtils.h>
 #import <Nyxian-Swift.h>
 
 @implementation NXProjectConfig

@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXUser.h>
+#import <LindChain/IDEFoundation/NXUser.h>
 
 @implementation NXUser {
     NSDateFormatter *_formatter;

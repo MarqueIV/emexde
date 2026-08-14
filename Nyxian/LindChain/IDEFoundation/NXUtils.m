@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXUtils.h>
+#import <LindChain/IDEFoundation/NXUtils.h>
 
 NSString *NXMakeContentCodeFriendly(NSString *content)
 {

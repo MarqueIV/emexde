@@ -19,9 +19,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXCodeTemplate.h>
-#import <LindChain/Project/NXUser.h>
-#import <LindChain/Project/NXUtils.h>
+#import <LindChain/IDEFoundation/NXCodeTemplate.h>
+#import <LindChain/IDEFoundation/NXUser.h>
+#import <LindChain/IDEFoundation/NXUtils.h>
 
 BOOL NXCodeTemplateMakeProjectStructure(NXProjectScheme scheme,
                                         NXProjectLanguage language,

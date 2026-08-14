@@ -19,9 +19,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXTarget.h>
-#import <LindChain/Project/NXUser.h>
-#import <NXBootstrap.h>
+#import <LindChain/IDEFoundation/NXTarget.h>
+#import <LindChain/IDEFoundation/NXUser.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 #import <Nyxian-Swift.h>
 
 @implementation NXTarget

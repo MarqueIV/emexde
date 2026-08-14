@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXPlist.h>
+#import <LindChain/IDEFoundation/NXPlist.h>
 #import <CommonCrypto/CommonDigest.h>
 #import <os/lock.h>
 #import <objc/runtime.h>

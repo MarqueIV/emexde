@@ -55,13 +55,13 @@
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
 
 /* Project Headers */
-#import <LindChain/Project/NXUser.h>
-#import <LindChain/Project/NXCodeTemplate.h>
-#import <LindChain/Project/NXPlist.h>
-#import <LindChain/Project/NXProject.h>
-#import <LindChain/Project/NXDocumentManager.h>
-#import <LindChain/Project/NXUtils.h>
-#import <NXBootstrap.h>
+#import <LindChain/IDEFoundation/NXUser.h>
+#import <LindChain/IDEFoundation/NXCodeTemplate.h>
+#import <LindChain/IDEFoundation/NXPlist.h>
+#import <LindChain/IDEFoundation/NXProject.h>
+#import <LindChain/IDEFoundation/NXDocumentManager.h>
+#import <LindChain/IDEFoundation/NXUtils.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 
 /* UI Headers */
 #import <UI/XCodeButton.h>

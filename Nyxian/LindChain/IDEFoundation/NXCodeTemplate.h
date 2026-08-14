@@ -19,23 +19,14 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef NXDOCUMENTMANAGER_H
-#define NXDOCUMENTMANAGER_H
+#ifndef NXCODETEMPLATE_H
+#define NXCODETEMPLATE_H
 
 #import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <LindChain/Project/NXDocument.h>
+#import <LindChain/IDEFoundation/NXType.h>
 
-@interface NXDocumentManager : NSObject
+BOOL NXCodeTemplateMakeProjectStructure(NXProjectScheme scheme, NXProjectLanguage language, NXProjectInterface interface, NSString *projectName, NSURL *projectURL);
+NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind schemeKind, NXProjectLanguageKind languageKind);
+NSArray<NSString*> *NXSwiftFlagsForCodeTemplateLanguage(NXProjectSchemeKind schemeKind, NXProjectLanguageKind languageKind);
 
-- (instancetype)init;
-+ (instancetype)shared;
-
-- (void)open:(NSURL*)url completion:(void (^)(NXDocument*))completion;
-- (void)close:(NSURL*)url completion:(void (^)(void))completion;
-- (void)saveAllWithCompletion:(void (^)(void))completion;
-- (void)changeAllLockStateToBoolean:(BOOL)isLocked;
-
-@end
-
-#endif /* NXDOCUMENTMANAGER_H */
+#endif /* NXCODETEMPLATE_H */

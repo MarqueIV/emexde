@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXDocumentManager.h>
+#import <LindChain/IDEFoundation/NXDocumentManager.h>
 #import <os/lock.h>
 #import <MobileDevelopmentKit/MDKThreadPoolGroup.h>
 #import <LindChain/Utils/Utils.h>

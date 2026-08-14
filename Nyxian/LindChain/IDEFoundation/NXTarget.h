@@ -23,9 +23,9 @@
 #define NXTARGET_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/Project/NXType.h>
-#import <LindChain/Project/NXUser.h>
-#import <LindChain/Project/NXPlist.h>
+#import <LindChain/IDEFoundation/NXType.h>
+#import <LindChain/IDEFoundation/NXUser.h>
+#import <LindChain/IDEFoundation/NXPlist.h>
 
 @interface NXTarget : NSObject
 

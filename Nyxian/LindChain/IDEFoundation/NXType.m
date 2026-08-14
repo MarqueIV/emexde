@@ -20,7 +20,7 @@
 */
 
 #import <Foundation/Foundation.h>
-#import <LindChain/Project/NXType.h>
+#import <LindChain/IDEFoundation/NXType.h>
 
 NXProjectFormat NXProjectFormatFromFormatKind(NXProjectFormatKind kind)
 {

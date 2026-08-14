@@ -23,8 +23,8 @@
 #define NXPROJECT_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/Project/NXPlist.h>
-#import <LindChain/Project/NXType.h>
+#import <LindChain/IDEFoundation/NXPlist.h>
+#import <LindChain/IDEFoundation/NXType.h>
 #import <LindChain/ProcEnvironment/Surface/entitlement.h>
 
 @interface NXProjectConfig : NXPlist

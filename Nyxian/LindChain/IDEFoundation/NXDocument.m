@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Project/NXDocument.h>
+#import <LindChain/IDEFoundation/NXDocument.h>
 #include <stdatomic.h>
 
 @implementation NXDocument {
