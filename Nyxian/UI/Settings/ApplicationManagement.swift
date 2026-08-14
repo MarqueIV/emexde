@@ -229,8 +229,8 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 guard let application = application else { return }
                 if application.isLaunchAllowed {
                     let machOViewController: MachOPatcherViewController = MachOPatcherViewController(machOPath: application.executablePath) {
-                        if PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) != nil {
-                            PEProcessManager.shared().spawnProcess(withBundleIdentifier: application.bundleIdentifier, withItems: [:], withKernelSurfaceProcess: nil, doRestartIfRunning: true)
+                        if let process = PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) {
+                            process.sendSignal(SIGKILL)
                         }
                     }
                     let navMachOViewController: UINavigationController = UINavigationController(rootViewController: machOViewController)
@@ -243,7 +243,10 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
             
             let clearContainerAction = UIAction(title: "Clear Data Container", image: UIImage(systemName: "arrow.up.trash.fill")) { _ in
                 guard let application = application else { return }
-                PEProcessManager.shared().closeIfRunning(usingBundleIdentifier: application.bundleIdentifier)
+                if let process = PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) {
+                    // It is unsafe to send SIGKILL, because data container is wiped
+                    process.sendSignal(SIGKILL)
+                }
                 LDEApplicationWorkspace.shared().clearContainer(forBundleID: application.bundleIdentifier)
             }
             
@@ -365,14 +368,7 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                                     
                                     if LDEApplicationWorkspace.shared().installApplication(atBundlePath: bundle.bundleURL.path) {
                                         DispatchQueue.main.async {
-                                            alert.dismiss(animated: true) {
-                                                PEProcessManager.shared().spawnProcess(
-                                                    withBundleIdentifier: bundle.bundleIdentifier,
-                                                    withItems: [:],
-                                                    withKernelSurfaceProcess: nil,
-                                                    doRestartIfRunning: true
-                                                )
-                                            }
+                                            alert.dismiss(animated: true)
                                         }
                                     } else {
                                         DispatchQueue.main.async {
