@@ -19,6 +19,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#ifndef NXLANGUAGESERVER_H
+#define NXLANGUAGESERVER_H
+
 #import <Foundation/Foundation.h>
 #import <MobileDevelopmentKit/MDKDiagnostic.h>
 #import <MobileDevelopmentKit/MDKFileSourceLocation.h>
@@ -27,7 +30,7 @@
 #include <string.h>
 #include <pthread.h>
 
-@interface SynpushServer : NSObject
+@interface NXLanguageServer : NSObject
 
 - (instancetype)init:(NSString*)filepath;
 
@@ -39,3 +42,5 @@
 - (void)releaseMemory;
 
 @end
+
+#endif /* NXLANGUAGESERVER_H */

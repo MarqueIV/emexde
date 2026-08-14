@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Synpush/Synpush.h>
+#import <LindChain/IDELanguageServer/NXLanguageServer.h>
 #import <MobileDevelopmentKit/MDKASTUnit.h>
 #import <MobileDevelopmentKit/MDKFile.h>
 #import <string.h>
@@ -28,14 +28,11 @@
 
 #pragma mark - SynpushServer
 
-@interface SynpushServer () {
+@implementation NXLanguageServer {
     os_unfair_lock _lock;
     MDKMutableASTUnit *_unit;
     MDKMutableFile *_file;
 }
-@end
-
-@implementation SynpushServer
 
 - (instancetype)init:(NSString*)filepath
 {

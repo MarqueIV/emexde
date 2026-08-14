@@ -29,8 +29,6 @@
 #import <LindChain/Private/UIKitPrivate.h>
 
 /* IDE Headers */
-#import <LindChain/IDEBuilder/LDEFilesFinder.h>
-#import <LindChain/IDEConsole/NXConsoleView.h>
 #import <LindChain/IDEFoundation/NXUser.h>
 #import <LindChain/IDEFoundation/NXCodeTemplate.h>
 #import <LindChain/IDEFoundation/NXPlist.h>
@@ -38,9 +36,11 @@
 #import <LindChain/IDEFoundation/NXDocumentManager.h>
 #import <LindChain/IDEFoundation/NXUtils.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
+#import <LindChain/IDELanguageServer/NXLanguageServer.h>
+#import <LindChain/IDEBuilder/LDEFilesFinder.h>
+#import <LindChain/IDEConsole/NXConsoleView.h>
 
 /* LindChain Core Headers */
-#import <LindChain/Synpush/Synpush.h>
 #import <LindChain/Downloader/fdownload.h>
 #import <LindChain/Utils/Zip.h>
 #import <LindChain/Utils/LDEDebouncer.h>

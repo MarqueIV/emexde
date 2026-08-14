@@ -44,7 +44,7 @@ class Coordinator: NSObject, TextViewDelegate {
     init(parent: CodeEditorViewController) {
         self.parent = parent
         super.init()
-        guard self.parent?.synpushServer != nil else { return }
+        guard self.parent?.languageServer != nil else { return }
         self.debounce = LDEDebouncer(delay: 1.5, with: DispatchQueue.main, withTarget: self, with: #selector(typecheckCode))
         if let textView = self.parent?.textView {
             self.textViewDidChange(textView)
@@ -56,13 +56,13 @@ class Coordinator: NSObject, TextViewDelegate {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             guard let parent = self.parent else { return }
-            guard let server = parent.synpushServer else { return }
+            guard let server = parent.languageServer else { return }
             
             parent.project?.projectConfig.reloadIfNeeded()
             let flags: [String] = parent.isReadOnly ? NXProjectConfig.sdkCompilerFlags() ?? [] : parent.project?.projectConfig.compilerFlags ?? []
             
             server.reparseFile(self.parent?.textView.text, withArgs: flags)
-            let diag = self.parent?.synpushServer?.getDiagnostics() ?? []
+            let diag = self.parent?.languageServer?.getDiagnostics() ?? []
             
             DispatchQueue.main.async {
                 self.diag = diag
@@ -75,7 +75,7 @@ class Coordinator: NSObject, TextViewDelegate {
         if(!textView.text.isEmpty) {
             self.parent?.document?.updateChangeCount(.done)
         }
-        guard self.parent?.synpushServer != nil else { return }
+        guard self.parent?.languageServer != nil else { return }
         if !self.isInvalidated {
             self.isInvalidated = true
             for item in self.entries {

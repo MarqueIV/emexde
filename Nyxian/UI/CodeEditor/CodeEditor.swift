@@ -43,7 +43,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
     private(set) var file: MDKFile
     private(set) var textView: TextView
     private(set) var project: NXProject?
-    private(set) var synpushServer: SynpushServer?
+    private(set) var languageServer: NXLanguageServer?
     private(set) var coordinator: Coordinator?
     private(set) var database: DebugDatabase?
     private(set) var location: CCSourceLocation?
@@ -84,7 +84,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
         // swift gets all of those nice little features.
         if CCFileTypeIsClangFile(self.file.type)
         {
-            self.synpushServer = SynpushServer(self.file.fileURL.path)
+            self.languageServer = NXLanguageServer(self.file.fileURL.path)
                 
             if let project = project {
                 self.database = DebugDatabase.getDatabase(ofPath: project.cacheURL.appendingPathComponent("debug.json").path)
@@ -162,7 +162,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
         self.textView.showLineBreaks = booleanDefaults(key: "LDEShowLineBreaks", defaultValue: true)
         self.textView.indentStrategy = .tab(length: 4)
         
-        if synpushServer != nil || self.file.type == .swift {
+        if self.languageServer != nil || self.file.type == .swift {
             self.autoindent = booleanDefaults(key: "LDEAutoindent", defaultValue: true)
         }
         
@@ -269,7 +269,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
     func documentRequestsText(_ document: NXDocument!) -> String! {
         guard let project = self.project,
               let database = self.database,
-              let _ = self.synpushServer,
+              let _ = self.languageServer,
               let coordinator = self.coordinator else { return self.textView.text }
         
         database.setFileDebug(ofPath: self.file.fileURL.path, synItems: coordinator.diag)
@@ -590,7 +590,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
             
             guard let project = self.project,
                   let database = self.database,
-                  let _ = self.synpushServer,
+                  let _ = self.languageServer,
                   let coordinator = self.coordinator else { return }
             
             database.setFileDebug(ofPath: self.file.fileURL.path, synItems: coordinator.diag)
@@ -644,7 +644,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
     override func viewWillDisappear(_ animated: Bool) {
         self.document?.autosave()
         self.coordinator?.debounce?.invalidate()
-        self.synpushServer?.releaseMemory()
+        self.languageServer?.releaseMemory()
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self)
     }
@@ -684,7 +684,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
     }
     
     @objc func jumpToDefinition() {
-        guard let server = synpushServer else { return }
+        guard let server = languageServer else { return }
         guard let selectedRange = textView.selectedTextRange else { return }
         
         DispatchQueue.global(qos: .userInitiated).async {
@@ -781,7 +781,7 @@ class CodeEditorViewController: UIViewController, NXDocumentDelegate {
     override func buildMenu(with builder: any UIMenuBuilder) {
         super.buildMenu(with: builder)
         
-        guard self.synpushServer != nil else {
+        guard self.languageServer != nil else {
             return
         }
         
