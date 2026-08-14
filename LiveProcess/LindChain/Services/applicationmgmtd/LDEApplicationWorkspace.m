@@ -109,7 +109,7 @@
     [self connect];
     
     __block BOOL result = NO;
-    ArchiveObject *archiveObject = [ArchiveObject objectForFileAtPath:packagePath];
+    ArchiveObject *archiveObject = [ArchiveObject handleForFileAtPath:packagePath];
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
@@ -276,7 +276,7 @@
     }
     else
     {
-        [_connection.remoteObjectProxy fastpathUtility:[PEFileHandle objectForFileAtPath:utilityPath] withName:[utilityPath lastPathComponent] withReply:^(NSString *fastPathRet, BOOL fastSigned){
+        [_connection.remoteObjectProxy fastpathUtility:[PEFileHandle handleForFileAtPath:utilityPath] withName:[utilityPath lastPathComponent] withReply:^(NSString *fastPathRet, BOOL fastSigned){
             fastpath = fastSigned ? fastPathRet : nil;
             dispatch_semaphore_signal(sema);
         }];

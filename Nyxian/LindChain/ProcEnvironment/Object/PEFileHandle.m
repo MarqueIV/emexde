@@ -32,7 +32,7 @@
     return self;
 }
 
-+ (instancetype)objectForFileDescriptor:(int)fd
++ (instancetype)handleForFileDescriptor:(int)fd
 {
     if(fd_is_guarded(fd))
     {
@@ -47,7 +47,7 @@
     return object;
 }
 
-+ (instancetype)objectForFilePort:(fileport_t)fp
++ (instancetype)handleForFilePort:(fileport_t)fp
 {
     int fd = fileport_makefd(fp);
     if(fd < 0)
@@ -55,12 +55,12 @@
         return nil;
     }
     
-    PEFileHandle *object = [self objectForFileDescriptor:fd];
+    PEFileHandle *object = [self handleForFileDescriptor:fd];
     close(fd);
     return object;
 }
 
-+ (instancetype)objectForFileAtPath:(NSString*)path
++ (instancetype)handleForFileAtPath:(NSString*)path
                           withFlags:(int)flags
                     withPermissions:(int)perm
 {
@@ -70,20 +70,20 @@
         return nil;
     }
     
-    PEFileHandle *object = [self objectForFileDescriptor:fd];
+    PEFileHandle *object = [self handleForFileDescriptor:fd];
     close(fd);
     return object;
 }
 
-+ (instancetype)objectForFileAtPath:(NSString*)path
++ (instancetype)handleForFileAtPath:(NSString*)path
                           withFlags:(int)flags
 {
-    return [self objectForFileAtPath:path withFlags:flags withPermissions:0777];
+    return [self handleForFileAtPath:path withFlags:flags withPermissions:0777];
 }
 
-+ (instancetype)objectForFileAtPath:(NSString*)path
++ (instancetype)handleForFileAtPath:(NSString*)path
 {
-    return [self objectForFileAtPath:path withFlags:O_RDWR];
+    return [self handleForFileAtPath:path withFlags:O_RDWR];
 }
 
 - (void)setFileDescriptor:(int)fd
@@ -91,30 +91,27 @@
     _fd = xpc_fd_create(fd);
 }
 
-- (int)dup
+- (int)extractFileDescriptor
 {
     return xpc_fd_dup(_fd);
 }
 
-- (BOOL)dup2:(int)fd
+- (BOOL)extractFileDescriptorToLoc:(int)loc
 {
-    if(fd < 0 ||
-       fd_is_guarded(fd))
+    if(loc < 0 || fd_is_guarded(loc))
     {
         return NO;
     }
     
     int cfd = xpc_fd_dup(_fd);
-    if(cfd == fd)
+    if(cfd == loc)
     {
         return YES;
     }
     else
     {
-        int retval = dup2(cfd, fd);
-        
+        int retval = dup2(cfd, loc);
         close(cfd);
-        
         if(retval < 0)
         {
             return NO;

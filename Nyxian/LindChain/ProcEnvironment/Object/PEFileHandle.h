@@ -53,39 +53,39 @@
 @property (nonatomic,strong) NSObject<OS_xpc_object> *fd;
 
 /*!
- @method `objectForFileDescriptor:`
+ @method `handleForFileDescriptor:`
  @abstract Creates a object for a file descriptor.
  @param fd
     file descriptor at wish to be converted to a `PEFileHandle`.
  @return
     A instance that is referencing the current file descriptor passed.
  */
-+ (instancetype)objectForFileDescriptor:(int)fd;
++ (instancetype)handleForFileDescriptor:(int)fd;
 
 /*!
- @method `objectForFilePort:`
+ @method `handleForFilePort:`
  @abstract Creates a object for a file descriptor.
  @param fp
     file port at wish to be converted to a `PEFileHandle`.
  @return
     A instance that is referencing the current file descriptor passed.
  */
-+ (instancetype)objectForFilePort:(fileport_t)fp;
++ (instancetype)handleForFilePort:(fileport_t)fp;
 
 /*!
  @method `objectForFileAtPath:withFlags:withPermissions:`
  */
-+ (instancetype)objectForFileAtPath:(NSString*)path withFlags:(int)flags withPermissions:(int)perm;
++ (instancetype)handleForFileAtPath:(NSString*)path withFlags:(int)flags withPermissions:(int)perm;
 
 /*!
  @method `objectForFileAtPath:withFlags:`
  */
-+ (instancetype)objectForFileAtPath:(NSString*)path withFlags:(int)flags;
++ (instancetype)handleForFileAtPath:(NSString*)path withFlags:(int)flags;
 
 /*!
  @method `objectForFileAtPath:`
  */
-+ (instancetype)objectForFileAtPath:(NSString*)path;
++ (instancetype)handleForFileAtPath:(NSString*)path;
 
 /*!
  @method `setFileDescriptor:`
@@ -96,22 +96,22 @@
 - (void)setFileDescriptor:(int)fd;
 
 /*!
- @method `dup`
+ @method `extractFileDescriptor`
  @abstract Converts the `PEFileHandle` back to a file descriptor.
  @return
-    Returns file descriptor duplication is successful.
+    Returns file descriptor if extraction is successful.
  */
-- (int)dup;
+- (int)extractFileDescriptor;
 
 /*!
- @method `dup2:`
- @abstract Converts the object back to a file descriptor.
- @param fd
+ @method `extractFileDescriptorToLoc:`
+ @abstract Converts the object back to a file descriptor at a wished descriptor identifier.
+ @param loc
     file descriptor opened/replaced with.
  @return
-    Returns boolean value true when duplication to fd is successful.
+    Returns boolean value true when extraction to fd is successful.
  */
-- (BOOL)dup2:(int)fd;
+- (BOOL)extractFileDescriptorToLoc:(int)loc;
 
 /*!
  @method `writeOut:`

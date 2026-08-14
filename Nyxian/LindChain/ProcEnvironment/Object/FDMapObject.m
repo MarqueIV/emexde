@@ -74,7 +74,7 @@
     for(int i = 0; i < numFDs; i++)
     {
         int fd = fdinfo[i].proc_fd;
-        PEFileHandle *fileHandle = [PEFileHandle objectForFileDescriptor:fd];
+        PEFileHandle *fileHandle = [PEFileHandle handleForFileDescriptor:fd];
         if(fileHandle == nil)
         {
             continue;
@@ -106,7 +106,7 @@
         PEFileHandle *fileHandle = _fd_map[key];
         if(fileHandle != nil)
         {
-            [fileHandle dup2:[key intValue]];
+            [fileHandle extractFileDescriptorToLoc:[key intValue]];
         }
     }
 }
@@ -121,7 +121,7 @@
         return -1;
     }
     
-    PEFileHandle *object = [PEFileHandle objectForFileDescriptor:fd];
+    PEFileHandle *object = [PEFileHandle handleForFileDescriptor:fd];
     if(object == nil)
     {
         errno = EBADF;
@@ -142,7 +142,7 @@
         return -1;
     }
     
-    PEFileHandle *object = [PEFileHandle objectForFilePort:fp];
+    PEFileHandle *object = [PEFileHandle handleForFileDescriptor:fp];
     if(object == nil)
     {
         errno = EBADF;

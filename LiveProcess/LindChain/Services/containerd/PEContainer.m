@@ -651,7 +651,7 @@
      * getting the file descriptor so we can extract the
      * entitlements.
      */
-    int fd = [object dup];
+    int fd = [object extractFileDescriptor];
     if(fd < 0)
     {
         return false;
@@ -692,7 +692,7 @@
      * getting the file descriptor so we can extract the
      * entitlements.
      */
-    int fd = [object dup];
+    int fd = [object extractFileDescriptor];
     if(fd < 0)
     {
         return PEEntitlementNone;
@@ -723,7 +723,7 @@
         return false;
     }
     
-    int fd = [object dup];
+    int fd = [object extractFileDescriptor];
     if(fd < 0)
     {
         return false;

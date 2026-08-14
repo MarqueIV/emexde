@@ -214,7 +214,7 @@
                       withMode:(mode_t)mode
                      withReply:(void (^)(PEFileHandle*))reply
 {
-    reply([PEFileHandle objectForFileAtPath:path withFlags:flags withPermissions:mode]);
+    reply([PEFileHandle handleForFileAtPath:path withFlags:flags withPermissions:mode]);
 }
 
 - (void)containerRootWithReply:(void (^)(NSURL*))reply
