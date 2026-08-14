@@ -28,16 +28,12 @@
 #import <Foundation/Foundation.h>
 #import <mach/mach.h>
 
-/* ----------------------------------------------------------------------
- *  Environment API Headers
- * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEXPCObject.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations
  * -------------------------------------------------------------------- */
 
-@interface PEMachPort : NSObject <PEXPCObject, NSCopying>
+@interface PEMachPort : NSObject <NSSecureCoding,NSCopying>
 
 @property (nonatomic, readonly) mach_port_t port;
 @property (nonatomic, readonly, getter=isUsable) BOOL usable;

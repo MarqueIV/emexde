@@ -29,11 +29,6 @@
 #import <LindChain/Private/mach/fileport.h>
 
 /* ----------------------------------------------------------------------
- *  Environment API Headers
- * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEXPCObject.h>
-
-/* ----------------------------------------------------------------------
  *  Class Declarations
  * -------------------------------------------------------------------- */
 
@@ -46,7 +41,7 @@
     It is designed to be passed across XPC boundaries and supports
     `NSSecureCoding` for safe serialization.
  */
-@interface FDObject : NSObject <NSCopying,PEXPCObject>
+@interface FDObject : NSObject <NSSecureCoding,NSCopying>
 
 /*!
  @property `fd`

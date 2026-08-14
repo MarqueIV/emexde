@@ -30,7 +30,6 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEXPCObject.h>
 #import <LindChain/ProcEnvironment/Object/FDObject.h>
 
 /* ----------------------------------------------------------------------

@@ -30,7 +30,6 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEXPCObject.h>
 #import <LindChain/ProcEnvironment/Object/FDObject.h>
 
 /* ----------------------------------------------------------------------
@@ -46,7 +45,7 @@
     It is designed to be passed across XPC boundaries and supports
     `NSSecureCoding` for safe serialization.
  */
-@interface FDMapObject : NSObject <PEXPCObject>
+@interface FDMapObject : NSObject <NSSecureCoding>
 
 /*!
  @property `fd_map`
