@@ -83,7 +83,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                 
                     alert.addAction(UIAlertAction(title: "Proceed", style: .destructive) { [weak self] _ in
                         DispatchQueue.main.async {
-                            let alert = UIAlertController(title: nil, message: "Restoring", preferredStyle: .alert)
+                            let alert = UIAlertController(title: nil, message: "Clearing Application Caches", preferredStyle: .alert)
                         
                             let activityIndicator = UIActivityIndicatorView(style: .medium)
                             activityIndicator.translatesAutoresizingMaskIntoConstraints = false
@@ -116,7 +116,7 @@ class VirtualEnvironmentViewController: UIThemedTableViewController {
                                         if !success {
                                             let alert = UIAlertController(
                                                 title: "Error",
-                                                message: "Restore failed",
+                                                message: "Clearing Application Caches failed",
                                                 preferredStyle: .alert
                                             )
                                             
