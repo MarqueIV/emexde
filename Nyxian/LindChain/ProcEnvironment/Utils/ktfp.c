@@ -81,7 +81,7 @@ kern_return_t ktfp(mach_port_t exceptionPort, task_t *task)
      * receive right of meaning the host will
      * handle this pseudo exception.
      */
-    __asm__ volatile ("brk #1" ::: "memory");
+    __asm__ volatile ("brk #1" ::: "memory");   /* no Duy I haven't copied this from you if you use the same ASM, I use it so the compiler stops stripping away "success = true" */
     success = true; /* handoff should have succeeded */
     
 out_dealloc:
