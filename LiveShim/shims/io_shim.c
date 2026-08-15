@@ -77,19 +77,24 @@ static int ksurface_user_open(const char *path,
         va_end(ap);
     }
     
-    hook_log("[open] ");
-    hook_log(path);
-    hook_log("\n");
+    fileport_t fileport;
+    if(liveshim_syscall(SYS_open, path, flags, mode, &fileport) != 0)
+    {
+        return (int)syscall(SYS_open, path, flags, mode);
+    }
     
-    return (int)syscall(SYS_open, path, flags, mode);
+    int fd = fileport_makefd(fileport);
+    mach_port_deallocate(mach_task_self(), fileport);
+    if(fd < 0)
+    {
+        return (int)syscall(SYS_open, path, flags, mode);
+    }
+    
+    return fd;
 }
 
 static DIR *ksurface_user_opendir(const char *path)
 {
-    hook_log("[opendir] ");
-    hook_log(path);
-    hook_log("\n");
-    
     fileport_t fileport;
     if(liveshim_syscall(SYS_open, path, O_RDONLY | O_DIRECTORY, 0, &fileport) != 0)
     {

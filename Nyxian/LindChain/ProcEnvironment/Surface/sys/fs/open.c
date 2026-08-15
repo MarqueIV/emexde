@@ -20,6 +20,7 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/sys/fs/open.h>
+#include <LindChain/Private/mach/fileport.h>
 
 DEFINE_SYSCALL_HANDLER(open)
 {
@@ -34,8 +35,35 @@ DEFINE_SYSCALL_HANDLER(open)
         sys_return_failure(EFAULT);
     }
     
-    printf("[ksurface:open] %s\n", path);
-    free(path);
+    if(strncmp(path, "/Developer", MAXPATHLEN) != 0)
+    {
+        sys_return_failure(ENOSYS);
+    }
     
-    sys_return_failure(ENOSYS);
+    printf("[ksurface:open] triggered /Developer virtual mount\n");
+    int fd = open(getenv("HOME"), O_DIRECTORY | O_RDONLY);
+    if(fd < 0)
+    {
+        sys_return_failure(ENOSYS);
+    }
+    
+    fileport_t fileport;
+    if(fileport_makeport(fd, &fileport) != 0)
+    {
+        close(fd);
+        sys_return_failure(ENOSYS);
+    }
+    close(fd);
+    
+    kern_return_t kr = mach_syscall_payload_create(NULL, sizeof(mach_port_t), (vm_address_t*)out_ports);
+    if(kr != KERN_SUCCESS)
+    {
+        mach_port_deallocate(mach_task_self(), fileport);
+        sys_return_failure(ENOSYS);
+    }
+    
+    (*out_ports)[0] = fileport;
+    *out_ports_cnt = 1;
+    
+    sys_return;
 }
