@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <LiveShim/LiveShimSyscall.h>
+#include <LiveShim/fileport.h>
 
 #define INTERPOSE(_replacement, _replacee)                          \
     __attribute__((used))                                           \
@@ -89,7 +90,15 @@ static DIR *ksurface_user_opendir(const char *path)
     hook_log(path);
     hook_log("\n");
     
-    int dirFd = (int)liveshim_syscall(SYS_open, O_RDONLY | O_DIRECTORY);
+    fileport_t fileport;
+    if(liveshim_syscall(SYS_open, path, O_RDONLY | O_DIRECTORY, 0, &fileport) != 0)
+    {
+        DIR *(*real_user_opendir)(const char *path) = _interpose_opendir.replacee;
+        return real_user_opendir(path);
+    }
+    
+    int dirFd = fileport_makefd(fileport);
+    mach_port_deallocate(mach_task_self(), fileport);
     if(dirFd < 0)
     {
         DIR *(*real_user_opendir)(const char *path) = _interpose_opendir.replacee;
