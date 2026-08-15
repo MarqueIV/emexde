@@ -33,6 +33,8 @@ static int ksurface_user_open(const char *path,
                               int flags,
                               ...)
 {
+    int (*darwin_user_open)(const char *path, int flags, ...) = _interpose_open.replacee;
+    
     mode_t mode = 0;
     if(flags & O_CREAT)
     {
@@ -45,14 +47,14 @@ static int ksurface_user_open(const char *path,
     fileport_t fileport;
     if(liveshim_syscall(SYS_open, path, flags, mode, &fileport) != 0)
     {
-        return (int)syscall(SYS_open, path, flags, mode);
+        return darwin_user_open(path, flags, mode);
     }
     
     int fd = fileport_makefd(fileport);
     mach_port_deallocate(mach_task_self(), fileport);
     if(fd < 0)
     {
-        return (int)syscall(SYS_open, path, flags, mode);
+        return darwin_user_open(path, flags, mode);
     }
     
     return fd;
@@ -60,19 +62,19 @@ static int ksurface_user_open(const char *path,
 
 static DIR *ksurface_user_opendir(const char *path)
 {
+    DIR *(*darwin_user_opendir)(const char *path) = _interpose_opendir.replacee;
+    
     fileport_t fileport;
     if(liveshim_syscall(SYS_open, path, O_RDONLY | O_DIRECTORY, 0, &fileport) != 0)
     {
-        DIR *(*real_user_opendir)(const char *path) = _interpose_opendir.replacee;
-        return real_user_opendir(path);
+        return darwin_user_opendir(path);
     }
     
     int dirFd = fileport_makefd(fileport);
     mach_port_deallocate(mach_task_self(), fileport);
     if(dirFd < 0)
     {
-        DIR *(*real_user_opendir)(const char *path) = _interpose_opendir.replacee;
-        return real_user_opendir(path);
+        return darwin_user_opendir(path);
     }
     
     DIR *dir = fdopendir(dirFd);
