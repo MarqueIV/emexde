@@ -21,7 +21,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
-#include <LindChain/ProcEnvironment/panic.h>
+#include <LindChain/ProcEnvironment/Shims/panic.h>
 #import <Foundation/Foundation.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 

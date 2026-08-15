@@ -21,7 +21,7 @@ along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/Services/containerd/PEContainerProtocol.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Surface/trust.h>
 #import <LindChain/Utils/Swizzle.h>
 

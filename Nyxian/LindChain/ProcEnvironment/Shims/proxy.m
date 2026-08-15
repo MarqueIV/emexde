@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/proxy.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
+#import <LindChain/ProcEnvironment/Shims/proxy.h>
 #include <signal.h>
 #include <errno.h>
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>

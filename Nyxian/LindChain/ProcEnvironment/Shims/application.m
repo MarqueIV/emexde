@@ -22,10 +22,10 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
-#import <LindChain/ProcEnvironment/application.h>
-#import <LindChain/ProcEnvironment/environment.h>
+#import <LindChain/ProcEnvironment/Shims/application.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
 #import <LindChain/Utils/Swizzle.h>
-#import <LindChain/ProcEnvironment/proxy.h>
+#import <LindChain/ProcEnvironment/Shims/proxy.h>
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>
 #import <LiveShim/LiveShimSyscall.h>
 

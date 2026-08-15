@@ -22,7 +22,7 @@
 #ifndef PROCENVIRONMENT_LOCK_H
 #define PROCENVIRONMENT_LOCK_H
 
-#include <LindChain/ProcEnvironment/panic.h>
+#include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <string.h>
 #include <errno.h>
 

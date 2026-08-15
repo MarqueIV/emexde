@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Process/PELaunchService.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PELaunchService.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 
 @implementation PELaunchService
 

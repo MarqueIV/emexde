@@ -19,13 +19,13 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/panic.h>
+#import <LindChain/ProcEnvironment/Shims/panic.h>
 #import <LindChain/ProcEnvironment/Surface/tty/tty.h>
 #import <LindChain/ProcEnvironment/Surface/proc/list.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <sys/socket.h>
 #import <sys/poll.h>
 #include <stdio.h>

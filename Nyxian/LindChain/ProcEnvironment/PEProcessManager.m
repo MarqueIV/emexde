@@ -19,10 +19,10 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
-#import <LindChain/ProcEnvironment/panic.h>
+#import <LindChain/ProcEnvironment/Shims/panic.h>
 #import <Nyxian-Swift.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <os/lock.h>

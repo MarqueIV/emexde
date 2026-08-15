@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/panic.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
+#import <LindChain/ProcEnvironment/Shims/panic.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>

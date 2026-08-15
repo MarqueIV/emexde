@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/environment.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
 #import <LindChain/ProcEnvironment/Surface/extra/relax.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
 #import <LiveShim/LiveShimSyscall.h>

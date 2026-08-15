@@ -29,7 +29,7 @@
 #import <LindChain/ProcEnvironment/litehook/litehook.h>
 #import "LCMachOUtils.h"
 #import "../utils.h"
-#import <LindChain/ProcEnvironment/environment.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
 #import <LindChain/ProcEnvironment/Surface/cdhash.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #import <LindChain/Utils/CFTools.h>

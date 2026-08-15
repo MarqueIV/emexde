@@ -23,7 +23,7 @@
 #define NXWINDOWSESSIONTERMINAL_H
 
 #import <LindChain/WindowServer/Window/NXWindowSession.h>
-#import <LindChain/ProcEnvironment/Process/PEProcess.h>
+#import <LindChain/ProcEnvironment/PEProcess.h>
 
 @interface NXWindowSessionTerminal : NXWindowSession
 

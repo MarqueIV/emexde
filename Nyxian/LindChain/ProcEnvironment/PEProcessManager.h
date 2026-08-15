@@ -19,27 +19,27 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PELAUNCHSERVICEREGISTRY_H
-#define PELAUNCHSERVICEREGISTRY_H
+#ifndef PEPROCESSMANAGER_H
+#define PEPROCESSMANAGER_H
 
 #import <Foundation/Foundation.h>
-#import <os/lock.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchService.h>
+#import <LindChain/ProcEnvironment/PEProcess.h>
 
-@interface PELaunchServiceRegistry : NSObject
-
-@property (atomic,readonly) BOOL isBooted;
+@interface PEProcessManager : NSObject
 
 - (instancetype)init;
 + (instancetype)shared;
 
-- (NSXPCConnection *)connectToService:(NSString *)serviceIdentifier protocol:(Protocol *)protocol observer:(id)observer observerProtocol:(Protocol *)observerProtocol;
-- (PELaunchService *)serviceForIdentifier:(NSString *)serviceIdentifier;
+- (pid_t)spawnProcessWithItems:(NSDictionary*)items withKernelSurfaceProcess:(ksurface_proc_t*)proc;
+- (pid_t)spawnProcessWithBundleIdentifier:(NSString *)bundleIdentifier withItems:(NSDictionary*)items withKernelSurfaceProcess:(ksurface_proc_t*)proc doRestartIfRunning:(BOOL)doRestartIfRunning;
 
-- (void)invalidateAllEntries;
-- (void)reloadAllEntries;
-- (void)loadEntryWithFileName:(NSString*)entryName;
+- (void)closeIfRunningUsingBundleIdentifier:(NSString*)bundleIdentifier;
+- (PEProcess*)processForProcessIdentifier:(pid_t)pid;
+- (PEProcess*)processForBundleIdentifier:(NSString*)bundleIdentifier;
+- (void)unregisterProcessWithProcessIdentifier:(pid_t)pid;
+
+- (void)killAllRunningProcesses;
 
 @end
 
-#endif /* PELAUNCHSERVICEREGISTRY_H */
+#endif /* PEPROCESSMANAGER_H */

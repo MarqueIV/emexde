@@ -19,16 +19,16 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Process/PEProcess.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEProcess.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
-#import <LindChain/ProcEnvironment/Process/PEExtension.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
-#import <LindChain/ProcEnvironment/Object/PEMachPort.h>
+#import <LindChain/ProcEnvironment/PEExtension.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proctil.h>
 #import <MobileDevelopmentKit/MDKThreadPool.h>

@@ -20,11 +20,11 @@
 */
 
 #import "LDEApplicationWorkspaceInternal.h"
-#import <LindChain/ProcEnvironment/environment.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
 #import <LiveShim/LiveShimSyscall.h>
 #import <LindChain/Utils/Zip.h>
 #import <Security/Security.h>
-#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
+#import <LindChain/ProcEnvironment/PEFileTable.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceProtocol.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 

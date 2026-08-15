@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
-#import <LindChain/ProcEnvironment/Process/PEBootstrapRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
 
 @implementation PELaunchServiceRegistry {
     os_unfair_lock _lock;

@@ -21,7 +21,7 @@
 
 #include <LindChain/ProcEnvironment/Surface/proc/lookup.h>
 #include <LindChain/ProcEnvironment/Surface/proc/def.h>
-#include <LindChain/ProcEnvironment/panic.h>
+#include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <assert.h>
 
 kern_return_t proc_for_pid(pid_t pid,

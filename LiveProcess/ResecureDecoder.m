@@ -23,8 +23,8 @@
 #import <objc/runtime.h>
 #import <ResecureDecoder.h>
 #import <LindChain/ProcEnvironment/Object/ArchiveObject.h>
-#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
-#import <LindChain/ProcEnvironment/Object/PEMachPort.h>
+#import <LindChain/ProcEnvironment/PEFileTable.h>
+#import <LindChain/ProcEnvironment/PEMachPort.h>
 
 void ResecureDecoder(void)
 {

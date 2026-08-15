@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
+#import <LindChain/ProcEnvironment/PEFileTable.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <xpc/xpc.h>
 #include <LindChain/ProcEnvironment/Utils/fd.h>

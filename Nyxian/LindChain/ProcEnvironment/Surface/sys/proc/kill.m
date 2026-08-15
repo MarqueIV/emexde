@@ -22,7 +22,7 @@
 #include <LindChain/ProcEnvironment/Surface/sys/proc/kill.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #include <LindChain/ProcEnvironment/Surface/permit.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 
 DEFINE_SYSCALL_HANDLER(kill)
 {    

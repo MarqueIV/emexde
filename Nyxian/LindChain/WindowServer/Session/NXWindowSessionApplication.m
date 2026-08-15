@@ -22,7 +22,7 @@
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #import <LindChain/WindowServer/NXWindowServer.h>
-#import <LindChain/ProcEnvironment/Process/PEExtension.h>
+#import <LindChain/ProcEnvironment/PEExtension.h>
 #import <LindChain/Utils/Swizzle.h>
 
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>

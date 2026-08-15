@@ -21,10 +21,10 @@
 
 #include <LindChain/ProcEnvironment/Surface/sys/compat/pectl.h>
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
-#import <LindChain/ProcEnvironment/Process/PEBootstrapRegistry.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
-#import <LindChain/ProcEnvironment/Process/PEUserspaceManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PEUserspaceManager.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <Foundation/Foundation.h>
 #import <LindChain/Services/containerd/PEContainer.h>

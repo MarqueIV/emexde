@@ -23,7 +23,7 @@
 #define PECONTAINERPROTOCOL_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
+#import <LindChain/ProcEnvironment/PEFileHandle.h>
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 

@@ -20,10 +20,10 @@
 */
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/environment.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
 #import <LiveShim/LiveShimSyscall.h>
-#import <LindChain/ProcEnvironment/proxy.h>
-#import <LindChain/ProcEnvironment/libproc.h>
+#import <LindChain/ProcEnvironment/Shims/proxy.h>
+#import <LindChain/ProcEnvironment/Shims/libproc.h>
 #import <LindChain/ProcEnvironment/litehook/litehook.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>

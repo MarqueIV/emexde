@@ -30,7 +30,7 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
+#import <LindChain/ProcEnvironment/PEFileHandle.h>
 
 /* ----------------------------------------------------------------------
  *  Class Declarations

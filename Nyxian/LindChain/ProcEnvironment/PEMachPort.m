@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Object/PEMachPort.h>
+#import <LindChain/ProcEnvironment/PEMachPort.h>
 #import <xpc/xpc.h>
 
 @implementation PEMachPort

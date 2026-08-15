@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Process/PEBootstrapRegistry.h>
+#import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
 #import <os/lock.h>
 
 @implementation PEBootstrapRegistry {

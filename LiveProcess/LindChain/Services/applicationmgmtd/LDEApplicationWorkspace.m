@@ -24,7 +24,7 @@
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Object/ArchiveObject.h>
 #import <LindChain/Utils/Zip.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
 #import <Nyxian-Swift.h>
 
 @interface LDEApplicationWorkspace ()

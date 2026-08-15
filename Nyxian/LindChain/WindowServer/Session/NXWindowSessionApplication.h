@@ -22,7 +22,7 @@
 #ifndef NXWINDOWSESSIONAPPLICATION_H
 #define NXWINDOWSESSIONAPPLICATION_H
 
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/WindowServer/Window/NXWindowSession.h>
 #import <LindChain/Private/UIKitPrivate.h>
 

@@ -21,7 +21,7 @@
 
 #import <LindChain/ProcEnvironment/Surface/obj/reference.h>
 #import <LindChain/ProcEnvironment/Surface/obj/event.h>
-#import <LindChain/ProcEnvironment/panic.h>
+#import <LindChain/ProcEnvironment/Shims/panic.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <dlfcn.h>

@@ -20,8 +20,8 @@
 */
 
 #import <LindChain/IDEConsole/Utils.h>
-#include <LindChain/ProcEnvironment/vfork.h>
-#include <LindChain/ProcEnvironment/posix_spawn.h>
+#include <LindChain/ProcEnvironment/Shims/vfork.h>
+#include <LindChain/ProcEnvironment/Shims/posix_spawn.h>
 #include <LiveShim/LiveShimSyscall.h>
 #include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <mach/mach.h>

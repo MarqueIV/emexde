@@ -19,14 +19,14 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Process/PEExtension.h>
+#import <LindChain/ProcEnvironment/PEExtension.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
-#import <LindChain/ProcEnvironment/Object/PEMachPort.h>
+#import <LindChain/ProcEnvironment/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Syscall/mach_syscall_server.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <objc/runtime.h>
-#import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
 
 NSBundle *PEGetLiveProcessBundle(void)
 {

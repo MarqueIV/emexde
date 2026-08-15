@@ -23,7 +23,7 @@
 #define PELAUNCHSERVICE_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/Process/PEProcess.h>
+#import <LindChain/ProcEnvironment/PEProcess.h>
 #import <os/lock.h>
 
 @interface PELaunchService : NSObject {

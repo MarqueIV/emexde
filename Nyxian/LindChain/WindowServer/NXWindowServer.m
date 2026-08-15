@@ -21,7 +21,7 @@
 
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/WindowServer/NXAppTile.h>
-#import <LindChain/ProcEnvironment/Process/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 
 @interface NXWindowLayerView : UIView
 @end

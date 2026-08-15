@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Object/PEFileHandle.h>
+#import <LindChain/ProcEnvironment/PEFileHandle.h>
 #include <LindChain/ProcEnvironment/Utils/fd.h>
 #include <fcntl.h>
 #include <copyfile.h>

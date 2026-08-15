@@ -24,11 +24,11 @@
 #import <mach-o/dyld.h>
 #import <objc/runtime.h>
 #import <LindChain/ProcEnvironment/litehook/litehook.h>
-#import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/proxy.h>
-#import <LindChain/ProcEnvironment/posix_spawn.h>
+#import <LindChain/ProcEnvironment/Shims/environment.h>
+#import <LindChain/ProcEnvironment/Shims/proxy.h>
+#import <LindChain/ProcEnvironment/Shims/posix_spawn.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
-#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
+#import <LindChain/ProcEnvironment/PEFileTable.h>
 #import <LindChain/ServiceKit/Service.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceInternal.h>
 #import <ResecureDecoder.h>

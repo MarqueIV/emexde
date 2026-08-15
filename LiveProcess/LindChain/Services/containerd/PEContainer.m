@@ -21,7 +21,7 @@
 
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/Services/containerd/PEContainerProtocol.h>
-#import <LindChain/ProcEnvironment/Process/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
 #import <LindChain/ProcEnvironment/Surface/trust.h>
 
 #define PE_PROXY_OR_SIGNAL(sema) \

@@ -30,13 +30,13 @@
 /* ----------------------------------------------------------------------
  *  Environment API Headers
  * -------------------------------------------------------------------- */
-#import <LindChain/ProcEnvironment/proxy.h>
-#import <LindChain/ProcEnvironment/libproc.h>
-#import <LindChain/ProcEnvironment/application.h>
-#import <LindChain/ProcEnvironment/posix_spawn.h>
-#import <LindChain/ProcEnvironment/vfork.h>
-#import <LindChain/ProcEnvironment/Object/PEMachPort.h>
-#import <LindChain/ProcEnvironment/Object/PEFileTable.h>
+#import <LindChain/ProcEnvironment/PEMachPort.h>
+#import <LindChain/ProcEnvironment/PEFileTable.h>
+#import <LindChain/ProcEnvironment/Shims/proxy.h>
+#import <LindChain/ProcEnvironment/Shims/libproc.h>
+#import <LindChain/ProcEnvironment/Shims/application.h>
+#import <LindChain/ProcEnvironment/Shims/posix_spawn.h>
+#import <LindChain/ProcEnvironment/Shims/vfork.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #import <LindChain/ProcEnvironment/Surface/permit.h>

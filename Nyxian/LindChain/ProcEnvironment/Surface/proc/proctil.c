@@ -21,7 +21,7 @@
 
 #include <LindChain/ProcEnvironment/Surface/proc/proctil.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
-#include <LindChain/ProcEnvironment/panic.h>
+#include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <stdatomic.h>
 #include <os/lock.h>
 

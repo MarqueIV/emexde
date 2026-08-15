@@ -22,7 +22,7 @@
 
 #include <LindChain/ProcEnvironment/Syscall/mach_syscall_server.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
-#include <LindChain/ProcEnvironment/panic.h>
+#include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
