@@ -19,17 +19,27 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LindChain/ProcEnvironment/ioctl.h>
-#include <LiveShim/LiveShimSyscall.h>
-#include <LindChain/ProcEnvironment/litehook/litehook.h>
-#include <termios.h>
-#include <sys/ioctl.h>
-#include <errno.h>
-#include <unistd.h>
+#include <LiveShim/shim.h>
 
-DEFINE_HOOK(ioctl, int, (int fd,
-                         unsigned long flag,
-                         ...))
+#if LIVESHIM_IOCTL_ENABLED
+
+static int ksurface_user_ioctl(int fd, unsigned long flag, ...);
+static int ksurface_user_isatty(int fd);
+static int ksurface_user_tcgetattr(int fd, struct termios *t);
+static int ksurface_user_tcsetattr(int fd, int options, struct termios *t);
+static int ksurface_user_tcsetpgrp(int fd, pid_t pgrp);
+static int ksurface_user_tcgetpgrp(int fd);
+
+INTERPOSE(ksurface_user_ioctl, ioctl);
+INTERPOSE(ksurface_user_isatty, isatty);
+INTERPOSE(ksurface_user_tcgetattr, tcgetattr);
+INTERPOSE(ksurface_user_tcsetattr, tcsetattr);
+INTERPOSE(ksurface_user_tcsetpgrp, tcsetpgrp);
+INTERPOSE(ksurface_user_tcgetpgrp, tcgetpgrp);
+
+static int ksurface_user_ioctl(int fd,
+                               unsigned long flag,
+                               ...)
 {
     /* starting variadic argument parse */
     va_list args;
@@ -50,27 +60,28 @@ DEFINE_HOOK(ioctl, int, (int fd,
     if(ret != 0 &&
        errno == ENOSYS)
     {
-        return ORIG_FUNC(ioctl)(fd, flag, sys_args[0], sys_args[1], sys_args[2], sys_args[3], sys_args[4], sys_args[5], sys_args[6]);
+        int (*darwin_user_ioctl)(int fd, unsigned long flag, ...) = _interpose_ioctl.replacee;
+        return darwin_user_ioctl(fd, flag, sys_args[0], sys_args[1], sys_args[2], sys_args[3], sys_args[4], sys_args[5], sys_args[6]);
     }
     
     return ret;
 }
 
-DEFINE_HOOK(isatty, int, (int fd))
+static int ksurface_user_isatty(int fd)
 {
     struct termios termios;
     return liveshim_syscall(SYS_ioctl, fd, TIOCGETA, &termios) == 0;
 }
 
-DEFINE_HOOK(tcgetattr, int, (int fd,
-                             struct termios *t))
+static int ksurface_user_tcgetattr(int fd,
+                                   struct termios *t)
 {
     return (int)liveshim_syscall(SYS_ioctl, fd, TIOCGETA, t);
 }
 
-DEFINE_HOOK(tcsetattr, int, (int fd,
-                             int options,
-                             struct termios *t))
+static int ksurface_user_tcsetattr(int fd,
+                                   int options,
+                                   struct termios *t)
 {
     unsigned long req;
 
@@ -93,25 +104,17 @@ DEFINE_HOOK(tcsetattr, int, (int fd,
     return (int)liveshim_syscall(SYS_ioctl, fd, req, t);
 }
 
-DEFINE_HOOK(tcsetpgrp, int, (int fd,
-                             pid_t pgrp))
+static int ksurface_user_tcsetpgrp(int fd,
+                                   pid_t pgrp)
 {
     return (int)liveshim_syscall(SYS_ioctl, fd, TIOCSPGRP, &pgrp);
 }
 
-DEFINE_HOOK(tcgetpgrp, int, (int fd))
+static int ksurface_user_tcgetpgrp(int fd)
 {
     pid_t pgrp = 0;
     int ret = (int)liveshim_syscall(SYS_ioctl, fd, TIOCGPGRP, &pgrp);
     return (ret == 0) ? pgrp : -1;
 }
 
-void environment_ioctl_init(void)
-{
-    DO_HOOK_GLOBAL(ioctl);
-    DO_HOOK_GLOBAL(isatty);
-    DO_HOOK_GLOBAL(tcgetattr);
-    DO_HOOK_GLOBAL(tcsetattr);
-    DO_HOOK_GLOBAL(tcsetpgrp);
-    DO_HOOK_GLOBAL(tcgetpgrp);
-}
+#endif /* LIVESHIM_IOCTL_ENABLED */

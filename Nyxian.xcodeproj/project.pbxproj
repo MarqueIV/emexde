@@ -156,7 +156,6 @@
 			membershipExceptions = (
 				LindChain/ProcEnvironment/application.m,
 				LindChain/ProcEnvironment/cred.c,
-				LindChain/ProcEnvironment/ioctl.c,
 				LindChain/ProcEnvironment/libproc.m,
 				LindChain/ProcEnvironment/LiveContainer/LCBootstrap.m,
 				LindChain/ProcEnvironment/LiveContainer/Tweaks/Dead10ccFix.m,
@@ -167,7 +166,6 @@
 				"LindChain/ProcEnvironment/LiveContainer/Tweaks/UIKit+GuestHooksInit.m",
 				LindChain/ProcEnvironment/posix_spawn.m,
 				LindChain/ProcEnvironment/proxy.m,
-				LindChain/ProcEnvironment/sysctl.c,
 				LindChain/ProcEnvironment/tfp.c,
 				LindChain/ProcEnvironment/vfork.c,
 			);
@@ -211,7 +209,6 @@
 				LindChain/ProcEnvironment/attrstrnilfix.m,
 				LindChain/ProcEnvironment/cred.c,
 				LindChain/ProcEnvironment/environment.m,
-				LindChain/ProcEnvironment/ioctl.c,
 				LindChain/ProcEnvironment/libproc.m,
 				LindChain/ProcEnvironment/litehook/litehook.c,
 				LindChain/ProcEnvironment/LiveContainer/LCBootstrap.m,
@@ -233,7 +230,6 @@
 				LindChain/ProcEnvironment/proxy.m,
 				LindChain/ProcEnvironment/Surface/cdhash.m,
 				LindChain/ProcEnvironment/Surface/extra/relax.c,
-				LindChain/ProcEnvironment/sysctl.c,
 				LindChain/ProcEnvironment/tfp.c,
 				LindChain/ProcEnvironment/Utils/fd.c,
 				LindChain/ProcEnvironment/Utils/ktfp.c,
@@ -316,6 +312,7 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			privateHeaders = (
 				mach/fileport.h,
+				shims/shim.h,
 			);
 			publicHeaders = (
 				LiveShim.h,

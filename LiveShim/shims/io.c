@@ -19,39 +19,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdio.h>
-#include <dlfcn.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <dirent.h>
-#include <dlfcn.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <sys/attr.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <string.h>
-#include <LiveShim/LiveShimSyscall.h>
-#include <LiveShim/fileport.h>
+#include <LiveShim/shim.h>
 
-#define INTERPOSE(_replacement, _replacee)                          \
-    __attribute__((used))                                           \
-    static struct {                                                 \
-        const void *replacement;                                    \
-        const void *replacee;                                       \
-    } _interpose_##_replacee                                        \
-    __attribute__((section("__DATA,__interpose"))) = {              \
-        (const void *)(unsigned long)&_replacement,                 \
-        (const void *)(unsigned long)&_replacee                     \
-    }
-
-struct interpose_pair {
-    const void *replacement;
-    const void *replacee;
-};
+#if LIVESHIM_IO_ENABLED
 
 static int ksurface_user_open(const char *path, int flags, ...);
 static DIR *ksurface_user_opendir(const char *path);
@@ -114,3 +84,5 @@ static DIR *ksurface_user_opendir(const char *path)
     
     return dir;
 }
+
+#endif /* LIVESHIM_IO_ENABLED */
