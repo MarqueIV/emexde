@@ -57,10 +57,10 @@ struct interpose_pair {
     const void *replacee;
 };
 
-#define LIVESHIM_IO_ENABLED  0
+#define LIVESHIM_IO_ENABLED     0   /* very early in development */
 #define LIVESHIM_IOCTL_ENABLED  1
-#define LIVESHIM_SYSCTL_ENABLED  1
-#define LIVESHIM_TASK_ENABLED  1
-#define LIVESHIM_UCRED_ENABLED 1
+#define LIVESHIM_SYSCTL_ENABLED 1
+#define LIVESHIM_TASK_ENABLED   1
+#define LIVESHIM_UCRED_ENABLED  1
 
 #endif /* LIVESHIM_SHIM_H */
