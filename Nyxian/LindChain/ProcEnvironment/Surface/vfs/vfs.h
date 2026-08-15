@@ -36,5 +36,6 @@
 const char *vfs_match_mount(const char *path);
 bool vfs_resolve_rel(const char *in, char *out, size_t outsz);
 int vfs_root_fd(void);
+int vfs_host_path(const char *path, char *out, size_t outsz);
 
 #endif /* SURFACE_VFS_VFS_H */

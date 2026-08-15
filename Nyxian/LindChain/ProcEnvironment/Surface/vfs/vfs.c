@@ -21,6 +21,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 #include <LindChain/ProcEnvironment/Surface/vfs/vfs.h>
+#include <sys/param.h>
 #include <string.h>
 
 const char *vfs_match_mount(const char *path)
@@ -126,4 +127,48 @@ int vfs_root_fd(void)
         }
     });
     return rootfd;
+}
+
+int vfs_host_path(const char *path,
+                  char *out,
+                  size_t outsz)
+{
+    const char *sub = vfs_match_mount(path);
+    if(sub == NULL)
+    {
+        return ENOSYS;
+    }
+
+    const char *root = getenv("VFSROOT");
+    if(root == NULL || root[0] == '\0')
+    {
+        return ENOENT;
+    }
+
+    char rel[MAXPATHLEN];
+    if(!vfs_resolve_rel(sub, rel, sizeof rel))
+    {
+        return ENOENT;
+    }
+
+    int n;
+    if(rel[0] == '.' && rel[1] == '\0')
+    {
+        n = snprintf(out, outsz, "%s", root);
+    }
+    else
+    {
+        n = snprintf(out, outsz, "%s/%s", root, rel);
+    }
+
+    if(n < 0)
+    {
+        return EIO;
+    }
+    if((size_t)n >= outsz)
+    {
+        return ENAMETOOLONG;
+    }
+
+    return 0;
 }

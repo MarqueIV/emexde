@@ -51,4 +51,5 @@ syscall_list_item_t sys_list[SYS_N] = {
     { .name = "SYS_pectl",          .sysnum = SYS_pectl,        .hndl = GET_SYSCALL_HANDLER(pectl)          },
     { .name = "SYS_open",           .sysnum = SYS_open,         .hndl = GET_SYSCALL_HANDLER(open)           },
     { .name = "SYS_faccessat",      .sysnum = SYS_faccessat,    .hndl = GET_SYSCALL_HANDLER(faccessat)      },
+    { .name = "SYS_getattrlist",    .sysnum = SYS_getattrlist,  .hndl = GET_SYSCALL_HANDLER(getattrlist)    },
 };

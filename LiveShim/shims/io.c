@@ -27,11 +27,13 @@ static int ksurface_user_open(const char *path, int flags, ...);
 static DIR *ksurface_user_opendir(const char *path);
 static int ksurface_user_faccessat(int dirFd, const char *access, int mode, int flags);
 static int ksurface_user_access(const char *path, int mode);
+static int ksurface_user_getattrlist(const char *a, void *b, void *c, size_t d, unsigned int e);
 
 INTERPOSE(ksurface_user_open, open);
 INTERPOSE(ksurface_user_opendir, opendir);
 INTERPOSE(ksurface_user_faccessat, faccessat);
 INTERPOSE(ksurface_user_access, access);
+INTERPOSE(ksurface_user_getattrlist, getattrlist);
 
 static int ksurface_user_open(const char *path,
                               int flags,
@@ -108,6 +110,21 @@ static int ksurface_user_access(const char *path,
                                 int mode)
 {
     return ksurface_user_faccessat(AT_FDCWD, path, mode, 0);
+}
+
+static int ksurface_user_getattrlist(const char *path,
+                                     void *attrList,
+                                     void *attrBuf,
+                                     size_t attrBufSize,
+                                     unsigned int options)
+{
+    int (*darwin_user_getattrlist)(const char *a, void *b, void *c, size_t d, unsigned int e) = _interpose_getattrlist.replacee;
+    int ret = (int)liveshim_syscall(SYS_getattrlist, path, attrList, attrBuf, attrBufSize, options);
+    if(ret == -1 && errno == ENOSYS)
+    {
+        ret = darwin_user_getattrlist(path, attrList, attrBuf, attrBufSize, options);
+    }
+    return (int)ret;
 }
 
 #endif /* LIVESHIM_IO_ENABLED */
