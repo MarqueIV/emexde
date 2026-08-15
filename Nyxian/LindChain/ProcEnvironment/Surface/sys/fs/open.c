@@ -41,7 +41,7 @@ DEFINE_SYSCALL_HANDLER(open)
     }
     
     printf("[ksurface:open] triggered /Developer virtual mount\n");
-    int fd = open(getenv("HOME"), O_DIRECTORY | O_RDONLY);
+    int fd = open(getenv("VFSROOT"), O_DIRECTORY | O_RDONLY);
     if(fd < 0)
     {
         sys_return_failure(ENOSYS);

@@ -236,6 +236,8 @@ void ksurface_kinit(void)
     klog_log("ksurface:kinit", "hello from kinit");
     klog_log("ksurface:kinit", "kernel commits magic spells to the iOS kernel now");
     
+    setenv("VFSROOT", [[NSString stringWithFormat:@"%@/Documents", NSHomeDirectory()] UTF8String], 1);
+    
     /*
      * allocates the surface where everything nyxian kernel
      * related exists, structures that are made to store

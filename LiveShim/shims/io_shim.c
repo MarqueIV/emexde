@@ -59,11 +59,6 @@ static DIR *ksurface_user_opendir(const char *path);
 INTERPOSE(ksurface_user_open, open);
 INTERPOSE(ksurface_user_opendir, opendir);
 
-static void hook_log(const char *s)
-{
-    write(STDERR_FILENO, s, strlen(s));
-}
-
 static int ksurface_user_open(const char *path,
                               int flags,
                               ...)
