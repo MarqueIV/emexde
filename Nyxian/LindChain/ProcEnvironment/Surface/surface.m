@@ -234,7 +234,13 @@ void ksurface_kinit(void)
 {
     /* starting huh :3 (shall only run once) */
     klog_log("ksurface:kinit", "hello from kinit");
-    klog_log("ksurface:kinit", "kernel commits magic spells to the iOS kernel now");
+    klog_log("ksurface:kinit", "kernel commits magic spells to the iOS kernel :3");
+    klog_log("ksurface:kinit", "extending paws onto XNU");
+    klog_log("ksurface:kinit", "");
+    klog_log("ksurface:kinit", "   |\\__/,|   (`\\");
+    klog_log("ksurface:kinit", " _.|o o  |_   ) )");
+    klog_log("ksurface:kinit", "-(((---(((--------");
+    klog_log("ksurface:kinit", "");
     
     /* sets where the virtual /Developer mount will reference too */
     setenv("VFSROOT", [[NSString stringWithFormat:@"%@/Documents", NSHomeDirectory()] UTF8String], 1);
