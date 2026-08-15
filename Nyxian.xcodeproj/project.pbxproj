@@ -27,6 +27,8 @@
 		86DCC30A2FA521A600973169 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 86DCC3082FA5219900973169 /* libz.tbd */; };
 		86E4D4F72FB8CF63008BFE4D /* TreeSitterSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 86E4D4F62FB8CF63008BFE4D /* TreeSitterSwift */; };
 		8F4D96E62FFBF8FB006CAF3C /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8F4D96E52FFBF8FB006CAF3C /* Runestone */; };
+		8FB3BAF93030001D00DB3ABC /* LiveShim.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */; };
+		8FB3BAFA3030001D00DB3ABC /* LiveShim.framework in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		8FECB2472FFD34D500049BB0 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8FECB2462FFD34D500049BB0 /* Runestone */; };
 		8FECB24D2FFD367A00049BB0 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8FECB24C2FFD367A00049BB0 /* Runestone */; };
 		AF9919582DC9175A00DDF895 /* TreeSitterObjc in Frameworks */ = {isa = PBXBuildFile; productRef = AF9919572DC9175A00DDF895 /* TreeSitterObjc */; };
@@ -63,6 +65,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 86DCC2592FA5209600973169;
 			remoteInfo = CoreCompiler;
+		};
+		8FB3BAFB3030001D00DB3ABC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8FB3BADA302FFBAA00DB3ABC;
+			remoteInfo = LiveShim;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -105,6 +114,7 @@
 			files = (
 				860D917E2FAE1F95000D321B /* MobileDevelopmentKit.framework in Embed Libraries */,
 				860D91E12FAE2E4C000D321B /* CoreCompiler.framework in Embed Libraries */,
+				8FB3BAFA3030001D00DB3ABC /* LiveShim.framework in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -126,6 +136,7 @@
 		86DCC25A2FA5209600973169 /* CoreCompiler.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CoreCompiler.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86DCC3082FA5219900973169 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		86DCC3092FA521A100973169 /* libz.1.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.tbd; path = usr/lib/libz.1.tbd; sourceTree = SDKROOT; };
+		8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = LiveShim.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF99171F2DC8EA3C00DDF895 /* Shared */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Shared; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -294,6 +305,13 @@
 			);
 			target = 86DCC2592FA5209600973169 /* CoreCompiler */;
 		};
+		8FB3BAE8302FFBAA00DB3ABC /* Exceptions for "LiveShim" folder in "LiveShim" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			publicHeaders = (
+				LiveShim.h,
+			);
+			target = 8FB3BADA302FFBAA00DB3ABC /* LiveShim */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
@@ -375,6 +393,14 @@
 			path = CoreCompiler;
 			sourceTree = "<group>";
 		};
+		8FB3BADC302FFBAA00DB3ABC /* LiveShim */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8FB3BAE8302FFBAA00DB3ABC /* Exceptions for "LiveShim" folder in "LiveShim" target */,
+			);
+			path = LiveShim;
+			sourceTree = "<group>";
+		};
 		AF9916DB2DC8C42200DDF895 /* Nyxian */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -421,6 +447,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8FB3BAD8302FFBAA00DB3ABC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AF9916D62DC8C42200DDF895 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -432,6 +465,7 @@
 				79B70C1F2F732364000F38E7 /* Runestone in Frameworks */,
 				8F4D96E62FFBF8FB006CAF3C /* Runestone in Frameworks */,
 				8FECB2472FFD34D500049BB0 /* Runestone in Frameworks */,
+				8FB3BAF93030001D00DB3ABC /* LiveShim.framework in Frameworks */,
 				AF9919582DC9175A00DDF895 /* TreeSitterObjc in Frameworks */,
 				793A4E3B2F84FE1D003B609A /* Runestone in Frameworks */,
 				791C96052F8726B0006AF674 /* Runestone in Frameworks */,
@@ -474,12 +508,14 @@
 				79AA11BD2F7FFE24002FEAF2 /* nxtool */,
 				86DCC25B2FA5209600973169 /* CoreCompiler */,
 				860D91762FAE1F95000D321B /* MobileDevelopmentKit */,
+				8FB3BADC302FFBAA00DB3ABC /* LiveShim */,
 				7944B5662DEC74FC00834134 /* Frameworks */,
 				79BF97F72E6291EE00C60D4C /* LiveProcess.appex */,
 				7944B5652DEC74EA00834134 /* Nyxian.app */,
 				79AA11BC2F7FFE24002FEAF2 /* nxtool */,
 				86DCC25A2FA5209600973169 /* CoreCompiler.framework */,
 				860D91752FAE1F95000D321B /* MobileDevelopmentKit.framework */,
+				8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */,
 			);
 			sourceTree = "<group>";
 		};
@@ -494,6 +530,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		86DCC2552FA5209600973169 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8FB3BAD6302FFBAA00DB3ABC /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -592,6 +635,29 @@
 			productReference = 86DCC25A2FA5209600973169 /* CoreCompiler.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		8FB3BADA302FFBAA00DB3ABC /* LiveShim */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8FB3BAE5302FFBAA00DB3ABC /* Build configuration list for PBXNativeTarget "LiveShim" */;
+			buildPhases = (
+				8FB3BAD6302FFBAA00DB3ABC /* Headers */,
+				8FB3BAD7302FFBAA00DB3ABC /* Sources */,
+				8FB3BAD8302FFBAA00DB3ABC /* Frameworks */,
+				8FB3BAD9302FFBAA00DB3ABC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				8FB3BADC302FFBAA00DB3ABC /* LiveShim */,
+			);
+			name = LiveShim;
+			packageProductDependencies = (
+			);
+			productName = LiveShim;
+			productReference = 8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		AF9916D82DC8C42200DDF895 /* Nyxian */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = AF9916E72DC8C42400DDF895 /* Build configuration list for PBXNativeTarget "Nyxian" */;
@@ -608,6 +674,7 @@
 				795227892F45B52000D1C3CC /* PBXTargetDependency */,
 				860D917C2FAE1F95000D321B /* PBXTargetDependency */,
 				860D91E32FAE2E4C000D321B /* PBXTargetDependency */,
+				8FB3BAFC3030001D00DB3ABC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AF9916DB2DC8C42200DDF895 /* Nyxian */,
@@ -658,6 +725,9 @@
 						CreatedOnToolsVersion = 26.4.1;
 						LastSwiftMigration = 2640;
 					};
+					8FB3BADA302FFBAA00DB3ABC = {
+						CreatedOnToolsVersion = 27.0;
+					};
 					AF9916D82DC8C42200DDF895 = {
 						CreatedOnToolsVersion = 16.2;
 					};
@@ -692,6 +762,7 @@
 				860D91742FAE1F95000D321B /* MobileDevelopmentKit */,
 				86DCC2592FA5209600973169 /* CoreCompiler */,
 				79AA11BB2F7FFE24002FEAF2 /* nxtool */,
+				8FB3BADA302FFBAA00DB3ABC /* LiveShim */,
 			);
 		};
 /* End PBXProject section */
@@ -712,6 +783,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		86DCC2582FA5209600973169 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8FB3BAD9302FFBAA00DB3ABC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -757,6 +835,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8FB3BAD7302FFBAA00DB3ABC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AF9916D52DC8C42200DDF895 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -787,6 +872,11 @@
 			isa = PBXTargetDependency;
 			target = 86DCC2592FA5209600973169 /* CoreCompiler */;
 			targetProxy = 860D91E22FAE2E4C000D321B /* PBXContainerItemProxy */;
+		};
+		8FB3BAFC3030001D00DB3ABC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8FB3BADA302FFBAA00DB3ABC /* LiveShim */;
+			targetProxy = 8FB3BAFB3030001D00DB3ABC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1091,6 +1181,74 @@
 			};
 			name = Release;
 		};
+		8FB3BAE6302FFBAA00DB3ABC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = org.emexlabs.LiveShim;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		8FB3BAE7302FFBAA00DB3ABC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 27.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				PRODUCT_BUNDLE_IDENTIFIER = org.emexlabs.LiveShim;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		AF9916E52DC8C42400DDF895 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 79277DC02EE8752800F18B30 /* Config.xcconfig */;
@@ -1304,7 +1462,6 @@
 				INFOPLIST_KEY_OSBundleUsageDescription = "The guest app is requesting for this permission.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -1422,7 +1579,6 @@
 				INFOPLIST_KEY_OSBundleUsageDescription = "The guest app is requesting for this permission.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = NO;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = "";
 				INFOPLIST_KEY_UIRequiresFullScreen = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
@@ -1492,6 +1648,15 @@
 			buildConfigurations = (
 				86DCC2652FA5209600973169 /* Debug */,
 				86DCC2662FA5209600973169 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8FB3BAE5302FFBAA00DB3ABC /* Build configuration list for PBXNativeTarget "LiveShim" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8FB3BAE6302FFBAA00DB3ABC /* Debug */,
+				8FB3BAE7302FFBAA00DB3ABC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
