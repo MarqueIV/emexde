@@ -70,7 +70,13 @@
         ksurface_kinit();
         
         klog_log(domain, "spinning up launch services");
-        [PELaunchServiceManager shared];
+        PELaunchServiceManager *launchServiceManager = [PELaunchServiceManager shared];
+        if(launchServiceManager == nil)
+        {
+            environment_panic(domain, "PELaunchServiceManager didn't spin up");
+        }
+        
+        [launchServiceManager reloadAllEntries];
     }
 }
 

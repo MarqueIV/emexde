@@ -30,10 +30,16 @@
 - (instancetype)init
 {
     self = [super init];
-    _launchServices = [[NSMutableArray alloc] init];
-    _lock = OS_UNFAIR_LOCK_INIT;
-    _isBooted = NO;
-    [self reloadAllEntries];
+    if(self)
+    {
+        _launchServices = [[NSMutableArray alloc] init];
+        if(_launchServices == nil)
+        {
+            return nil;
+        }
+        _lock = OS_UNFAIR_LOCK_INIT;
+        _isBooted = NO;
+    }
     return self;
 }
 
