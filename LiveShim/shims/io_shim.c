@@ -35,15 +35,15 @@
 #include <unistd.h>
 #include <string.h>
 
-#define INTERPOSE(_replacement, _replacee)                       \
-    __attribute__((used))                                       \
-    static struct {                                              \
-        const void *replacement;                                 \
-        const void *replacee;                                    \
-    } _interpose_##_replacee                                     \
-    __attribute__((section("__DATA,__interpose"))) = {           \
-        (const void *)(unsigned long)&_replacement,               \
-        (const void *)(unsigned long)&_replacee                   \
+#define INTERPOSE(_replacement, _replacee)                          \
+    __attribute__((used))                                           \
+    static struct {                                                 \
+        const void *replacement;                                    \
+        const void *replacee;                                       \
+    } _interpose_##_replacee                                        \
+    __attribute__((section("__DATA,__interpose"))) = {              \
+        (const void *)(unsigned long)&_replacement,                 \
+        (const void *)(unsigned long)&_replacee                     \
     }
 
 struct interpose_pair {
@@ -59,7 +59,7 @@ INTERPOSE(ksurface_user_opendir, opendir);
 
 static void hook_log(const char *s)
 {
-    syscall(SYS_write, STDERR_FILENO, s, strlen(s));
+    write(STDERR_FILENO, s, strlen(s));
 }
 
 static int ksurface_user_open(const char *path,

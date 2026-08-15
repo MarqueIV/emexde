@@ -25,10 +25,10 @@
 #import <LindChain/ProcEnvironment/Surface/proc/def.h>
 #import <LindChain/ProcEnvironment/Surface/tty/def.h>
 #import <LindChain/ProcEnvironment/Syscall/mach_syscall_server.h>
-#import <LindChain/ProcEnvironment/Syscall/mach_syscall_client.h>
 #import <LindChain/ProcEnvironment/Surface/radix/radix.h>
 #import <LindChain/ProcEnvironment/Surface/lock.h>
 #include <LindChain/ProcEnvironment/Surface/key.h>
+#include <LiveShim/LiveShimSyscall.h>
 #include <stdint.h>
 #include <limits.h>
 #include <pthread.h>

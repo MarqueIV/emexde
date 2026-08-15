@@ -21,82 +21,82 @@
 
 #include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <LindChain/ProcEnvironment/cred.h>
-#include <LindChain/ProcEnvironment/syscall.h>
+#include <LiveShim/LiveShimSyscall.h>
 #include <unistd.h>
 
 DEFINE_HOOK(getuid, uid_t, (void))
 {
-    return (uid_t)environment_syscall(SYS_getuid);
+    return (uid_t)liveshim_syscall(SYS_getuid);
 }
 
 DEFINE_HOOK(getgid, gid_t, (void))
 {
-    return (gid_t)environment_syscall(SYS_getgid);
+    return (gid_t)liveshim_syscall(SYS_getgid);
 }
 
 DEFINE_HOOK(geteuid, uid_t, (void))
 {
-    return (uid_t)environment_syscall(SYS_geteuid);
+    return (uid_t)liveshim_syscall(SYS_geteuid);
 }
 
 DEFINE_HOOK(getegid, gid_t, (void))
 {
-    return (gid_t)environment_syscall(SYS_getegid);
+    return (gid_t)liveshim_syscall(SYS_getegid);
 }
 
 DEFINE_HOOK(getppid, pid_t, (void))
 {
-    return (pid_t)environment_syscall(SYS_getppid);
+    return (pid_t)liveshim_syscall(SYS_getppid);
 }
 
 DEFINE_HOOK(setuid, int, (uid_t uid))
 {
-    return (int)environment_syscall(SYS_setuid, uid);
+    return (int)liveshim_syscall(SYS_setuid, uid);
 }
 
 DEFINE_HOOK(seteuid, int, (uid_t euid))
 {
-    return (int)environment_syscall(SYS_seteuid, euid);
+    return (int)liveshim_syscall(SYS_seteuid, euid);
 }
 
 DEFINE_HOOK(setruid, int, (uid_t uid))
 {
-    return (int)environment_syscall(SYS_setreuid, uid, -1);
+    return (int)liveshim_syscall(SYS_setreuid, uid, -1);
 }
 
 DEFINE_HOOK(setreuid, int, (uid_t ruid, uid_t euid))
 {
-    return (int)environment_syscall(SYS_setreuid, ruid, euid);
+    return (int)liveshim_syscall(SYS_setreuid, ruid, euid);
 }
 
 DEFINE_HOOK(setgid, int, (gid_t gid))
 {
-    return (int)environment_syscall(SYS_setgid, gid);
+    return (int)liveshim_syscall(SYS_setgid, gid);
 }
 
 DEFINE_HOOK(setegid, int, (gid_t gid))
 {
-    return (int)environment_syscall(SYS_setegid, gid);
+    return (int)liveshim_syscall(SYS_setegid, gid);
 }
 
 DEFINE_HOOK(setrgid, int, (gid_t gid))
 {
-    return (int)environment_syscall(SYS_setregid, gid, -1);
+    return (int)liveshim_syscall(SYS_setregid, gid, -1);
 }
 
 DEFINE_HOOK(setregid, int, (gid_t egid, gid_t rgid))
 {
-    return (int)environment_syscall(SYS_setregid, egid, rgid);
+    return (int)liveshim_syscall(SYS_setregid, egid, rgid);
 }
 
 DEFINE_HOOK(getsid, pid_t, (pid_t sid))
 {
-    return (pid_t)environment_syscall(SYS_getsid, sid);
+    return (pid_t)liveshim_syscall(SYS_getsid, sid);
 }
 
 DEFINE_HOOK(setsid, int, (void))
 {
-    return (int)environment_syscall(SYS_setsid);
+    return (int)liveshim_syscall(SYS_setsid);
 }
 
 void environment_cred_init(void)

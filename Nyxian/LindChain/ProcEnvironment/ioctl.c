@@ -20,11 +20,12 @@
 */
 
 #include <LindChain/ProcEnvironment/ioctl.h>
-#include <LindChain/ProcEnvironment/syscall.h>
+#include <LiveShim/LiveShimSyscall.h>
 #include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <termios.h>
 #include <sys/ioctl.h>
 #include <errno.h>
+#include <unistd.h>
 
 DEFINE_HOOK(ioctl, int, (int fd,
                          unsigned long flag,
@@ -44,7 +45,7 @@ DEFINE_HOOK(ioctl, int, (int fd,
     /* ending parse */
     va_end(args);
     
-    int ret = (int)environment_syscall(SYS_ioctl, fd, flag, sys_args[0], sys_args[1], sys_args[2], sys_args[3], sys_args[4], sys_args[5], sys_args[6]);
+    int ret = (int)liveshim_syscall(SYS_ioctl, fd, flag, sys_args[0], sys_args[1], sys_args[2], sys_args[3], sys_args[4], sys_args[5], sys_args[6]);
     
     if(ret != 0 &&
        errno == ENOSYS)
@@ -58,13 +59,13 @@ DEFINE_HOOK(ioctl, int, (int fd,
 DEFINE_HOOK(isatty, int, (int fd))
 {
     struct termios termios;
-    return environment_syscall(SYS_ioctl, fd, TIOCGETA, &termios) == 0;
+    return liveshim_syscall(SYS_ioctl, fd, TIOCGETA, &termios) == 0;
 }
 
 DEFINE_HOOK(tcgetattr, int, (int fd,
                              struct termios *t))
 {
-    return (int)environment_syscall(SYS_ioctl, fd, TIOCGETA, t);
+    return (int)liveshim_syscall(SYS_ioctl, fd, TIOCGETA, t);
 }
 
 DEFINE_HOOK(tcsetattr, int, (int fd,
@@ -89,19 +90,19 @@ DEFINE_HOOK(tcsetattr, int, (int fd,
             return -1;
     }
     
-    return (int)environment_syscall(SYS_ioctl, fd, req, t);
+    return (int)liveshim_syscall(SYS_ioctl, fd, req, t);
 }
 
 DEFINE_HOOK(tcsetpgrp, int, (int fd,
                              pid_t pgrp))
 {
-    return (int)environment_syscall(SYS_ioctl, fd, TIOCSPGRP, &pgrp);
+    return (int)liveshim_syscall(SYS_ioctl, fd, TIOCSPGRP, &pgrp);
 }
 
 DEFINE_HOOK(tcgetpgrp, int, (int fd))
 {
     pid_t pgrp = 0;
-    int ret = (int)environment_syscall(SYS_ioctl, fd, TIOCGPGRP, &pgrp);
+    int ret = (int)liveshim_syscall(SYS_ioctl, fd, TIOCGPGRP, &pgrp);
     return (ret == 0) ? pgrp : -1;
 }
 

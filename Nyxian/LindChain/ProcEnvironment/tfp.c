@@ -22,7 +22,7 @@
 #include <LindChain/ProcEnvironment/tfp.h>
 #include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
-#include <LindChain/ProcEnvironment/syscall.h>
+#include <LiveShim/LiveShimSyscall.h>
 #include <LindChain/ProcEnvironment/Utils/ktfp.h>
 #include <mach/mach.h>
 
@@ -37,7 +37,7 @@ static kern_return_t __environment_task_for_pid(mach_port_name_t tp_in,
     }
     
     *tp_out = MACH_PORT_NULL;   /* SYS_gettask may not zero it out on failure */
-    int64_t ret = environment_syscall(SYS_gettask, pid, name_port, tp_out);
+    int64_t ret = liveshim_syscall(SYS_gettask, pid, name_port, tp_out);
     if(ret == -1 || *tp_out == MACH_PORT_NULL)
     {
         return KERN_FAILURE;

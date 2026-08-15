@@ -21,7 +21,7 @@
 
 #import <Foundation/Foundation.h>
 #import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 #import <LindChain/ProcEnvironment/proxy.h>
 #import <LindChain/ProcEnvironment/libproc.h>
 #import <LindChain/ProcEnvironment/litehook/litehook.h>
@@ -42,7 +42,7 @@ DEFINE_HOOK(proc_listallpids, int, (void *buffer,
     uint32_t len = sizeof(kp);
     
     int mib[3] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL };
-    environment_syscall(SYS_sysctl, mib, 3, &kp, &len);
+    liveshim_syscall(SYS_sysctl, mib, 3, &kp, &len);
     
     size_t count = (uint32_t)(len / sizeof(kinfo_proc_t));
     
@@ -84,7 +84,7 @@ DEFINE_HOOK(proc_name, int, (pid_t pid,
     int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)pid };
     kinfo_proc_t kp;
     size_t olen = sizeof(kp);
-    int64_t retval = environment_syscall(SYS_sysctl, mib, 4, &kp, &olen, NULL, 0);
+    int64_t retval = liveshim_syscall(SYS_sysctl, mib, 4, &kp, &olen, NULL, 0);
     if(retval != 0 || olen < sizeof(kp))
     {
         return (int)retval;
@@ -108,7 +108,7 @@ DEFINE_HOOK(proc_pidpath, int, (pid_t pid,
     }
     
     /* syscall with SYS_PROCPATH */
-    int64_t retval = environment_syscall(SYS_procpath, pid, buffer, &buffersize);
+    int64_t retval = liveshim_syscall(SYS_procpath, pid, buffer, &buffersize);
     if(retval != 0)
     {
         return 0;
@@ -160,7 +160,7 @@ DEFINE_HOOK(proc_pidpath, int, (pid_t pid,
 
 DEFINE_HOOK(kill, int, (pid_t pid, int sig))
 {
-    return (int)environment_syscall(SYS_kill, pid, sig);
+    return (int)liveshim_syscall(SYS_kill, pid, sig);
 }
 
 DEFINE_HOOK(raise, int, (int sig))

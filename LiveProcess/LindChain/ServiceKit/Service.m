@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 #import <LindChain/ServiceKit/Service.h>
 #include <dlfcn.h>
 #include <mach/mach.h>
@@ -123,7 +123,7 @@ int PEServiceMain(int argc,
                 return;
             }
             
-            if(environment_syscall(SYS_pectl, PECTL_LS_SET_ENDPOINT, [serviceIdentifier UTF8String], port) != 0)
+            if(liveshim_syscall(SYS_pectl, PECTL_LS_SET_ENDPOINT, [serviceIdentifier UTF8String], port) != 0)
             {
                 return;
             }

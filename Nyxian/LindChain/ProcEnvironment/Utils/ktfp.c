@@ -21,7 +21,8 @@
 
 #import <LindChain/ProcEnvironment/Utils/ktfp.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
+#include <assert.h>
 
 typedef struct {
     union {
@@ -69,7 +70,7 @@ kern_return_t ktfp(mach_port_t exceptionPort, task_t *task)
     }
     
     /* handing off receive right to host environment */
-    if(environment_syscall(SYS_handoffep, exceptionPort) != 0)
+    if(liveshim_syscall(SYS_handoffep, exceptionPort) != 0)
     {
         goto out_dealloc;
     }

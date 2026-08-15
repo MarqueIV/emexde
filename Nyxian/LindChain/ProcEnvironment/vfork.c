@@ -22,12 +22,13 @@
 #import <LindChain/IDEConsole/Utils.h>
 #include <LindChain/ProcEnvironment/vfork.h>
 #include <LindChain/ProcEnvironment/posix_spawn.h>
-#include <LindChain/ProcEnvironment/syscall.h>
+#include <LiveShim/LiveShimSyscall.h>
 #include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <mach/mach.h>
 #include <pthread.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <unistd.h>
 
 #pragma mark - Threading black magic
 
@@ -392,7 +393,7 @@ DEFINE_HOOK(waitpid, pid_t, (pid_t pid,
                              int *ecode,
                              int options))
 {
-    return (pid_t)environment_syscall(SYS_wait4, pid, ecode, options);
+    return (pid_t)liveshim_syscall(SYS_wait4, pid, ecode, options);
 }
 
 DEFINE_HOOK(wait4, pid_t, (pid_t pid,
@@ -400,7 +401,7 @@ DEFINE_HOOK(wait4, pid_t, (pid_t pid,
                            int options,
                            struct rusage *rs))
 {
-    return (pid_t)environment_syscall(SYS_wait4, pid, ecode, options, rs);
+    return (pid_t)liveshim_syscall(SYS_wait4, pid, ecode, options, rs);
 }
 
 #pragma mark - Initilizer

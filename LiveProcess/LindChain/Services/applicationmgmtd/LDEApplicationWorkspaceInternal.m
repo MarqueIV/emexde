@@ -21,7 +21,7 @@
 
 #import "LDEApplicationWorkspaceInternal.h"
 #import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 #import <LindChain/Utils/Zip.h>
 #import <Security/Security.h>
 #import <LindChain/ProcEnvironment/Object/PEFileTable.h>

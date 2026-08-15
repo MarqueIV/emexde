@@ -43,7 +43,7 @@
 #import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
 #import <malloc/malloc.h>
 #import <LindChain/Utils/CFTools.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 
 int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char* newPath, uint32_t* bufsize)
 {
@@ -160,7 +160,7 @@ int LCBootstrapMain(NSString *executablePath,
     
     /* preload executable to bypass RT_NOLOAD */
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
-    int64_t ret = environment_syscall(SYS_pectl, PECTL_CS_GET_CDHASH, cdhash, MACH_PORT_NULL);
+    int64_t ret = liveshim_syscall(SYS_pectl, PECTL_CS_GET_CDHASH, cdhash, MACH_PORT_NULL);
     appMainImageIndex = _dyld_image_count();
     /* makes sure the binary gets loaded that is meant to have the ksurface capabilities */
     void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, ret != 0 ? NULL : cdhash);

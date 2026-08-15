@@ -20,9 +20,9 @@
 */
 
 #import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/syscall.h>
 #import <LindChain/ProcEnvironment/Surface/extra/relax.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
+#import <LiveShim/LiveShimSyscall.h>
 #include <dlfcn.h>
 
 #if !HOST_ENV
@@ -50,16 +50,11 @@ void environment_client_connect_to_host(NSXPCListenerEndpoint *endpoint)
 
 void environment_client_connect_to_syscall_proxy(PEMachPort *port)
 {
-    /* creating client*/
-    syscall_client_t *client = syscall_client_create([port port]);
-    
-    /* null pointer check */
+    syscall_client_t *client = liveshim_syscall_client_create([port port]);
     if(client == NULL)
     {
         return;
     }
-    
-    /* setting syscall proxy */
     syscallProxy = client;
 }
 
@@ -112,7 +107,7 @@ int environment_init(EnvironmentExec exec,
          * first, we gonna have to wait.
          * TODO: create something like a process placeholder to confirm that spawning processes is allowed otherwise a forkbomb would cause continious killing and spawning of NXExtension child
          */
-        while(environment_syscall(SYS_getppid) < 0)
+        while(liveshim_syscall(SYS_getppid) < 0)
         {
             relax();
         }

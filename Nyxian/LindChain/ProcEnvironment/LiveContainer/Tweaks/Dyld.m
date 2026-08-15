@@ -30,10 +30,10 @@
 #import "LCMachOUtils.h"
 #import "../utils.h"
 #import <LindChain/ProcEnvironment/environment.h>
-#import <LindChain/ProcEnvironment/syscall.h>
 #import <LindChain/ProcEnvironment/Surface/cdhash.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #import <LindChain/Utils/CFTools.h>
+#import <LiveShim/LiveShimSyscall.h>
 
 typedef struct {
     uint32_t platform;
@@ -128,7 +128,7 @@ DEFINE_HOOK(dlopen, void *, (const char * __path,
     if(!cs_valid)
     {
         /* sign if invalid */
-        if((int)environment_syscall(SYS_pectl, PECTL_CS_SIGN_PATH, __path, MACH_PORT_NULL) == 0)
+        if((int)liveshim_syscall(SYS_pectl, PECTL_CS_SIGN_PATH, __path, MACH_PORT_NULL) == 0)
         {
             refreshFile(__path);
         }
@@ -382,7 +382,7 @@ void DyldHooksInit(void)
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        PEEntitlement ownEntitlements = environment_syscall(SYS_getent);
+        PEEntitlement ownEntitlements = liveshim_syscall(SYS_getent);
         if(entitlement_got_entitlement(ownEntitlements, PEEntitlementDyldHideLiveProcess))
         {
             int imageCount = _dyld_image_count();
@@ -485,7 +485,7 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
 #if DEBUG
                             printf("[DYLD:CDHash Verifier] something is wrong 3:\n");
 #endif /* DEBUG */
-                            if(environment_syscall(SYS_pectl, PECTL_CS_FALLBACK_ENT, NULL, MACH_PORT_NULL) != 0)
+                            if(liveshim_syscall(SYS_pectl, PECTL_CS_FALLBACK_ENT, NULL, MACH_PORT_NULL) != 0)
                             {
                                 /* didn't succeed in rolling back permitives */
                                 abort();

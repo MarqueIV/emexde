@@ -24,13 +24,12 @@
 #include <signal.h>
 #include <errno.h>
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 
 #define PROXY_MAX_DISPATCH_TIME 1.0
 #define PROXY_TYPE_REPLY(type) ^(void (^reply)(type))
 
 NSObject<ServerProtocol> *hostProcessProxy = nil;
-syscall_client_t *syscallProxy = NULL;
 
 static int64_t sync_call_with_timeout_int64(void (^invoke)(void (^reply)(int64_t)))
 {

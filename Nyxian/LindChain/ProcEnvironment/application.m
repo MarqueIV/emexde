@@ -27,7 +27,7 @@
 #import <LindChain/Utils/Swizzle.h>
 #import <LindChain/ProcEnvironment/proxy.h>
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 
 #pragma mark - Initilizer
 
@@ -39,12 +39,12 @@ static dispatch_source_t global_signal_source = nil;
 - (void)hook_run
 {
     /* tell host app to let our process appear as a window */
-    environment_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
+    liveshim_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
     
     while(errno == EAGAIN)
     {
         usleep(500);
-        environment_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
+        liveshim_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
     }
     
     [self hook_run];

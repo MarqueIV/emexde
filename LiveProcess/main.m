@@ -29,14 +29,10 @@
 #import <LindChain/ProcEnvironment/posix_spawn.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Object/PEFileTable.h>
-
 #import <LindChain/ServiceKit/Service.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceInternal.h>
-
 #import <ResecureDecoder.h>
-
-#import <LindChain/ProcEnvironment/Syscall/mach_syscall_client.h>
-#import <LindChain/ProcEnvironment/syscall.h>
+#import <LiveShim/LiveShimSyscall.h>
 
 bool performHookDyldApi(const char* functionName, uint32_t adrpOffset, void** origFunction, void* hookFunction);
 
@@ -222,8 +218,8 @@ int LiveProcessMain(int argc, char *argv[])
          * they are usually platformized, but they shall also
          * gain higher permitives.
          */
-        if(environment_syscall(SYS_setgid, serviceGroupIdentifier) != 0 ||
-           environment_syscall(SYS_setuid, serviceUserIdentifier) != 0)
+        if(liveshim_syscall(SYS_setgid, serviceGroupIdentifier) != 0 ||
+           liveshim_syscall(SYS_setuid, serviceUserIdentifier) != 0)
         {
             return 1;
         }

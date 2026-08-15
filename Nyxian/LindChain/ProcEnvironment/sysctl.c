@@ -20,7 +20,7 @@
 */
 
 #include <LindChain/ProcEnvironment/sysctl.h>
-#include <LindChain/ProcEnvironment/syscall.h>
+#include <LiveShim/LiveShimSyscall.h>
 #include <LindChain/ProcEnvironment/litehook/litehook.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <sys/sysctl.h>
@@ -33,7 +33,7 @@ DEFINE_HOOK(sysctl, int, (int *name,
                           void *__sized_by(newlen) newp,
                           size_t newlen))
 {
-    int ret = (int)environment_syscall(SYS_sysctl, name, namelen, oldp, oldlenp, newp, newlen);
+    int ret = (int)liveshim_syscall(SYS_sysctl, name, namelen, oldp, oldlenp, newp, newlen);
     return (ret == -1 && errno == ENOSYS) ? ORIG_FUNC(sysctl)(name, namelen, oldp, oldlenp, newp, newlen) : ret;
 }
 
@@ -43,7 +43,7 @@ DEFINE_HOOK(sysctlbyname, int, (const char *name,
                                 void *__sized_by(newlen) newp,
                                 size_t newlen))
 {
-    int ret = (int)environment_syscall(SYS_sysctlbyname, name, oldp, oldlenp, newp, newlen);
+    int ret = (int)liveshim_syscall(SYS_sysctlbyname, name, oldp, oldlenp, newp, newlen);
     return (ret == -1 && errno == ENOSYS) ? ORIG_FUNC(sysctlbyname)(name, oldp, oldlenp, newp, newlen) : ret;
 }
 
@@ -51,7 +51,7 @@ DEFINE_HOOK(gethostname, int, (char *name,
                                size_t len))
 {
     int mib[2] = { CTL_KERN, KERN_HOSTNAME };
-    int retval = (int)environment_syscall(SYS_sysctl, mib, 2, name, &len, NULL, NULL);
+    int retval = (int)liveshim_syscall(SYS_sysctl, mib, 2, name, &len, NULL, NULL);
     name[len] = '\0';
     return retval;
 }
@@ -60,7 +60,7 @@ DEFINE_HOOK(sethostname, int, (char *name,
                                size_t len))
 {
     int mib[2] = { CTL_KERN, KERN_HOSTNAME };
-    return (int)environment_syscall(SYS_sysctl, mib, 2, NULL, NULL, name, len);
+    return (int)liveshim_syscall(SYS_sysctl, mib, 2, NULL, NULL, name, len);
 }
 
 void environment_sysctl_init(void)
