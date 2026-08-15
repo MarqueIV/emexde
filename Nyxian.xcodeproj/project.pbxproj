@@ -11,7 +11,6 @@
 		793A4E3B2F84FE1D003B609A /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 793A4E3A2F84FE1D003B609A /* Runestone */; };
 		793A7E502EB5996A0044418E /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 793A7E4F2EB5996A0044418E /* SwiftTerm */; };
 		793FCD242E6730740011B3F5 /* libarchive.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 79BF9A8E2E62BA7D00C60D4C /* libarchive.tbd */; };
-		795227872F45B52000D1C3CC /* LiveProcess.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79BF97F72E6291EE00C60D4C /* LiveProcess.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		79AA11C72F7FFF46002FEAF2 /* libarchive.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 79AA11C32F7FFEE4002FEAF2 /* libarchive.tbd */; };
 		79B708BC2F73157F000F38E7 /* TreeSitterCPP in Frameworks */ = {isa = PBXBuildFile; productRef = 79B708BB2F73157F000F38E7 /* TreeSitterCPP */; };
 		79B70C1C2F73223A000F38E7 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 79B70C1B2F73223A000F38E7 /* Runestone */; };
@@ -29,6 +28,7 @@
 		8F4D96E62FFBF8FB006CAF3C /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8F4D96E52FFBF8FB006CAF3C /* Runestone */; };
 		8FB3BB043030089000DB3ABC /* LiveShim.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */; };
 		8FB3BB053030089000DB3ABC /* LiveShim.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8FB3BADB302FFBAA00DB3ABC /* LiveShim.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		8FB3BE87303131D300DB3ABC /* LiveProcess.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 79BF97F72E6291EE00C60D4C /* LiveProcess.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		8FECB2472FFD34D500049BB0 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8FECB2462FFD34D500049BB0 /* Runestone */; };
 		8FECB24D2FFD367A00049BB0 /* Runestone in Frameworks */ = {isa = PBXBuildFile; productRef = 8FECB24C2FFD367A00049BB0 /* Runestone */; };
 		AF9919582DC9175A00DDF895 /* TreeSitterObjc in Frameworks */ = {isa = PBXBuildFile; productRef = AF9919572DC9175A00DDF895 /* TreeSitterObjc */; };
@@ -38,13 +38,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		795227882F45B52000D1C3CC /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 79BF97F62E6291EE00C60D4C;
-			remoteInfo = LiveProcess;
-		};
 		860D917B2FAE1F95000D321B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
@@ -73,20 +66,23 @@
 			remoteGlobalIDString = 8FB3BADA302FFBAA00DB3ABC;
 			remoteInfo = LiveShim;
 		};
+		8FB3BE88303131D300DB3ABC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 79BF97F62E6291EE00C60D4C;
+			remoteInfo = LiveProcess;
+		};
+		8FB3BE8B303131D800DB3ABC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AF9916D12DC8C42200DDF895 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 79BF97F62E6291EE00C60D4C;
+			remoteInfo = LiveProcess;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		7952278A2F45B52000D1C3CC /* Embed Foundation Extensions */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 13;
-			files = (
-				795227872F45B52000D1C3CC /* LiveProcess.appex in Embed Foundation Extensions */,
-			);
-			name = "Embed Foundation Extensions";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		79AA11BA2F7FFE24002FEAF2 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +111,17 @@
 				8FB3BB053030089000DB3ABC /* LiveShim.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8FB3BE8A303131D300DB3ABC /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				8FB3BE87303131D300DB3ABC /* LiveProcess.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		AFF4DB332DCA57EC00B1B5F9 /* Embed Libraries */ = {
@@ -674,14 +681,15 @@
 				AF9916D62DC8C42200DDF895 /* Frameworks */,
 				AF9916D72DC8C42200DDF895 /* Resources */,
 				AFF4DB332DCA57EC00B1B5F9 /* Embed Libraries */,
-				7952278A2F45B52000D1C3CC /* Embed Foundation Extensions */,
+				8FB3BE8A303131D300DB3ABC /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				795227892F45B52000D1C3CC /* PBXTargetDependency */,
 				860D917C2FAE1F95000D321B /* PBXTargetDependency */,
 				860D91E32FAE2E4C000D321B /* PBXTargetDependency */,
+				8FB3BE89303131D300DB3ABC /* PBXTargetDependency */,
+				8FB3BE8C303131D800DB3ABC /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AF9916DB2DC8C42200DDF895 /* Nyxian */,
@@ -859,11 +867,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		795227892F45B52000D1C3CC /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 79BF97F62E6291EE00C60D4C /* LiveProcess */;
-			targetProxy = 795227882F45B52000D1C3CC /* PBXContainerItemProxy */;
-		};
 		860D917C2FAE1F95000D321B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 860D91742FAE1F95000D321B /* MobileDevelopmentKit */;
@@ -884,6 +887,16 @@
 			isa = PBXTargetDependency;
 			target = 8FB3BADA302FFBAA00DB3ABC /* LiveShim */;
 			targetProxy = 8FB3BB063030089000DB3ABC /* PBXContainerItemProxy */;
+		};
+		8FB3BE89303131D300DB3ABC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 79BF97F62E6291EE00C60D4C /* LiveProcess */;
+			targetProxy = 8FB3BE88303131D300DB3ABC /* PBXContainerItemProxy */;
+		};
+		8FB3BE8C303131D800DB3ABC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 79BF97F62E6291EE00C60D4C /* LiveProcess */;
+			targetProxy = 8FB3BE8B303131D800DB3ABC /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

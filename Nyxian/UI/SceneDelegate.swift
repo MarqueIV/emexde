@@ -118,15 +118,62 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
             return;
         }
         
-        if(PEGetLiveProcessBundle() == nil)
-        {
-            let label = UILabel()
-            label.text = "NSExtension missing, make sure you keep the extension when installing."
-            label.frame = UIScreen.main.bounds
-            label.numberOfLines = 0
-            self.window?.addSubview(label)
+        func errorFallback(title: String, message: String) {
+            RevertUI()
+            self.window?.rootViewController = UIViewController()
+            self.window?.rootViewController?.view.backgroundColor = currentTheme!.backgroundColor
+
+            let alert = UIAlertController(
+                title: title,
+                message: nil,
+                preferredStyle: .alert
+            )
+            
+            let textColor = UIColor { trait in
+                trait.userInterfaceStyle == .dark
+                    ? UIColor(white: 0.75, alpha: 1.0)
+                    : UIColor(white: 0.20, alpha: 1.0)
+            }
+            
+            alert.setValue(
+                NSAttributedString(
+                    string: message,
+                    attributes: [
+                        .foregroundColor: textColor,
+                        .font: UIFont.systemFont(ofSize: 13)
+                    ]
+                ),
+                forKey: "attributedMessage"
+            )
+
             self.window?.makeKeyAndVisible()
-            self.window?.bringSubviewToFront(label)
+
+            DispatchQueue.main.async {
+                self.window?.rootViewController?.present(
+                    alert,
+                    animated: true
+                )
+            }
+        }
+        
+        if PEGetLiveProcessBundle() == nil
+        {
+            errorFallback(title: "Extension Not Found", message: """
+            The required NSExtension could not be found.
+
+            Make sure the app was installed with its extension intact and that it wasn't removed during signing or installation.
+            """)
+            return
+        }
+        
+        if !PEExtensionHasGetTaskAllowed() {
+            errorFallback(title: "Unsupported Provisioning Profile", message: """
+            Extension doesn't have the "get-task-allow" entitlement.
+
+            Distribution certificates are not supported. You must use a Developer certificate issued by Apple.
+
+            The 7 day certificate is a Developer certificate.
+            """)
             return
         }
         

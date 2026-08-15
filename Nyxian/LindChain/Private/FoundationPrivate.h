@@ -28,6 +28,12 @@
 - (void)_hostDidEnterBackgroundNote:(NSNotification *)note;
 @end
 
+@interface EXConcreteExtension : NSExtension
+
+- (id)_plugIn;
+
+@end
+
 void* SecTaskCreateFromSelf(CFAllocatorRef allocator);
 NSString *SecTaskCopyTeamIdentifier(void *task, NSError **error);
 CFTypeRef SecTaskCopyValueForEntitlement(void *task, CFStringRef key, CFErrorRef *error);
@@ -42,6 +48,12 @@ CFTypeRef SecTaskCopyValueForEntitlement(void *task, CFStringRef key, CFErrorRef
 
 @interface CFPrefsPlistSource2 : NSObject
 -(id)hook_initWithDomain:(CFStringRef)arg1 user:(CFStringRef)arg2 byHost:(bool)arg3 containerPath:(CFStringRef)arg4 containingPreferences:(id)arg5 ;
+@end
+
+@interface PKHostPlugIn : NSObject
+
+@property (readonly) NSDictionary *entitlements;
+
 @end
 
 #endif /* FOUNDATION_PRIVATE_H */

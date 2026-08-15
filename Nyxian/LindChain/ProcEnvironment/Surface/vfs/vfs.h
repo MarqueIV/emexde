@@ -25,7 +25,7 @@
 #include <fcntl.h>
 
 /* the mount where the root of our VFS will live */
-#define VFS_MOUNT_PREFIX        "/Developer"
+#define VFS_MOUNT_PREFIX        "/cores"
 #define VFS_MOUNT_PREFIX_LEN    (sizeof(VFS_MOUNT_PREFIX) - 1)
 
 #define KSURFACE_OPEN_FLAG_MASK                                     \

@@ -65,7 +65,7 @@
     assert(!atomic_flag_test_and_set(&flag));
     
     const char *domain = "PEUserspaceManager:boot";
-    if(PEGetLiveProcessBundle() != NULL)
+    if(PEGetLiveProcessBundle() != NULL && PEExtensionHasGetTaskAllowed())
     {
         klog_log(domain, "spinning up micro kernel");
         ksurface_kinit();

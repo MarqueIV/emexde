@@ -84,6 +84,37 @@ NSExtension *PEGetNSExtension(void)
     return extension;
 }
 
+BOOL PEExtensionHasGetTaskAllowed(void)
+{
+    static BOOL hasGetTaskAllowed = NO;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSExtension *extension = PEGetNSExtension();
+        if(extension == nil)
+        {
+            return;
+        }
+        
+        EXConcreteExtension *concreteExtension = (EXConcreteExtension*)extension;
+        if(concreteExtension == nil && [concreteExtension isKindOfClass:[PrivClass(EXConcreteExtension) class]])
+        {
+            return;
+        }
+        
+        PKHostPlugIn *plugin = [concreteExtension _plugIn];
+        if(plugin == nil)
+        {
+            return;
+        }
+        
+        
+        NSDictionary *entitlements = [plugin entitlements];
+        NSNumber *getTaskAllowed = [entitlements objectForKey:@"get-task-allow"];
+        hasGetTaskAllowed = [getTaskAllowed isKindOfClass:[NSNumber class]] && [getTaskAllowed boolValue];
+    });
+    return hasGetTaskAllowed;
+}
+
 void PESpawnTimeout(void)
 {
     static mach_timebase_info_data_t timebase;

@@ -40,6 +40,7 @@
 @end
 
 NSBundle *PEGetLiveProcessBundle(void);
+BOOL PEExtensionHasGetTaskAllowed(void);
 NSExtension *PEGetNSExtension(void);
 void PESpawnTimeout(void);
 FBProcess *PESpawnFBProcess(NSDictionary *items);
