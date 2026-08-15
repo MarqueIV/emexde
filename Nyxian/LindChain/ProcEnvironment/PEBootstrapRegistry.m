@@ -29,8 +29,15 @@
 - (instancetype)init
 {
     self = [super init];
-    _registry = [[NSMutableDictionary alloc] init];
-    _lock = OS_UNFAIR_LOCK_INIT;
+    if(self)
+    {
+        _registry = [[NSMutableDictionary alloc] init];
+        if(_registry == nil)
+        {
+            return nil;
+        }
+        _lock = OS_UNFAIR_LOCK_INIT;
+    }
     return self;
 }
 

@@ -37,8 +37,15 @@
 - (instancetype)init
 {
     self = [super init];
-    _processes = [[NSMutableDictionary alloc] init];
-    _lock = OS_UNFAIR_LOCK_INIT;
+    if(self)
+    {
+        _processes = [[NSMutableDictionary alloc] init];
+        if(_processes == nil)
+        {
+            return nil;
+        }
+        _lock = OS_UNFAIR_LOCK_INIT;
+    }
     return self;
 }
 

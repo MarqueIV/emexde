@@ -21,9 +21,10 @@
 */
 
 #import <LindChain/ProcEnvironment/PEUserspaceManager.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
-#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/PEExtension.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
+#import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <Nyxian-Swift.h>
@@ -69,11 +70,35 @@
         klog_log(domain, "spinning up micro kernel");
         ksurface_kinit();
         
-        klog_log(domain, "spinning up launch services");
+        klog_log(domain, "spinning up userspace");
+        PEProcessManager *processManager = [PEProcessManager shared];
+        if(processManager == nil)
+        {
+            environment_panic(domain, "PEProcessManager didn't spin up");
+        }
+        else
+        {
+            klog_log(domain, "PEProcessManager [ok]");
+        }
+        
+        PEBootstrapRegistry *bootstrapRegistry = [PEBootstrapRegistry shared];
+        if(bootstrapRegistry == nil)
+        {
+            environment_panic(domain, "PEBootstrapRegistry didn't spin up");
+        }
+        else
+        {
+            klog_log(domain, "PEBootstrapRegistry [ok]");
+        }
+        
         PELaunchServiceManager *launchServiceManager = [PELaunchServiceManager shared];
         if(launchServiceManager == nil)
         {
             environment_panic(domain, "PELaunchServiceManager didn't spin up");
+        }
+        else
+        {
+            klog_log(domain, "PELaunchServiceManager [ok]");
         }
         
         [launchServiceManager reloadAllEntries];
