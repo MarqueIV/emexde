@@ -108,7 +108,7 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
     override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         switch section {
             case 1:
-                return "The password is only used to sign apps on your behave, they will not be send to any server."
+                return "The password is only used to sign apps on your behave, it won't be sent to any server."
             default:
                 return nil
         }
