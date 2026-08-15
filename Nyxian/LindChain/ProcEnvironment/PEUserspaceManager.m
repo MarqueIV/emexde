@@ -70,7 +70,7 @@
         klog_log(domain, "spinning up micro kernel");
         ksurface_kinit();
         
-        klog_log(domain, "spinning up userspace");
+        klog_log(domain, "spinning up userspace management subsystems");
         PEProcessManager *processManager = [PEProcessManager shared];
         if(processManager == nil)
         {
@@ -101,6 +101,7 @@
             klog_log(domain, "PELaunchServiceManager [ok]");
         }
         
+        klog_log(domain, "spinning up userspace launch services");
         [launchServiceManager reloadAllEntries];
     }
 }
