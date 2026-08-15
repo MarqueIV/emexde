@@ -19,17 +19,20 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LindChain/ProcEnvironment/tfp.h>
-#include <LindChain/ProcEnvironment/litehook/litehook.h>
-#include <LindChain/ProcEnvironment/Surface/proc/proc.h>
-#include <LiveShim/LiveShimSyscall.h>
-#include <LindChain/ProcEnvironment/Utils/ktfp.h>
-#include <mach/mach.h>
+#include <LiveShim/shim.h>
 
-static kern_return_t __environment_task_for_pid(mach_port_name_t tp_in,
-                                                pid_t pid,
-                                                mach_port_name_t *tp_out,
-                                                bool name_port)
+#if LIVESHIM_TASK_ENABLED
+
+static kern_return_t ksurface_user_task_for_pid(mach_port_name_t tp_in, pid_t pid, mach_port_name_t *tp_out);
+static kern_return_t ksurface_user_task_name_for_pid(mach_port_name_t tp_in, pid_t pid, mach_port_name_t *tp_out);
+
+INTERPOSE(ksurface_user_task_for_pid, task_for_pid);
+INTERPOSE(ksurface_user_task_name_for_pid, task_name_for_pid);
+
+static inline kern_return_t __environment_task_for_pid(mach_port_name_t tp_in,
+                                                       pid_t pid,
+                                                       mach_port_name_t *tp_out,
+                                                       bool name_port)
 {
     if(tp_out == NULL)
     {
@@ -46,26 +49,18 @@ static kern_return_t __environment_task_for_pid(mach_port_name_t tp_in,
     return KERN_SUCCESS;
 }
 
-DEFINE_HOOK(task_for_pid, kern_return_t, (mach_port_name_t tp_in,
-                                          pid_t pid,
-                                          mach_port_name_t *tp_out))
+static kern_return_t ksurface_user_task_for_pid(mach_port_name_t tp_in,
+                                                pid_t pid,
+                                                mach_port_name_t *tp_out)
 {
     return __environment_task_for_pid(tp_in, pid, tp_out, false);
 }
 
-DEFINE_HOOK(task_name_for_pid, kern_return_t, (mach_port_name_t tp_in,
-                                               pid_t pid,
-                                               mach_port_name_t *tp_out))
+static kern_return_t ksurface_user_task_name_for_pid(mach_port_name_t tp_in,
+                                                     pid_t pid,
+                                                     mach_port_name_t *tp_out)
 {
     return __environment_task_for_pid(tp_in, pid, tp_out, true);
 }
 
-void environment_tfp_init(void)
-{
-    /* handing new task control port right off to host */
-    assert(ktfp(MACH_PORT_NULL, NULL) == KERN_SUCCESS);
-    
-    /* hooking tfp api */
-    DO_HOOK_GLOBAL(task_for_pid);
-    DO_HOOK_GLOBAL(task_name_for_pid);
-}
+#endif /* LIVESHIM_TASK_ENABLED */

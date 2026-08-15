@@ -31,12 +31,10 @@
  *  Environment API Headers
  * -------------------------------------------------------------------- */
 #import <LindChain/ProcEnvironment/proxy.h>
-#import <LindChain/ProcEnvironment/tfp.h>
 #import <LindChain/ProcEnvironment/libproc.h>
 #import <LindChain/ProcEnvironment/application.h>
 #import <LindChain/ProcEnvironment/posix_spawn.h>
 #import <LindChain/ProcEnvironment/vfork.h>
-#import <LindChain/ProcEnvironment/cred.h>
 #import <LindChain/ProcEnvironment/Object/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Object/PEFileTable.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>

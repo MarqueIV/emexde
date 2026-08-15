@@ -22,7 +22,6 @@
 #include <LindChain/ProcEnvironment/Surface/sys/compat/gettask.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #include <LindChain/ProcEnvironment/Surface/permit.h>
-#include <LindChain/ProcEnvironment/tfp.h>
 
 DEFINE_SYSCALL_HANDLER(gettask)
 {    

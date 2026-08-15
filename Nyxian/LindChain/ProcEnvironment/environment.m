@@ -23,6 +23,7 @@
 #import <LindChain/ProcEnvironment/Surface/extra/relax.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
 #import <LiveShim/LiveShimSyscall.h>
+#include <LindChain/ProcEnvironment/Utils/ktfp.h>
 #include <dlfcn.h>
 
 #if !HOST_ENV
@@ -94,7 +95,6 @@ int environment_init(EnvironmentExec exec,
          * processes have capabilities on other processes
          * that exist within the same reality.
          */
-        environment_cred_init();
         environment_posix_spawn_init();
         environment_vfork_init();
         environment_libproc_init();
@@ -110,12 +110,8 @@ int environment_init(EnvironmentExec exec,
             relax();
         }
         
-        /*
-         * task_for_pid(3) is fixed last, because otherwise
-         * we cannot handoff the exception port, because
-         * syscalling has to work first for SYS_handoffep.
-         */
-        environment_tfp_init();
+        /* handoffs task port */
+        ktfp(MACH_PORT_NULL, NULL);
         
         /* invoking code execution or let it return */
         if(exec == EnvironmentExecLiveContainer)

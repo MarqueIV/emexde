@@ -21,7 +21,6 @@
 
 #include <LindChain/ProcEnvironment/Surface/proc/lookup.h>
 #include <LindChain/ProcEnvironment/Surface/proc/def.h>
-#include <LindChain/ProcEnvironment/tfp.h>
 #include <LindChain/ProcEnvironment/panic.h>
 #include <assert.h>
 

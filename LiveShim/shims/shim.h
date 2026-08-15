@@ -60,5 +60,7 @@ struct interpose_pair {
 #define LIVESHIM_IO_ENABLED  0
 #define LIVESHIM_IOCTL_ENABLED  1
 #define LIVESHIM_SYSCTL_ENABLED  1
+#define LIVESHIM_TASK_ENABLED  1
+#define LIVESHIM_UCRED_ENABLED 1
 
 #endif /* LIVESHIM_SHIM_H */
