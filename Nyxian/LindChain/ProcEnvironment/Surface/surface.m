@@ -236,6 +236,7 @@ void ksurface_kinit(void)
     klog_log("ksurface:kinit", "hello from kinit");
     klog_log("ksurface:kinit", "kernel commits magic spells to the iOS kernel now");
     
+    /* sets where the virtual /Developer mount will reference too */
     setenv("VFSROOT", [[NSString stringWithFormat:@"%@/Documents", NSHomeDirectory()] UTF8String], 1);
     
     /*

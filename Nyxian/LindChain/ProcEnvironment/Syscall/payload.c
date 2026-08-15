@@ -122,36 +122,63 @@ char *mach_syscall_copy_str_in(task_t task,
                                userspace_pointer_t src,
                                size_t len)
 {
-    /* copy upto lenght of string */
-    size_t clen = 0;
-    char buf = '\0';
-    do {
-        vm_size_t rlen = 0;
-        kern_return_t kr = vm_read_overwrite(task, (vm_address_t)src + clen, sizeof(buf), (vm_address_t)&buf, &rlen);
-        if(kr != KERN_SUCCESS)
+    if (len == SIZE_MAX) {
+        return NULL;
+    }
+    
+    size_t cap = (len < 1024 ? len : 1024) + 1;
+    char *buf = malloc(cap);
+    if (!buf) {
+        return NULL;
+    }
+    
+    size_t off = 0;
+    while(off < len)
+    {
+        vm_address_t addr = (vm_address_t)src + off;
+        size_t want = PAGE_SIZE - (addr & (PAGE_SIZE - 1));
+        
+        if(want > len - off)
         {
+            want = len - off;
+        }
+        
+        if(want > cap - 1 - off)
+        {
+            size_t ncap = cap * 2;
+            if(ncap < off + want + 1)
+            {
+                ncap = off + want + 1;
+            }
+            char *nbuf = realloc(buf, ncap);
+            if(!nbuf)
+            {
+                free(buf);
+                return NULL;
+            }
+            buf = nbuf;
+            cap = ncap;
+        }
+        
+        vm_size_t rlen = 0;
+        kern_return_t kr = vm_read_overwrite(task, addr, want, (vm_address_t)(buf + off), &rlen);
+        if(kr != KERN_SUCCESS || rlen != want)
+        {
+            free(buf);
             return NULL;
         }
         
-        if(clen >= len || buf == '\0')
+        char *nul = memchr(buf + off, '\0', want);
+        if(nul)
         {
-            break;
+            size_t total = (size_t)(nul - buf);
+            char *shrunk = realloc(buf, total + 1);
+            return shrunk ? shrunk : buf;
         }
         
-        clen++;
-    } while(buf != '\0');
+        off += want;
+    }
     
-    /* copy string */
-    char *strBuf = malloc(clen + 1);
-    if(!strBuf)
-    {
-        return NULL;
-    }
-    if(clen && !mach_syscall_copy_in(task, clen, (kernelspace_pointer_t)strBuf, src))
-    {
-        free(strBuf);
-        return NULL;
-    }
-    strBuf[clen] = '\0';
-    return strBuf;
+    buf[off] = '\0';
+    return buf;
 }

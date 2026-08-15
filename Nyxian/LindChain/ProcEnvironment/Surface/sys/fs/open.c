@@ -31,7 +31,6 @@ DEFINE_SYSCALL_HANDLER(open)
     char *path = mach_syscall_copy_str_in(sys_task_, user_path, MAXPATHLEN);
     if(path == NULL)
     {
-        printf("illegal access = %p\n", user_path);
         sys_return_failure(EFAULT);
     }
     
