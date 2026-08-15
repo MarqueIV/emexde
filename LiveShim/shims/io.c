@@ -25,9 +25,13 @@
 
 static int ksurface_user_open(const char *path, int flags, ...);
 static DIR *ksurface_user_opendir(const char *path);
+static int ksurface_user_faccessat(int dirFd, const char *access, int mode, int flags);
+static int ksurface_user_access(const char *path, int mode);
 
 INTERPOSE(ksurface_user_open, open);
 INTERPOSE(ksurface_user_opendir, opendir);
+INTERPOSE(ksurface_user_faccessat, faccessat);
+INTERPOSE(ksurface_user_access, access);
 
 static int ksurface_user_open(const char *path,
                               int flags,
@@ -85,6 +89,25 @@ static DIR *ksurface_user_opendir(const char *path)
     }
     
     return dir;
+}
+
+static int ksurface_user_faccessat(int dirFd,
+                                   const char *path,
+                                   int mode,
+                                   int flags)
+{
+    int (*darwin_user_faccessat)(int dirFd, const char *path, int mode, int flags) = _interpose_faccessat.replacee;
+    if(liveshim_syscall(SYS_faccessat, dirFd, path, mode, flags) != 0)
+    {
+        return darwin_user_faccessat(dirFd, path, mode, flags);
+    }
+    return 0;
+}
+
+static int ksurface_user_access(const char *path,
+                                int mode)
+{
+    return ksurface_user_faccessat(AT_FDCWD, path, mode, 0);
 }
 
 #endif /* LIVESHIM_IO_ENABLED */

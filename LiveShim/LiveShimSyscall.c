@@ -238,8 +238,6 @@ int64_t liveshim_syscall_invoke(syscall_client_t *client,
     return buffer.reply.result;
 }
 
-extern syscall_client_t *syscallProxy;
-
 enum kESysType: uint8_t {
     kESysTypeNum = 0,
     kESysTypePortIn = 1,
@@ -273,6 +271,7 @@ env_sys_entry_t sys_env_entries[] = {
     SYS_ENTRY(SYS_ioctl,       T_FIN,       T_NUM,  T_NUM,  T_NUM,  T_NUM,  T_NUM),
     SYS_ENTRY(SYS_pectl,       T_NUM,       T_NUM,  T_PIN,  T_POUT, T_NUM,  T_NUM),
     SYS_ENTRY(SYS_open,        T_NUM,       T_NUM,  T_NUM,  T_POUT, T_NUM,  T_NUM),
+    SYS_ENTRY(SYS_faccessat,   T_FIN,       T_NUM,  T_NUM,  T_NUM,  T_NUM,  T_NUM),
 };
 
 /* also making our lives easier */
@@ -355,6 +354,11 @@ int64_t liveshim_syscall(uint32_t syscall_num, ...)
                 }
                 case kESysTypeFDIn:
                 {
+                    if((int)val < 0)
+                    {
+                        break;
+                    }
+                    
                     fileport_t fileport = MACH_PORT_NULL;
                     if(fileport_makeport((int)val, &fileport) == 0)
                     {

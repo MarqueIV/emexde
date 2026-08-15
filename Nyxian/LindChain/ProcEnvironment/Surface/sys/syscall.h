@@ -42,6 +42,7 @@
 #include <LindChain/ProcEnvironment/Surface/sys/compat/waittask.h>
 #include <LindChain/ProcEnvironment/Surface/sys/compat/pectl.h>
 #include <LindChain/ProcEnvironment/Surface/sys/fs/open.h>
+#include <LindChain/ProcEnvironment/Surface/sys/fs/faccessat.h>
 #include <sys/syscall.h>
 
 /* additional nyxian syscalls for now */
@@ -57,7 +58,7 @@
 #define SYS_waittask    759         /* waits till task port of a task is available */
 #define SYS_pectl       760         /* utility for many proc environment operations */
 
-#define SYS_N 26
+#define SYS_N 27
 
 typedef struct {
     const char *name;
