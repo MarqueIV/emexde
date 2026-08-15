@@ -19,10 +19,10 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
 
-@implementation PELaunchServiceRegistry {
+@implementation PELaunchServiceManager {
     os_unfair_lock _lock;
     NSMutableArray<PELaunchService*> *_launchServices;
 }
@@ -39,7 +39,7 @@
 
 + (instancetype)shared
 {
-    static PELaunchServiceRegistry *launchServiceRegistrySingleton = nil;
+    static PELaunchServiceManager *launchServiceRegistrySingleton = nil;
     static dispatch_once_t onceToken;
     static BOOL initializing = NO;
     
@@ -50,7 +50,7 @@
     
     dispatch_once(&onceToken, ^{
         initializing = YES;
-        launchServiceRegistrySingleton = [[PELaunchServiceRegistry alloc] init];
+        launchServiceRegistrySingleton = [[PELaunchServiceManager alloc] init];
         initializing = NO;
     });
     

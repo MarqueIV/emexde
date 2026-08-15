@@ -19,14 +19,14 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PELAUNCHSERVICEREGISTRY_H
-#define PELAUNCHSERVICEREGISTRY_H
+#ifndef PELAUNCHSERVICEMANAGER_H
+#define PELAUNCHSERVICEMANAGER_H
 
 #import <Foundation/Foundation.h>
 #import <os/lock.h>
 #import <LindChain/ProcEnvironment/PELaunchService.h>
 
-@interface PELaunchServiceRegistry : NSObject
+@interface PELaunchServiceManager : NSObject
 
 @property (atomic,readonly) BOOL isBooted;
 
@@ -42,4 +42,4 @@
 
 @end
 
-#endif /* PELAUNCHSERVICEREGISTRY_H */
+#endif /* PELAUNCHSERVICEMANAGER_H */

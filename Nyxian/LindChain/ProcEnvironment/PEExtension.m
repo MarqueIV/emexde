@@ -26,7 +26,7 @@
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <objc/runtime.h>
 #import <LindChain/ProcEnvironment/Shims/environment.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 
 NSBundle *PEGetLiveProcessBundle(void)
 {

@@ -23,7 +23,7 @@
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/PEUserspaceManager.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <Foundation/Foundation.h>
@@ -132,7 +132,7 @@ DEFINE_SYSCALL_HANDLER(pectl)
              * read data from the other container, which
              * is the reason for this extra layer of trust.
              */
-            PELaunchService *service = [[PELaunchServiceRegistry shared] serviceForIdentifier:service_nsname];
+            PELaunchService *service = [[PELaunchServiceManager shared] serviceForIdentifier:service_nsname];
             if(service != nil)
             {
                 PEProcess *process = service.process;

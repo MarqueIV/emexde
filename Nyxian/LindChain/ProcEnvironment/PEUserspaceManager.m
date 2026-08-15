@@ -21,7 +21,7 @@
 */
 
 #import <LindChain/ProcEnvironment/PEUserspaceManager.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/PEExtension.h>
 #import <LindChain/Services/containerd/PEContainer.h>
@@ -70,7 +70,7 @@
         ksurface_kinit();
         
         klog_log(domain, "spinning up launch services");
-        [PELaunchServiceRegistry shared];
+        [PELaunchServiceManager shared];
     }
 }
 
@@ -87,7 +87,7 @@
     }
     
     klog_log(domain, "invalidating all launch service entries in registry");
-    [[PELaunchServiceRegistry shared] invalidateAllEntries];    /* causes reignition to fail in launch services, so killing will not automatically restart them */
+    [[PELaunchServiceManager shared] invalidateAllEntries];    /* causes reignition to fail in launch services, so killing will not automatically restart them */
     
     klog_log(domain, "killing all running processes");
     [[PEProcessManager shared] killAllRunningProcesses];
@@ -259,14 +259,14 @@ first:
 
 - (void)reloadDaemons_nolock
 {
-    [[PELaunchServiceRegistry shared] invalidateAllEntries];
+    [[PELaunchServiceManager shared] invalidateAllEntries];
     if(_mode == kPEUserspaceModeDefault)
     {
-        [[PELaunchServiceRegistry shared] reloadAllEntries];
+        [[PELaunchServiceManager shared] reloadAllEntries];
     }
     else if(_mode == kPEUserspaceModeMinimal)
     {
-        [[PELaunchServiceRegistry shared] loadEntryWithFileName:@"org.emexlabs.containerd.plist"];
+        [[PELaunchServiceManager shared] loadEntryWithFileName:@"org.emexlabs.containerd.plist"];
     }
 }
 

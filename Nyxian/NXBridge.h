@@ -50,7 +50,7 @@
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionTerminal.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/PEExtension.h>
 #import <LindChain/ProcEnvironment/PEUserspaceManager.h>

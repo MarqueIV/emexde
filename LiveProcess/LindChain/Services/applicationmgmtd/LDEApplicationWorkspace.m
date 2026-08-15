@@ -24,7 +24,7 @@
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Object/ArchiveObject.h>
 #import <LindChain/Utils/Zip.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <Nyxian-Swift.h>
 
 @interface LDEApplicationWorkspace ()
@@ -62,8 +62,8 @@
         return YES;
     }
     
-    PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
-    _connection = [serviceRegistry connectToService:@"org.emexlabs.installd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
+    PELaunchServiceManager *serviceManager = [PELaunchServiceManager shared];
+    _connection = [serviceManager connectToService:@"org.emexlabs.installd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
     return _connection != nil;
 }
 

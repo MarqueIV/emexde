@@ -27,7 +27,7 @@
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/PEExtension.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proctil.h>
@@ -70,7 +70,7 @@
     
     LDEApplicationObject *applicationObject = nil;
     
-    if(PELaunchServiceRegistry.shared.isBooted)
+    if(PELaunchServiceManager.shared.isBooted)
     {
         applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:self.executablePath];
     }

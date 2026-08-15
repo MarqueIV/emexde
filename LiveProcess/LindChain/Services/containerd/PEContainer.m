@@ -21,7 +21,7 @@
 
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/Services/containerd/PEContainerProtocol.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceRegistry.h>
+#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/Surface/trust.h>
 
 #define PE_PROXY_OR_SIGNAL(sema) \
@@ -58,8 +58,8 @@
         return YES;
     }
     
-    PELaunchServiceRegistry *serviceRegistry = [PELaunchServiceRegistry shared];
-    _connection = [serviceRegistry connectToService:@"org.emexlabs.containerd" protocol:@protocol(PEContainerProtocol) observer:self observerProtocol:nil];
+    PELaunchServiceManager *serviceManager = [PELaunchServiceManager shared];
+    _connection = [serviceManager connectToService:@"org.emexlabs.containerd" protocol:@protocol(PEContainerProtocol) observer:self observerProtocol:nil];
     return _connection != nil;
 }
 
