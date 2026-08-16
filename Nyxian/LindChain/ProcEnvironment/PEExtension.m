@@ -89,25 +89,7 @@ BOOL PEExtensionHasGetTaskAllowed(void)
     static BOOL hasGetTaskAllowed = NO;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        NSExtension *extension = PEGetNSExtension();
-        if(extension == nil)
-        {
-            return;
-        }
-        
-        EXConcreteExtension *concreteExtension = (EXConcreteExtension*)extension;
-        if(concreteExtension == nil && [concreteExtension isKindOfClass:[PrivClass(EXConcreteExtension) class]])
-        {
-            return;
-        }
-        
-        PKHostPlugIn *plugin = [concreteExtension _plugIn];
-        if(plugin == nil)
-        {
-            return;
-        }
-        
-        
+        PKHostPlugIn *plugin = [PEGetNSExtension() _plugIn];
         NSDictionary *entitlements = [plugin entitlements];
         NSNumber *getTaskAllowed = [entitlements objectForKey:@"get-task-allow"];
         hasGetTaskAllowed = [getTaskAllowed isKindOfClass:[NSNumber class]] && [getTaskAllowed boolValue];
@@ -177,12 +159,11 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
         return nil;
     }
     
-    pid_t pid = [extension pidForRequestIdentifier:identifier];
-    
     /*
      * checking if process is still valid
      * we need its BSD process identifier.
      */
+    pid_t pid = [extension pidForRequestIdentifier:identifier];
     if(pid < 0)
     {
         [extension _kill:SIGKILL];

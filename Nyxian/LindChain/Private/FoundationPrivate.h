@@ -18,6 +18,7 @@
 
 @interface NSExtension : NSObject
 @property (nonatomic, strong, readwrite) NSArray *preferredLanguages;
+@property (setter=_setPlugIn:, nonatomic, retain) id _plugIn;
 + (instancetype)extensionWithIdentifier:(NSString *)identifier error:(NSError **)error;
 - (void)beginExtensionRequestWithInputItems:(NSArray *)items completion:(void(^)(NSUUID *))callback;
 - (NSUUID*)beginExtensionRequestWithInputItems:(NSArray*)arg1 error:(NSError**)arg2;
@@ -26,6 +27,8 @@
 - (void)setRequestCancellationBlock:(void(^)(NSUUID *uuid, NSError *error))callback;
 - (void)setRequestInterruptionBlock:(void(^)(NSUUID *))callback;
 - (void)_hostDidEnterBackgroundNote:(NSNotification *)note;
+
+- (id)uns_extensionContainerBundleProxy;
 @end
 
 @interface EXConcreteExtension : NSExtension
@@ -53,6 +56,8 @@ CFTypeRef SecTaskCopyValueForEntitlement(void *task, CFStringRef key, CFErrorRef
 @interface PKHostPlugIn : NSObject
 
 @property (readonly) NSDictionary *entitlements;
+@property (readonly) NSDictionary *attributes;
+@property unsigned int useCount;
 
 @end
 
