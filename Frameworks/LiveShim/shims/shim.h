@@ -57,10 +57,19 @@ struct interpose_pair {
     const void *replacee;
 };
 
-#define LIVESHIM_IO_ENABLED     0   /* very early in development */
+#if __has_include(<ksurface_config.h>)
+#include <ksurface_config.h>
+#define LIVESHIM_IO_ENABLED     KSURFACE_SYS_IO_ENABLED
+#define LIVESHIM_IOCTL_ENABLED  KSURFACE_SYS_IOCTL_ENABLED
+#define LIVESHIM_SYSCTL_ENABLED KSURFACE_SYS_SYSCTL_ENABLED
+#define LIVESHIM_TASK_ENABLED   KSURFACE_SYS_TASK_ENABLED
+#define LIVESHIM_UCRED_ENABLED  KSURFACE_SYS_UCRED_ENABLED
+#else
+#define LIVESHIM_IO_ENABLED     1
 #define LIVESHIM_IOCTL_ENABLED  1
 #define LIVESHIM_SYSCTL_ENABLED 1
 #define LIVESHIM_TASK_ENABLED   1
 #define LIVESHIM_UCRED_ENABLED  1
+#endif
 
 #endif /* LIVESHIM_SHIM_H */

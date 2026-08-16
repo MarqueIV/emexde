@@ -1,5 +1,5 @@
 **/.DS_store
-CoreCompiler/CoreCompilerSupportLibs/
+Frameworks/CoreCompiler/CoreCompilerSupportLibs/
 build/
 *.ipa
 *.deb
