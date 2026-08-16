@@ -25,6 +25,7 @@
 #import <LiveShim/LiveShimSyscall.h>
 #include <LindChain/ProcEnvironment/Utils/ktfp.h>
 #include <dlfcn.h>
+#import <ksurface_config.h>
 
 #if !HOST_ENV
 
@@ -59,11 +60,7 @@ void environment_client_connect_to_syscall_proxy(PEMachPort *port)
     syscallProxy = client;
 }
 
-#endif /* !HOST_ENV */
-
 #pragma mark - Initilizer
-
-#if !HOST_ENV
 
 int environment_init(EnvironmentExec exec,
                      NSString *executablePath,
@@ -95,9 +92,11 @@ int environment_init(EnvironmentExec exec,
          * processes have capabilities on other processes
          * that exist within the same reality.
          */
+        #if KSURFACE_SYS_PROC_ENABLED
         environment_posix_spawn_init();
         environment_vfork_init();
         environment_libproc_init();
+        #endif /* KSURFACE_SYS_PROC_ENABLED */
         environment_application_init();
         
         /*

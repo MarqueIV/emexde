@@ -29,6 +29,9 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <unistd.h>
+#import <ksurface_config.h>
+
+#if KSURFACE_SYS_PROC_ENABLED
 
 #pragma mark - Threading black magic
 
@@ -425,3 +428,5 @@ void environment_vfork_init(void)
     DO_HOOK_GLOBAL(waitpid);
     DO_HOOK_GLOBAL(wait4);
 }
+
+#endif /* KSURFACE_SYS_PROC_ENABLED */

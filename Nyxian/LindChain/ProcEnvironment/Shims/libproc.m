@@ -28,6 +28,9 @@
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/libproc.h>
 #import <LindChain/ProcEnvironment/Surface/surface.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
+#import <ksurface_config.h>
+
+#if KSURFACE_SYS_PROC_ENABLED
 
 DEFINE_HOOK(proc_listallpids, int, (void *buffer,
                                     int buffersize))
@@ -176,3 +179,5 @@ void environment_libproc_init(void)
     DO_HOOK_GLOBAL(kill);
     DO_HOOK_GLOBAL(raise);
 }
+
+#endif /* KSURFACE_SYS_PROC_ENABLED */

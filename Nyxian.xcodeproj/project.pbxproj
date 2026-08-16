@@ -594,8 +594,8 @@
 				79277DC62EE8761000F18B30 /* version.sh */,
 				79277DC02EE8752800F18B30 /* Config.xcconfig */,
 				AF99171F2DC8EA3C00DDF895 /* Shared */,
-				798692F02E627A3B00390D7E /* LiveProcess */,
 				AF9916DB2DC8C42200DDF895 /* Nyxian */,
+				798692F02E627A3B00390D7E /* LiveProcess */,
 				79AA11BD2F7FFE24002FEAF2 /* nxtool */,
 				8FB3C1EC303145D600DB3ABC /* Frameworks */,
 				7944B5662DEC74FC00834134 /* Frameworks */,
@@ -1006,6 +1006,7 @@
 				GCC_OPTIMIZATION_LEVEL = s;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
 					Nyxian/,
 					LiveProcess/,
 				);
@@ -1050,6 +1051,7 @@
 				GCC_OPTIMIZATION_LEVEL = s;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)",
 					Nyxian/,
 					LiveProcess/,
 				);

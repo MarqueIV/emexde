@@ -33,9 +33,9 @@ syscall_list_item_t sys_list[] = {
     /* necessary for basic function */
     { .name = "SYS_handoffep",      .sysnum = SYS_handoffep,    .hndl = GET_SYSCALL_HANDLER(handoffep)      },
     { .name = "SYS_pectl",          .sysnum = SYS_pectl,        .hndl = GET_SYSCALL_HANDLER(pectl)          },
-    { .name = "SYS_waittask",       .sysnum = SYS_waittask,     .hndl = GET_SYSCALL_HANDLER(waittask)       },
     { .name = "SYS_setent",         .sysnum = SYS_setent,       .hndl = GET_SYSCALL_HANDLER(setent)         },
     { .name = "SYS_getent",         .sysnum = SYS_getent,       .hndl = GET_SYSCALL_HANDLER(getent)         },
+    { .name = "sys_getppid",        .sysnum = SYS_getppid,      .hndl = GET_SYSCALL_HANDLER(getppid)        },
     
 #if KSURFACE_SYS_IO_ENABLED
     { .name = "SYS_open",           .sysnum = SYS_open,         .hndl = GET_SYSCALL_HANDLER(open)           },
@@ -49,6 +49,8 @@ syscall_list_item_t sys_list[] = {
     
 #if KSURFACE_SYS_SYSCTL_ENABLED
     { .name = "SYS_sysctl",         .sysnum = SYS_sysctl,       .hndl = GET_SYSCALL_HANDLER(sysctl)         },
+    { .name = "SYS_sysctlbyname",   .sysnum = SYS_sysctlbyname, .hndl = GET_SYSCALL_HANDLER(sysctlbyname)   },
+    { .name = "SYS_procpath",       .sysnum = SYS_procpath,     .hndl = GET_SYSCALL_HANDLER(procpath)       },
 #endif /* KSURFACE_SYS_SYSCTL_ENABLED */
     
 #if KSURFACE_SYS_TASK_ENABLED
@@ -62,7 +64,6 @@ syscall_list_item_t sys_list[] = {
     { .name = "SYS_setegid",        .sysnum = SYS_setegid,      .hndl = GET_SYSCALL_HANDLER(setegid)        },
     { .name = "SYS_setreuid",       .sysnum = SYS_setreuid,     .hndl = GET_SYSCALL_HANDLER(setreuid)       },
     { .name = "SYS_setregid",       .sysnum = SYS_setregid,     .hndl = GET_SYSCALL_HANDLER(setregid)       },
-    { .name = "sys_getppid",        .sysnum = SYS_getppid,      .hndl = GET_SYSCALL_HANDLER(getppid)        },
     { .name = "SYS_getuid",         .sysnum = SYS_getuid,       .hndl = GET_SYSCALL_HANDLER(getuid)         },
     { .name = "SYS_geteuid",        .sysnum = SYS_geteuid,      .hndl = GET_SYSCALL_HANDLER(geteuid)        },
     { .name = "SYS_getgid",         .sysnum = SYS_getgid,       .hndl = GET_SYSCALL_HANDLER(getgid)         },
@@ -71,10 +72,11 @@ syscall_list_item_t sys_list[] = {
     { .name = "SYS_setsid",         .sysnum = SYS_setsid,       .hndl = GET_SYSCALL_HANDLER(setsid)         },
 #endif /* KSURFACE_SYS_UCRED_ENABLED */
     
+#if KSURFACE_SYS_PROC_ENABLED
     { .name = "SYS_kill",           .sysnum = SYS_kill,         .hndl = GET_SYSCALL_HANDLER(kill)           },
-    { .name = "SYS_procpath",       .sysnum = SYS_procpath,     .hndl = GET_SYSCALL_HANDLER(procpath)       },
-    { .name = "SYS_sysctlbyname",   .sysnum = SYS_sysctlbyname, .hndl = GET_SYSCALL_HANDLER(sysctlbyname)   },
     { .name = "SYS_wait4",          .sysnum = SYS_wait4,        .hndl = GET_SYSCALL_HANDLER(wait4)          },
+    { .name = "SYS_waittask",       .sysnum = SYS_waittask,     .hndl = GET_SYSCALL_HANDLER(waittask)       },
+#endif /* KSURFACE_SYS_PROC_ENABLED */
 };
 
 

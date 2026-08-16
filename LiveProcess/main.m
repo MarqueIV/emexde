@@ -33,6 +33,7 @@
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceInternal.h>
 #import <ResecureDecoder.h>
 #import <LiveShim/LiveShimSyscall.h>
+#import <ksurface_config.h>
 
 bool performHookDyldApi(const char* functionName, uint32_t adrpOffset, void** origFunction, void* hookFunction);
 
@@ -208,11 +209,8 @@ int LiveProcessMain(int argc, char *argv[])
          * codebase.
          */
         environment_init(EnvironmentExecCustom, executablePath, argc, argv);
-        
-#if DEBUG
-        NSLog(@"ping");
-#endif /* DEBUG */
 
+#if KSURFACE_SYS_UCRED_ENABLED
         /*
          * first ever step is to elevate their permitives as
          * they are usually platformized, but they shall also
@@ -223,6 +221,11 @@ int LiveProcessMain(int argc, char *argv[])
         {
             return 1;
         }
+#endif /* KSURFACE_SYS_UCRED_ENABLED */
+        
+#if DEBUG
+        NSLog(@"ping");
+#endif /* DEBUG */
         
         /*
          * we get the class of the daemon, internal Nyxian

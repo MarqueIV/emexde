@@ -30,6 +30,7 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/Surface/proc/list.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proc.h>
+#import <ksurface_config.h>
 
 @interface ServerSession ()
 
@@ -62,6 +63,8 @@
     
     return _proc;
 }
+
+#if KSURFACE_SYS_PROC_ENABLED
 
 /*
  posix_spawn
@@ -121,6 +124,8 @@
     
     reply(-1);
 }
+
+#endif /* KSURFACE_SYS_PROC_ENABLED */
 
 /*
  App switcher services

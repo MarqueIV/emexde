@@ -25,6 +25,7 @@
 #include <errno.h>
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>
 #import <LiveShim/LiveShimSyscall.h>
+#import <ksurface_config.h>
 
 #define PROXY_MAX_DISPATCH_TIME 1.0
 #define PROXY_TYPE_REPLY(type) ^(void (^reply)(type))
@@ -48,6 +49,8 @@ static int64_t sync_call_with_timeout_int64(void (^invoke)(void (^reply)(int64_t
     return (waited == 0) ? result : -1;
 }
 
+#if KSURFACE_SYS_PROC_ENABLED
+
 int64_t environment_proxy_spawn_process_at_path(NSString *path,
                                                 NSArray *arguments,
                                                 NSDictionary *environment,
@@ -58,6 +61,8 @@ int64_t environment_proxy_spawn_process_at_path(NSString *path,
         [hostProcessProxy spawnProcessWithPath:path withArguments:arguments withEnvironmentVariables:environment withFileTable:fileTable withWorkingDirectory:workingDirectory withReply:reply];
     });
 }
+
+#endif /* KSURFACE_SYS_PROC_ENABLED */
 
 void environment_proxy_set_snapshot(UIImage *snapshot)
 {

@@ -31,8 +31,7 @@
 #import <LindChain/ProcEnvironment/Object/MachOObject.h>
 #import <LiveShim/LiveShimSyscall.h>
 #import <fcntl.h>
-
-#pragma mark - posix_spawn helper
+#import <ksurface_config.h>
 
 // copy, remove and rename back the file to prevent crash due to kernel signature cache
 // see https://developer.apple.com/documentation/security/updating-mac-software
@@ -48,6 +47,10 @@ void refreshFile(const char* path)
     [NSFileManager.defaultManager removeItemAtPath:objcPath error:&error];
     [NSFileManager.defaultManager moveItemAtPath:newPath toPath:objcPath error:&error];
 }
+
+#if KSURFACE_SYS_PROC_ENABLED
+
+#pragma mark - posix_spawn helper
 
 NSArray<NSString*> *NSArrayFromCArray(char *const argv[])
 {
@@ -446,3 +449,5 @@ void environment_posix_spawn_init(void)
     litehook_rebind_symbol(LITEHOOK_REBIND_GLOBAL, posix_spawn, environment_posix_spawn, nil);
     litehook_rebind_symbol(LITEHOOK_REBIND_GLOBAL, posix_spawnp, environment_posix_spawnp, nil);
 }
+
+#endif /* KSURFACE_SYS_PROC_ENABLED */
