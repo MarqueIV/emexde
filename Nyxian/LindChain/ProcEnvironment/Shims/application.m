@@ -28,6 +28,7 @@
 #import <LindChain/ProcEnvironment/Shims/proxy.h>
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>
 #import <LiveShim/LiveShimSyscall.h>
+#include <ksurface_config.h>
 
 #pragma mark - Initilizer
 
@@ -39,12 +40,12 @@ static dispatch_source_t global_signal_source = nil;
 - (void)hook_run
 {
     /* tell host app to let our process appear as a window */
-    liveshim_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
+    liveshim_syscall(SYS_pectl, kPECTLCategoryUserInterface, kPECTLUserInterfaceInit, NULL, NULL, MACH_PORT_NULL);
     
     while(errno == EAGAIN)
     {
         usleep(500);
-        liveshim_syscall(SYS_pectl, PECTL_PE_UIAPP_RUN, NULL, MACH_PORT_NULL);
+        liveshim_syscall(SYS_pectl, kPECTLCategoryUserInterface, kPECTLUserInterfaceInit, NULL, NULL, MACH_PORT_NULL);
     }
     
     [self hook_run];

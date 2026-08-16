@@ -34,6 +34,7 @@
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
 #import <LindChain/Utils/CFTools.h>
 #import <LiveShim/LiveShimSyscall.h>
+#include <ksurface_config.h>
 
 typedef struct {
     uint32_t platform;
@@ -128,7 +129,7 @@ DEFINE_HOOK(dlopen, void *, (const char * __path,
     if(!cs_valid)
     {
         /* sign if invalid */
-        if((int)liveshim_syscall(SYS_pectl, PECTL_CS_SIGN_PATH, __path, MACH_PORT_NULL) == 0)
+        if((int)liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningSignPath, __path, NULL, MACH_PORT_NULL) == 0)
         {
             refreshFile(__path);
         }
@@ -485,7 +486,7 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
 #if DEBUG
                             printf("[DYLD:CDHash Verifier] something is wrong 3:\n");
 #endif /* DEBUG */
-                            if(liveshim_syscall(SYS_pectl, PECTL_CS_FALLBACK_ENT, NULL, MACH_PORT_NULL) != 0)
+                            if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements) != 0)
                             {
                                 /* didn't succeed in rolling back permitives */
                                 abort();

@@ -31,8 +31,11 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
-#import <errno.h>
-#import <stdarg.h>
+#include <errno.h>
+#include <stdarg.h>
+#if __has_include(<ksurface_config.h>)
+#include <ksurface_config.h>
+#endif /* __has_include(<ksurface_config.h>) */
 
 syscall_client_t *syscallProxy = NULL;
 
@@ -266,10 +269,12 @@ typedef struct {
 #define T_OFIN      kESysTypeOptionalFDIn
 
 env_sys_entry_t sys_env_entries[] = {
+#ifdef KSURFACE_CONFIG_H
     SYS_ENTRY(SYS_gettask,     T_NUM,       T_NUM,  T_POUT, T_NUM,  T_NUM,  T_NUM),
     SYS_ENTRY(SYS_handoffep,   T_RPIN,      T_NUM,  T_NUM,  T_NUM,  T_NUM,  T_NUM),
+    SYS_ENTRY(SYS_pectl,       T_NUM,       T_NUM,  T_NUM,  T_NUM,  T_PIN,  T_POUT),
+#endif /* KSURFACE_CONFIG_H */
     SYS_ENTRY(SYS_ioctl,       T_FIN,       T_NUM,  T_NUM,  T_NUM,  T_NUM,  T_NUM),
-    SYS_ENTRY(SYS_pectl,       T_NUM,       T_NUM,  T_PIN,  T_POUT, T_NUM,  T_NUM),
     SYS_ENTRY(SYS_open,        T_NUM,       T_NUM,  T_NUM,  T_POUT, T_NUM,  T_NUM),
     SYS_ENTRY(SYS_faccessat,   T_FIN,       T_NUM,  T_NUM,  T_NUM,  T_NUM,  T_NUM),
 };

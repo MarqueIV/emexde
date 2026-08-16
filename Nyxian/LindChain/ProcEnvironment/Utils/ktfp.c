@@ -22,7 +22,10 @@
 #import <LindChain/ProcEnvironment/Utils/ktfp.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LiveShim/LiveShimSyscall.h>
-#include <assert.h>
+#import <assert.h>
+#if __has_include(<ksurface_config.h>)
+#import <ksurface_config.h>
+#endif /* __has_include(<ksurface_config.h>) */
 
 typedef struct {
     union {

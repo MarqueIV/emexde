@@ -127,6 +127,8 @@ typedef int64_t (*syscall_handler_t)(
 
 #define GET_SYSCALL_HANDLER(sysname) syscall_server_handler_##sysname
 
+#define SYSCALL_HANDLER_REDIRECT_TO_HANDLER(sysname) syscall_server_handler_##sysname(task, proc_snapshot, recv_buffer, args, in_ports, out_ports, out_ports_cnt)
+
 typedef struct syscall_server syscall_server_t;
 
 syscall_server_t *syscall_server_create(void);

@@ -22,7 +22,11 @@
 #ifndef SURFACE_SYS_SYSCALL_H
 #define SURFACE_SYS_SYSCALL_H
 
-/* headers to syscall handlers*/
+/* system headers */
+#include <sys/syscall.h>
+
+/* headers to all syscall handlers */
+#include <ksurface_config.h>
 #include <LindChain/ProcEnvironment/Surface/sys/proc/kill.h>
 #include <LindChain/ProcEnvironment/Surface/sys/cred/setuid.h>
 #include <LindChain/ProcEnvironment/Surface/sys/cred/setgid.h>
@@ -44,20 +48,6 @@
 #include <LindChain/ProcEnvironment/Surface/sys/fs/open.h>
 #include <LindChain/ProcEnvironment/Surface/sys/fs/faccessat.h>
 #include <LindChain/ProcEnvironment/Surface/sys/fs/getattrlist.h>
-#include <sys/syscall.h>
-
-/* additional nyxian syscalls for now */
-#define SYS_proctb      750         /* MARK: deprecated.. use SYS_sysctl instead */
-#define SYS_getent      751         /* getting processes entitlements */
-#define SYS_gethostname 752         /* MARK: deprecated.. use SYS_sysctl instead */
-#define SYS_sethostname 753         /* MARK: deprecated.. use SYS_sysctl instead */
-#define SYS_gettask     754         /* gets task port */
-#define SYS_procpath    755         /* gets process path of a pid */
-#define SYS_procbsd     756         /* MARK: deprecated.. use SYS_sysctl instead */
-#define SYS_handoffep   757         /* handoff exception port to kvirt */
-#define SYS_setent      758         /* sets entitlements (sanitized ofc) */
-#define SYS_waittask    759         /* waits till task port of a task is available */
-#define SYS_pectl       760         /* utility for many proc environment operations */
 
 typedef struct {
     const char *name;

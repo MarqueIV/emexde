@@ -30,24 +30,24 @@
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
+#include <ksurface_config.h>
 
 extern mach_port_t xpc_endpoint_copy_listener_port_4sim(NSObject<OS_xpc_object>*);
 extern NSObject<OS_xpc_object> *xpc_endpoint_create_mach_port_4sim(mach_port_t port);
 
-DEFINE_SYSCALL_HANDLER(pectl)
+DEFINE_SYSCALL_HANDLER(pectl_launchservice)
 {
-    uint8_t action = (uint8_t)args[0];
-    
+    PECTLLaunchService action = (PECTLLaunchService)args[1];
     switch(action)
     {
-        case PECTL_LS_GET_ENDPOINT:
+        case kPECTLLaunchServiceGetEndpoint:
         {
             if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), PEEntitlementLaunchServicesGetEndpoint))
             {
                 sys_return_failure(EPERM);
             }
             
-            userspace_pointer_t userspace_str = (userspace_pointer_t)args[1];
+            userspace_pointer_t userspace_str = (userspace_pointer_t)args[2];
             
             char *service_name = mach_syscall_copy_str_in(sys_task_, userspace_str, MAXHOSTNAMELEN);
             if(service_name == NULL)
@@ -92,7 +92,7 @@ DEFINE_SYSCALL_HANDLER(pectl)
             
             sys_return;
         }
-        case PECTL_LS_SET_ENDPOINT:
+        case kPECTLLaunchServiceSetEndpoint:
         {
             sys_need_in_ports(1, MACH_MSG_TYPE_MOVE_SEND);
             
@@ -108,7 +108,7 @@ DEFINE_SYSCALL_HANDLER(pectl)
                 sys_return_failure(EACCES);
             }
             
-            userspace_pointer_t userspace_str = (userspace_pointer_t)args[1];
+            userspace_pointer_t userspace_str = (userspace_pointer_t)args[2];
             
             char *service_name = mach_syscall_copy_str_in(sys_task_, userspace_str, MAXHOSTNAMELEN);
             if(service_name == NULL)
@@ -163,14 +163,21 @@ DEFINE_SYSCALL_HANDLER(pectl)
             
             sys_return;
         }
-        case PECTL_PE_SET_BAMSET:
-        {
+        default:
             sys_return_failure(ENOSYS);
-        }
-        case PECTL_CS_GET_PUBKEY:
+    }
+}
+
+/* sub categories */
+DEFINE_SYSCALL_HANDLER(pectl_codesigning)
+{
+    PECTLCodeSigning action = (PECTLCodeSigning)args[1];
+    switch(action)
+    {
+        case kPECTLCodeSigningGetPublicKey:
         {
-            userspace_pointer_t key_user_ptr = (userspace_pointer_t)args[1];
-            userspace_pointer_t key_len_ptr = (userspace_pointer_t)args[2];
+            userspace_pointer_t key_user_ptr = (userspace_pointer_t)args[2];
+            userspace_pointer_t key_len_ptr = (userspace_pointer_t)args[3];
             
             size_t key_len = 0;
             if(!mach_syscall_copy_in(sys_task_, sizeof(size_t), &key_len, key_len_ptr))
@@ -191,12 +198,10 @@ DEFINE_SYSCALL_HANDLER(pectl)
             
             sys_return;
         }
-        case PECTL_CS_GET_PRVKEY:
-        {
-            /* will be unimplemented for god knows how long */
-            sys_return_failure(EPERM);
-        }
-        case PECTL_CS_SIGN_PATH:
+        case kPECTLCodeSigningGetPrivateKey:
+            /* too much of a security concern */
+            sys_return_failure(ENOSYS);
+        case kPECTLCodeSigningSignPath:
         {
             /*
              * checking entitlements weither the process is entitled enough to
@@ -213,7 +218,7 @@ DEFINE_SYSCALL_HANDLER(pectl)
             }
             
             /* getting path */
-            userspace_pointer_t userspace_str = (userspace_pointer_t)args[1];
+            userspace_pointer_t userspace_str = (userspace_pointer_t)args[2];
             
             char *path = mach_syscall_copy_str_in(sys_task_, userspace_str, MAXHOSTNAMELEN);
             if(path == NULL)
@@ -254,7 +259,69 @@ DEFINE_SYSCALL_HANDLER(pectl)
             
             sys_return;
         }
-        case PECTL_PE_UIAPP_RUN:
+        case kPECTLCodeSigningGetCDHash:
+        {
+            if(!sys_proc_snapshot_->nyx.explicit_cdhash)
+            {
+                sys_return_failure(ENOENT);
+            }
+            
+            userspace_pointer_t ch_user_ptr = (userspace_pointer_t)args[2];
+            
+            if(!mach_syscall_copy_out(sys_task_, sizeof(sys_proc_->nyx.cdhash), sys_proc_->nyx.cdhash, ch_user_ptr))
+            {
+                sys_return_failure(EFAULT);
+            }
+            
+            sys_return;
+        }
+        case kPECTLCodeSigningAllEntitlements:
+            return PEEntitlementAll;
+        case kPECTLCodeSigningGetEntitlements:
+        {
+            return proc_getentitlements(sys_proc_snapshot_);
+        }
+        case kPECTLCodeSigningSetEntitlements:
+        {
+            kvo_wrlock(sys_proc_);
+            
+            /* MARK: THIS IS USER SUPPLIED */
+            PEEntitlement userPassed = (PEEntitlement)args[2];
+            
+            /* getting the added mask out of entitlements */
+            PEEntitlement added = (~proc_getentitlements(sys_proc_)) & userPassed;
+            
+            /* deny adding entitlements not present in max entitlements */
+            if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), added))
+            {
+                kvo_unlock(sys_proc_);
+                sys_return_failure(EPERM);
+            }
+            
+            proc_setentitlements(sys_proc_, userPassed);
+            
+            kvo_unlock(sys_proc_);
+            sys_return;
+        }
+        case kPECTLCodeSigningDropAllEntitlements:
+        {
+            kvo_wrlock(sys_proc_);
+            proc_setmaxentitlements(sys_proc_, PEEntitlementNone);
+            proc_setentitlements(sys_proc_, PEEntitlementNone);
+            kvo_unlock(sys_proc_);
+            sys_return;
+        }
+        default:
+            sys_return_failure(ENOSYS);
+    }
+}
+
+DEFINE_SYSCALL_HANDLER(pectl_userinterface)
+{
+    PECTLUserInterface action = (PECTLUserInterface)args[1];
+    switch(action)
+    {
+        case kPECTLUserInterfaceInit:
         {
             __block errno_t err = 0;
             dispatch_sync(dispatch_get_main_queue(), ^{
@@ -303,47 +370,63 @@ DEFINE_SYSCALL_HANDLER(pectl)
             });
             sys_return_failure(err);
         }
-        case PECTL_CS_GET_CDHASH:
-        {
-            if(!sys_proc_snapshot_->nyx.explicit_cdhash)
-            {
-                sys_return_failure(ENOENT);
-            }
-            
-            userspace_pointer_t ch_user_ptr = (userspace_pointer_t)args[1];
-            
-            if(!mach_syscall_copy_out(sys_task_, sizeof(sys_proc_->nyx.cdhash), sys_proc_->nyx.cdhash, ch_user_ptr))
-            {
-                sys_return_failure(EFAULT);
-            }
-            
-            sys_return;
-        }
-        case PECTL_CS_FALLBACK_ENT:
-        {
-            kvo_wrlock(sys_proc_);
-            proc_setmaxentitlements(sys_proc_, PEEntitlementNone);
-            proc_setentitlements(sys_proc_, PEEntitlementNone);
-            kvo_unlock(sys_proc_);
-            sys_return;
-        }
-        case PECTL_USREBOOT:
+        default:
+            sys_return_failure(ENOSYS);
+    }
+}
+
+DEFINE_SYSCALL_HANDLER(pectl_userspace)
+{
+    PECTLUserspace action = (PECTLUserspace)args[1];
+    switch(action)
+    {
+        case kPECTLUserspaceReboot:
             if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), PEEntitlementPlatform))
             {
                 sys_return_failure(EPERM);
             }
             [[PEUserspaceManager shared] rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
             sys_return;
-        case PECTL_GET_USMODE:
+        case kPECTLUserspaceGetMode:
             return [[PEUserspaceManager shared] mode];
-        case PECTL_GET_BTYPE:
+        default:
+            sys_return_failure(ENOSYS);
+    }
+    sys_return_failure(ENOSYS);
+}
+
+DEFINE_SYSCALL_HANDLER(pectl_misceleanous)
+{
+    PECTLMisceleanous action = (PECTLMisceleanous)args[1];
+    switch(action)
+    {
+        case kPECTLMisceleanousGetBuildType:
             #if DEBUG
             return kPEBuildTypeDebug;
             #else
             return kPEBuildTypeRelease;
             #endif /* DEBUG */
-        case PECTL_GET_ALLENT:
-            return PEEntitlementAll;
+        default:
+            sys_return_failure(ENOSYS);
+    }
+    sys_return_failure(ENOSYS);
+}
+
+DEFINE_SYSCALL_HANDLER(pectl)
+{
+    PECTLCategory category = (PECTLCategory)args[0];
+    switch(category)
+    {
+        case kPECTLCategoryLaunchService:
+            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_launchservice);
+        case kPECTLCategoryCodeSigning:
+            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_codesigning);
+        case kPECTLCategoryUserInterface:
+            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_userinterface);
+        case kPECTLCategoryUserspace:
+            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_userspace);
+        case kPECTLCategoryMisceleanous:
+            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_misceleanous);
         default:
             sys_return_failure(ENOSYS);
     }

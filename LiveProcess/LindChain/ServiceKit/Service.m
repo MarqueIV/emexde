@@ -23,6 +23,9 @@
 #import <LindChain/ServiceKit/Service.h>
 #include <dlfcn.h>
 #include <mach/mach.h>
+#if __has_include(<ksurface_config.h>)
+#include <ksurface_config.h>
+#endif /* __has_include(<ksurface_config.h>) */
 
 @interface NSXPCListenerEndpoint ()
 
@@ -123,7 +126,7 @@ int PEServiceMain(int argc,
                 return;
             }
             
-            if(liveshim_syscall(SYS_pectl, PECTL_LS_SET_ENDPOINT, [serviceIdentifier UTF8String], port) != 0)
+            if(liveshim_syscall(SYS_pectl, kPECTLCategoryLaunchService, kPECTLLaunchServiceSetEndpoint, [serviceIdentifier UTF8String], NULL, port) != 0)
             {
                 return;
             }

@@ -179,7 +179,7 @@ int environment_posix_spawn(pid_t *process_identifier,
     if(!cs_valid)
     {
         /* attempt signing */
-        int ret = (int)liveshim_syscall(SYS_pectl, PECTL_CS_SIGN_PATH, resolved, MACH_PORT_NULL);
+        int ret = (int)liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningSignPath, resolved, NULL, MACH_PORT_NULL);
         if(ret != 0)
         {
             /* errno comes from the syscall in this case */
