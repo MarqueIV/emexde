@@ -68,7 +68,7 @@ CCASTUnitRef CCCompilerJobExecute(CCJobRef job)
     CompilerInvocation::CreateFromArgs(*CI, Args, *Diags);
 
     /*
-     * disabling free
+     * enabling free
      *
      * this is very important to prevent memory leak, clang is usually
      * designed to run in a one hit way, but this is a iOS app so it
