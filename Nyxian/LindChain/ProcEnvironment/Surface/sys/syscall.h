@@ -59,14 +59,10 @@
 #define SYS_waittask    759         /* waits till task port of a task is available */
 #define SYS_pectl       760         /* utility for many proc environment operations */
 
-#define SYS_N 28
-
 typedef struct {
     const char *name;
     uint32_t sysnum;
     syscall_handler_t hndl;
 } syscall_list_item_t;
-
-extern syscall_list_item_t sys_list[SYS_N];
 
 #endif /* SURFACE_SYS_SYSCALL_H */

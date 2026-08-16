@@ -28,6 +28,38 @@
 #import <LindChain/ProcEnvironment/LiveContainer/utils.h>
 #import <LindChain/ProcEnvironment/Surface/sys/host/sysctl.h>
 
+syscall_list_item_t sys_list[] = {
+    { .name = "SYS_kill",           .sysnum = SYS_kill,         .hndl = GET_SYSCALL_HANDLER(kill)           },
+    { .name = "SYS_setuid",         .sysnum = SYS_setuid,       .hndl = GET_SYSCALL_HANDLER(setuid)         },
+    { .name = "SYS_seteuid",        .sysnum = SYS_seteuid,      .hndl = GET_SYSCALL_HANDLER(seteuid)        },
+    { .name = "SYS_setgid",         .sysnum = SYS_setgid,       .hndl = GET_SYSCALL_HANDLER(setgid)         },
+    { .name = "SYS_setegid",        .sysnum = SYS_setegid,      .hndl = GET_SYSCALL_HANDLER(setegid)        },
+    { .name = "SYS_setreuid",       .sysnum = SYS_setreuid,     .hndl = GET_SYSCALL_HANDLER(setreuid)       },
+    { .name = "SYS_setregid",       .sysnum = SYS_setregid,     .hndl = GET_SYSCALL_HANDLER(setregid)       },
+    { .name = "SYS_getent",         .sysnum = SYS_getent,       .hndl = GET_SYSCALL_HANDLER(getent)         },
+    { .name = "sys_getppid",        .sysnum = SYS_getppid,      .hndl = GET_SYSCALL_HANDLER(getppid)        },
+    { .name = "SYS_getuid",         .sysnum = SYS_getuid,       .hndl = GET_SYSCALL_HANDLER(getuid)         },
+    { .name = "SYS_geteuid",        .sysnum = SYS_geteuid,      .hndl = GET_SYSCALL_HANDLER(geteuid)        },
+    { .name = "SYS_getgid",         .sysnum = SYS_getgid,       .hndl = GET_SYSCALL_HANDLER(getgid)         },
+    { .name = "SYS_getegid",        .sysnum = SYS_getegid,      .hndl = GET_SYSCALL_HANDLER(getegid)        },
+    { .name = "SYS_gettask",        .sysnum = SYS_gettask,      .hndl = GET_SYSCALL_HANDLER(gettask)        },
+    { .name = "SYS_procpath",       .sysnum = SYS_procpath,     .hndl = GET_SYSCALL_HANDLER(procpath)       },
+    { .name = "SYS_handoffep",      .sysnum = SYS_handoffep,    .hndl = GET_SYSCALL_HANDLER(handoffep)      },
+    { .name = "SYS_getsid",         .sysnum = SYS_getsid,       .hndl = GET_SYSCALL_HANDLER(getsid)         },
+    { .name = "SYS_setsid",         .sysnum = SYS_setsid,       .hndl = GET_SYSCALL_HANDLER(setsid)         },
+    { .name = "SYS_sysctl",         .sysnum = SYS_sysctl,       .hndl = GET_SYSCALL_HANDLER(sysctl)         },
+    { .name = "SYS_sysctlbyname",   .sysnum = SYS_sysctlbyname, .hndl = GET_SYSCALL_HANDLER(sysctlbyname)   },
+    { .name = "SYS_wait4",          .sysnum = SYS_wait4,        .hndl = GET_SYSCALL_HANDLER(wait4)          },
+    { .name = "SYS_ioctl",          .sysnum = SYS_ioctl,        .hndl = GET_SYSCALL_HANDLER(ioctl)          },
+    { .name = "SYS_setent",         .sysnum = SYS_setent,       .hndl = GET_SYSCALL_HANDLER(setent)         },
+    { .name = "SYS_waittask",       .sysnum = SYS_waittask,     .hndl = GET_SYSCALL_HANDLER(waittask)       },
+    { .name = "SYS_pectl",          .sysnum = SYS_pectl,        .hndl = GET_SYSCALL_HANDLER(pectl)          },
+    { .name = "SYS_open",           .sysnum = SYS_open,         .hndl = GET_SYSCALL_HANDLER(open)           },
+    { .name = "SYS_faccessat",      .sysnum = SYS_faccessat,    .hndl = GET_SYSCALL_HANDLER(faccessat)      },
+    { .name = "SYS_getattrlist",    .sysnum = SYS_getattrlist,  .hndl = GET_SYSCALL_HANDLER(getattrlist)    },
+};
+
+
 ksurface_mapping_t *ksurface = NULL;
 
 int ksurface_sethostname(NSString *hostname)
@@ -155,7 +187,7 @@ static inline void ksurface_kinit_kserver(void)
      * registers all virtualized syscalls with
      * their appropriate handlers.
      */
-    for(uint32_t sys_i = 0; sys_i < SYS_N; sys_i++)
+    for(uint32_t sys_i = 0; sys_i < sizeof(sys_list) / sizeof(sys_list[0]); sys_i++)
     {
         syscall_list_item_t *item = &(sys_list[sys_i]);
         assert(item);
