@@ -31,6 +31,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/CrashRecoveryContext.h>
 #include <lld/Common/CommonLinkerContext.h>
+#include <os/lock.h>
 
 namespace lld {
 namespace macho {
@@ -44,6 +45,9 @@ bool link(llvm::ArrayRef<const char *> args, llvm::raw_ostream &stdoutOS,
 Boolean CCLinkerJobExecute(CCJobRef job,
                            CFArrayRef *outDiagnostics)
 {
+    static os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
+    os_unfair_lock_lock(&lock);
+    
     assert(job != nullptr);
     assert(CCJobGetType(job) == CCJobTypeLinker);
 
@@ -87,6 +91,7 @@ Boolean CCLinkerJobExecute(CCJobRef job,
         /* process error returns */
         if(result == nullptr)
         {
+            os_unfair_lock_unlock(&lock);
             return retCode == 0;
         }
 
@@ -105,6 +110,8 @@ Boolean CCLinkerJobExecute(CCJobRef job,
     {
         *outDiagnostics = result;
     }
+    
+    os_unfair_lock_unlock(&lock);
 
     return retCode == 0;
 }
