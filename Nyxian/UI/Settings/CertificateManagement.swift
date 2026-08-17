@@ -22,8 +22,6 @@
 import UIKit
 
 class CertificateController: UITableViewController {
-    var certificateStateCell: UITableViewCell?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -32,37 +30,23 @@ class CertificateController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        return 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if indexPath.row == 1 {
-            let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
-            cell.textLabel?.text = "Set Up Signing"
-            cell.textLabel?.textColor = .label
-            cell.textLabel?.textAlignment = .left
-            cell.selectionStyle = .default
-            return cell
-        } else {
-            let cell: UITableViewCell = UITableViewCell()
-            certificateStateCell = cell
-            return cell
-        }
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        cell.textLabel?.text = "Set Up Signing"
+        cell.textLabel?.textColor = .label
+        cell.textLabel?.textAlignment = .left
+        cell.selectionStyle = .default
+        return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if indexPath.row == 1 {
-            importCertificate()
-        }
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-    
-    func importCertificate() {
         let importPopup: CertificateImporter = CertificateImporter(style: .insetGrouped)
         let importSettings: UINavigationController = UINavigationController(rootViewController: importPopup)
         importSettings.modalPresentationStyle = .formSheet
         
-        // dynamic size
         if UIDevice.current.userInterfaceIdiom == .phone {
             if let sheet = importSettings.sheetPresentationController {
                 sheet.animateChanges {
@@ -78,5 +62,6 @@ class CertificateController: UITableViewController {
         }
         
         self.present(importSettings, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }
