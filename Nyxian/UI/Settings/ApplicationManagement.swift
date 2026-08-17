@@ -352,37 +352,37 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                         
                         self.present(alert, animated: true)
                         
-                        if LCUtils.certificateData == nil {
-                            alert.dismiss(animated: true) {
-                                checkSigningSetup()
+                        checkSigningSetup() { success in
+                            if !success {
+                                alert.dismiss(animated: true)
+                                return
                             }
-                            return
-                        }
-                        
-                        DispatchQueue.global().async {
-                            LCUtils.signAppBundle(withZSign: bundle.bundleURL) { result, error in
-                                if result {
-                                    PEProcessManager.shared().closeIfRunning(usingBundleIdentifier: bundle.bundleIdentifier)
-                                    
-                                    if !wasSignedLocally {
-                                        entitlement_set_path((executablePath as NSString).utf8String, ent)
-                                    }
-                                    
-                                    if LDEApplicationWorkspace.shared().installApplication(atBundlePath: bundle.bundleURL.path) {
-                                        DispatchQueue.main.async {
-                                            alert.dismiss(animated: true)
+                            
+                            DispatchQueue.global().async {
+                                LCUtils.signAppBundle(withZSign: bundle.bundleURL) { result, error in
+                                    if result {
+                                        PEProcessManager.shared().closeIfRunning(usingBundleIdentifier: bundle.bundleIdentifier)
+                                        
+                                        if !wasSignedLocally {
+                                            entitlement_set_path((executablePath as NSString).utf8String, ent)
+                                        }
+                                        
+                                        if LDEApplicationWorkspace.shared().installApplication(atBundlePath: bundle.bundleURL.path) {
+                                            DispatchQueue.main.async {
+                                                alert.dismiss(animated: true)
+                                            }
+                                        } else {
+                                            DispatchQueue.main.async {
+                                                alert.dismiss(animated: true) {
+                                                    NotificationServer.NotifyUser(level: .error, notification: "Failed to sign or install application.")
+                                                }
+                                            }
                                         }
                                     } else {
                                         DispatchQueue.main.async {
                                             alert.dismiss(animated: true) {
                                                 NotificationServer.NotifyUser(level: .error, notification: "Failed to sign or install application.")
                                             }
-                                        }
-                                    }
-                                } else {
-                                    DispatchQueue.main.async {
-                                        alert.dismiss(animated: true) {
-                                            NotificationServer.NotifyUser(level: .error, notification: "Failed to sign or install application.")
                                         }
                                     }
                                 }

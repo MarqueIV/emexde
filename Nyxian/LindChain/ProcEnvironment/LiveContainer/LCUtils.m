@@ -131,11 +131,11 @@
     return [ZSigner signMachOAtPath:url.path prov:self.profileData key:self.certificateData pass:self.certificatePassword];
 }
 
-+ (int)validateCertificateWithCompletionHandler:(void(^)(int status, NSDate *expirationDate, NSString *error))completionHandler
++ (int)validateCertificateWithCompletionHandler:(void(^)(int status, NSString *error))completionHandler
 {
     if(self.certificateData == nil)
     {
-        completionHandler(1, nil, @"No certificate imported, please set up signing");
+        completionHandler(1000, @"No certificate imported, please set up signing");
         return 1;
     }
     return [ZSigner checkCertWithProv:self.profileData key:self.certificateData pass:self.certificatePassword completionHandler:completionHandler];
@@ -143,11 +143,11 @@
 
 + (int)validateCertificateWithCertificateData:(NSData*)data
                                  withPassword:(NSString*)password
-                        WithCompletionHandler:(void(^)(int status, NSDate *expirationDate, NSString *error))completionHandler
+                        WithCompletionHandler:(void(^)(int status, NSString *error))completionHandler
 {
     if(data == nil)
     {
-        completionHandler(1000, nil, @"No certificate imported, please set up signing");
+        completionHandler(1000, @"No certificate imported, please set up signing");
         return 1000;
     }
     return [ZSigner checkCertWithProv:self.profileData key:data pass:password completionHandler:completionHandler];

@@ -133,7 +133,7 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
                    let url = cert.url {
                     let p12Data: Data = try Data(contentsOf: url)
                     
-                    LCUtils.validateCertificate(withCertificateData: p12Data, withPassword: password) { [weak self] status, experiationDate, someWords in
+                    LCUtils.validateCertificate(withCertificateData: p12Data, withPassword: password) { [weak self] status, someWords in
                         guard let self = self else { return }
                         if status == 0 {
                             LCUtils.certificateData = p12Data

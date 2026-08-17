@@ -284,11 +284,19 @@ class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
             XCButton.stopSpinning()
         }
         
+        var success: Bool = false;
+        let semaphore = DispatchSemaphore(value: 0)
+        checkSigningSetup() { reply in
+            success = reply
+            semaphore.signal()
+        }
+        semaphore.wait()
+        
+        if !success {
+            throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Code signing is not properly set up. Cannot sign targets."])
+        }
+        
         if(buildType == .RunningApp) {
-            if LCUtils.certificateData == nil {
-                throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"No code signature present to perform signing, import code signature in Settings > Certificate. Note that the code signature must be the same code signature used to sign Nyxian."])
-            }
-            
             if self.project.projectConfig.schemeKind == .app {
                 let semaphore = DispatchSemaphore(value: 0)
                 var nsError: NSError? = nil

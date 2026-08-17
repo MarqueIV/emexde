@@ -36,8 +36,8 @@ int dyld_get_program_sdk_version(void);
 
 + (NSProgress *)signAppBundleWithZSign:(NSURL *)path completionHandler:(void (^)(BOOL success, NSError *error))completionHandler;
 + (BOOL)signMachOAtURL:(NSURL *)url;
-+ (int)validateCertificateWithCompletionHandler:(void(^)(int status, NSDate *expirationDate, NSString *error))completionHandler;
-+ (int)validateCertificateWithCertificateData:(NSData*)data withPassword:(NSString*)password WithCompletionHandler:(void(^)(int status, NSDate *expirationDate, NSString *error))completionHandler;
++ (int)validateCertificateWithCompletionHandler:(void(^)(int status, NSString *error))completionHandler;
++ (int)validateCertificateWithCertificateData:(NSData*)data withPassword:(NSString*)password WithCompletionHandler:(void(^)(int status, NSString *error))completionHandler;
 
 @end
 

@@ -22,9 +22,10 @@
 import UIKit
 import UIOnboarding
 
-func checkSigningSetup() {
-    LCUtils.validateCertificate { status, experiationDate, someWords in
-        if status == 0 || status == 999 {
+func checkSigningSetup(completionHandler: @escaping (Bool) -> Void = { _ in }) {
+    LCUtils.validateCertificate { status, someWords in
+        completionHandler(status == 0)
+        if status == 0 {
             return
         }
         
@@ -32,16 +33,16 @@ func checkSigningSetup() {
             let alert = UIAlertController(
                 title: {
                     switch status {
-                        default:
-                            return "Signing Isn't Set Up"
+                    default:
+                        return "Signing Isn't Set Up"
                     }
                 }(),
                 message: {
                     switch status {
-                        default:
-                            return "Nyxian needs a signing certificate to install and launch the apps you build. Without one you can still write and compile code, but you won't be able to run it on this device."
-                }
-            }(), preferredStyle: .alert)
+                    default:
+                        return "Nyxian needs a signing certificate to install and launch the apps you build. Without one you can still write and compile code, but you won't be able to run it on this device."
+                    }
+                }(), preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Not Now", style: .cancel))
             alert.addAction(UIAlertAction(title: "Set Up Signing", style: .default) { _ in
@@ -59,7 +60,7 @@ func checkSigningSetup() {
                                 }
                             ]
                         }
-                            
+                        
                         sheet.prefersGrabberVisible = true
                     }
                 }
@@ -291,7 +292,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         // storing sentinel so it will not appear again
         UserDefaults.standard.set(NSNumber(booleanLiteral: true), forKey: "NXOnboardingSentinel")
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             checkSigningSetup()
         }
     }

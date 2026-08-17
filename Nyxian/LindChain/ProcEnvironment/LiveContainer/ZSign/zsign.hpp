@@ -48,7 +48,7 @@ NSString* getTeamId(NSData *prov,
 int checkCert(NSData *prov,
               NSData *key,
               NSString *pass,
-              void(^completionHandler)(int status, NSDate* expirationDate, NSString *error));
+              void(^completionHandler)(int status, NSString *error));
 #ifdef __cplusplus
 }
 #endif
