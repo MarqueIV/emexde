@@ -21,6 +21,11 @@
 
 #import <LindChain/WindowServer/Window/NXWindowBar.h>
 
+static inline UIColor *RGBHex(uint32_t hex)
+{
+    return [UIColor colorWithRed:((hex >> 16) & 0xFF) / 255.0 green:((hex >>  8) & 0xFF) / 255.0 blue:( hex & 0xFF) / 255.0 alpha:1.0];
+}
+
 @implementation NXWindowBar {
     UIView *_bottomBorder;
 
@@ -141,8 +146,8 @@
         [island.contentView addSubview:dotContainer];
         _dotContainer = dotContainer;
 
-        _closeDot = [self _dotWithColor:UIColor.systemRedColor];
-        _maxDot = [self _dotWithColor:UIColor.systemGreenColor];
+        _closeDot = [self _dotWithColor:RGBHex(0xFF5F57)];
+        _maxDot = [self _dotWithColor:RGBHex(0x28C840)];
         [dotContainer addSubview:_closeDot];
         [dotContainer addSubview:_maxDot];
 
@@ -160,10 +165,10 @@
             [dotContainer.centerYAnchor constraintEqualToAnchor:island.centerYAnchor],
         ]];
 
-        _closeButton = [self _islandButtonWithImage:@"xmark.circle.fill" withBackgroundColor:UIColor.systemRedColor callback:closeCallback];
+        _closeButton = [self _islandButtonWithImage:@"xmark.circle.fill" withBackgroundColor:RGBHex(0xFF5F57) /*borderColor:UIColor.systemRedColor*/ callback:closeCallback];
         
         __weak typeof(self) weakSelf = self;
-        _maximizeButton = [self _islandButtonWithImage:@"arrow.up.left.and.arrow.down.right.circle.fill" withBackgroundColor:UIColor.systemGreenColor callback:^{
+        _maximizeButton = [self _islandButtonWithImage:@"arrow.up.left.and.arrow.down.right.circle.fill" withBackgroundColor:RGBHex(0x28C840) /*borderColor:UIColor.systemGreenColor*/ callback:^{
             maximizeCallback();
             
             __strong typeof(self) strongSelf = weakSelf;
@@ -262,8 +267,9 @@
         self->_buttonStack.alpha = 1.0;
         self->_buttonStack.transform = CGAffineTransformIdentity;
         
-        self->_islandWidthConstraint.constant  = 120.0;
-        self->_islandHeightConstraint.constant = 58.0;
+        self->_islandWidthConstraint.constant  = 80.0;
+        self->_islandHeightConstraint.constant = 40.0;
+        self->_buttonIsland.layer.cornerRadius = 20.0;
         
         [layoutRoot layoutIfNeeded];
     } completion:nil];
@@ -327,7 +333,7 @@
                             callback:(void (^)(void))callback
 {
     UIButtonConfiguration *cfg = [UIButtonConfiguration plainButtonConfiguration];
-    cfg.preferredSymbolConfigurationForImage = [UIImageSymbolConfiguration configurationWithPointSize:16 weight:UIImageSymbolWeightSemibold];
+    cfg.preferredSymbolConfigurationForImage = [UIImageSymbolConfiguration configurationWithPointSize:17 weight:UIImageSymbolWeightSemibold];
     cfg.image = [UIImage systemImageNamed:name];
     cfg.baseForegroundColor = backgroundColor;
 

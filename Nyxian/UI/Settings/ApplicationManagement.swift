@@ -362,6 +362,8 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                         DispatchQueue.global().async {
                             LCUtils.signAppBundle(withZSign: bundle.bundleURL) { result, error in
                                 if result {
+                                    PEProcessManager.shared().closeIfRunning(usingBundleIdentifier: bundle.bundleIdentifier)
+                                    
                                     if !wasSignedLocally {
                                         entitlement_set_path((executablePath as NSString).utf8String, ent)
                                     }
