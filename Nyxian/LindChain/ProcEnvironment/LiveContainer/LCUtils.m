@@ -133,6 +133,11 @@
 
 + (int)validateCertificateWithCompletionHandler:(void(^)(int status, NSDate *expirationDate, NSString *error))completionHandler
 {
+    if(self.certificateData == nil)
+    {
+        completionHandler(1, nil, @"No certificate imported, please set up signing");
+        return 1;
+    }
     return [ZSigner checkCertWithProv:self.profileData key:self.certificateData pass:self.certificatePassword completionHandler:completionHandler];
 }
 
