@@ -125,6 +125,12 @@ static void *MDKWorkerThreadMain(void *arg)
 
 - (instancetype)initWithThreads:(CFIndex)threads
 {
+    /* otherwise memory corruption due to fixed amount of _freeStack */
+    if(threads > 64)
+    {
+        threads = 64;
+    }
+    
     self = [super init];
     _threads = (threads == 0) ? 1 : threads;
     _semaphore = dispatch_semaphore_create(threads);
