@@ -1,5 +1,5 @@
 {
-  "originHash" : "afb2bc5fd5f3bfc1dcc041b53be801a347170ea440e74970b5b5999dc108ff16",
+  "originHash" : "6ccbe1ec9a9660b6fba293be0f2b91bad1f8c28362bcb8932123a4b0b375be2d",
   "pins" : [
     {
       "identity" : "runestone",
@@ -85,10 +85,10 @@
     {
       "identity" : "uionboarding",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/lascic/UIOnboarding.git",
+      "location" : "https://github.com/emexlab/UIOnboarding",
       "state" : {
-        "revision" : "52b656c820cdb26e40a261bb2e79e60f847410de",
-        "version" : "2.0.5"
+        "branch" : "main",
+        "revision" : "b4ded3a36bd7a316866d2a534cbdb6dc8ceb67fd"
       }
     }
   ],

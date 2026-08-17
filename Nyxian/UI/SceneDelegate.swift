@@ -24,7 +24,7 @@ import UIOnboarding
 
 struct UIOnboardingHelper {
     static func setUpIcon() -> UIImage {
-        return Bundle.main.appIcon ?? .init(named: "IconPreviewDefaultOld")!
+        return .init(named: "IconPreviewDefaultOld")!
     }
     
     static func setUpFirstTitleLine() -> NSMutableAttributedString {
@@ -85,7 +85,7 @@ struct UIOnboardingHelper {
         return .init(icon: UIImage(systemName: "heart.fill")!,
                      text: "Contributions, feedback, and stars keep the project alive.",
                      linkTitle: "Contribute on GitHub",
-                     link: "https://github.com/emexlab/emexDE",
+                     link: "https://github.com/emexlab/Nyxian",
                      linkColor: UIColor { trait in
                          trait.userInterfaceStyle == .dark
                              ? UIColor(red: 0.85, green: 0.74, blue: 0.93, alpha: 1.0)
@@ -94,7 +94,9 @@ struct UIOnboardingHelper {
     }
     
     static func setUpButton() -> UIOnboardingButtonConfiguration {
-        return .init(title: "Continue", titleColor: currentTheme!.backgroundColor, backgroundColor: UIColor { trait in
+        let lightBackground = currentTheme!.backgroundColor.resolvedColor(with: .init(userInterfaceStyle: .light))
+        
+        return .init(title: "Continue", titleColor: lightBackground, backgroundColor: UIColor { trait in
             trait.userInterfaceStyle == .dark
             ? UIColor(red: 0.85, green: 0.74, blue: 0.93, alpha: 1.0)
             : UIColor(red: 0.62, green: 0.48, blue: 0.78, alpha: 1.0)
@@ -111,6 +113,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         // swizzle swizzle swizzle :3
         UIViewController.swizzlePresentAndDismissOnce
         UIBarButtonItem.swizzleBarButtonitem
+        RevertUI()
         
         self.window = NXWindowServer.shared(with: windowScene)
         if(self.window == nil)
@@ -119,7 +122,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         }
         
         func errorFallback(title: String, message: String) {
-            RevertUI()
             self.window?.rootViewController = UIViewController()
             self.window?.rootViewController?.view.backgroundColor = currentTheme!.backgroundColor
 
@@ -215,14 +217,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         let onboardingConfiguration = UIOnboardingViewConfiguration(appIcon: UIOnboardingHelper.setUpIcon(), firstTitleLine: UIOnboardingHelper.setUpFirstTitleLine(), secondTitleLine: UIOnboardingHelper.setUpSecondTitleLine(), features: UIOnboardingHelper.setUpFeatures(), textViewConfiguration: UIOnboardingHelper.setUpNotice(), buttonConfiguration: UIOnboardingHelper.setUpButton())
         let onboardingController: UIOnboardingViewController = UIOnboardingViewController(withConfiguration: onboardingConfiguration)
         onboardingController.delegate = self
-        onboardingController.loadViewIfNeeded()
-        DispatchQueue.main.async {
-            for subview in onboardingController.view.subviews {
-                if let scrollView = subview as? UIScrollView {
-                    scrollView.backgroundColor = currentTheme!.backgroundColor
-                }
-            }
-        }
+        onboardingController.backgroundColor = currentTheme!.backgroundColor
         
         self.window?.rootViewController?.present(onboardingController, animated: false)
     }

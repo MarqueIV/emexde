@@ -28,7 +28,6 @@ import UIKit
     var projectsList: [String:[NXProject]] = [:]
     
     @objc init() {
-        RevertUI()
         super.init(style: .insetGrouped)
     }
     
