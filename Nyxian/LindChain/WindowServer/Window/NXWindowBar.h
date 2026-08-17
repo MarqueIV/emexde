@@ -37,6 +37,9 @@
 
 - (void)setFullscreen:(BOOL)fullscreen animated:(BOOL)animated;
 
+- (void)expandIsland;
+- (void)collapseIsland;
+
 @end
 
 #endif /* NXWINDOWBAR_H */

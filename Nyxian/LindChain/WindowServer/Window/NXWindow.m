@@ -374,6 +374,7 @@
             [self focusWindow];
             [gesture setTranslation:CGPointZero inView:self.view.superview];
             [self.session beginInteractiveResize];
+            [_windowBar collapseIsland];
             break;
         case UIGestureRecognizerStateChanged:
         {
