@@ -32,6 +32,8 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        self.isModalInPresentation = true
+        self.navigationController?.isModalInPresentation = true
         self.title = "Set Up Signing"
         
         importButton.title = "Import"
