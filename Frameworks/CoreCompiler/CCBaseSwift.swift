@@ -24,5 +24,8 @@
 
 import Foundation
 
+extension CCFileType: Codable {}
+extension CCJobType: Codable {}
+extension CCDriverType: Codable {}
 extension CCDiagnosticType: Codable {}
 extension CCDiagnosticLevel: Codable {}
