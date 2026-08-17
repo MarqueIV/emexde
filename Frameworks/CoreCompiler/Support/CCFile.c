@@ -327,3 +327,18 @@ void CCFileSetUnsavedData(CCMutableFileRef mutableFile,
         mutableFile->unsavedData = CFRetain(data);
     }
 }
+
+Boolean CCFileTypeIsClangFile(CCFileType type)
+{
+    return (type < kCCFileTypeSwift);
+}
+
+Boolean CCFileTypeIsSwiftFile(CCFileType type)
+{
+    return (type == kCCFileTypeSwift);
+}
+
+Boolean CCFileTypeIsObjectFile(CCFileType type)
+{
+    return (type == kCCFileTypeObject);
+}

@@ -29,6 +29,11 @@
 #include <CoreCompiler/CCJob.h>
 #include <CoreCompiler/CCSDK.h>
 
+typedef CF_ENUM(UInt8, CCDriverType) {
+    kCCDriverTypeClang = 0,
+    kCCDriverTypeSwift,
+};
+
 typedef struct __CCDriver *CCDriverRef;
 typedef CFStringRef (*CCOutputPathCallback)(const char *baseInput, bool *skip, void *context);
 

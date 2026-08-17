@@ -27,6 +27,20 @@
 
 #include <CoreCompiler/CCBase.h>
 
+typedef CF_ENUM(UInt8, CCFileType) {
+    kCCFileTypeC = 0,
+    kCCFileTypeCHeader,
+    kCCFileTypeCXX,
+    kCCFileTypeCXXHeader,
+    kCCFileTypeObjC,
+    kCCFileTypeObjCHeader,
+    kCCFileTypeObjCXX,
+    kCCFileTypeObjCXXHeader,
+    kCCFileTypeSwift,
+    kCCFileTypeObject,
+    kCCFileTypeUnknown,
+};
+
 typedef struct __CCFile *CCFileRef;
 typedef struct __CCFile *CCMutableFileRef;
 
@@ -46,5 +60,9 @@ CC_EXPORT CFDataRef CCFileGetUnsavedData(CCFileRef file);
 CC_EXPORT CFDataRef CCFileCopyUnsavedData(CCFileRef file);
 CC_EXPORT void CCFileSetFileURL(CCMutableFileRef mutableFile, CFURLRef fileURL);
 CC_EXPORT void CCFileSetUnsavedData(CCMutableFileRef mutableFile, CFDataRef data);
+
+CC_EXPORT Boolean CCFileTypeIsClangFile(CCFileType type);
+CC_EXPORT Boolean CCFileTypeIsSwiftFile(CCFileType type);
+CC_EXPORT Boolean CCFileTypeIsObjectFile(CCFileType type);
 
 #endif /* CCFILE_H */

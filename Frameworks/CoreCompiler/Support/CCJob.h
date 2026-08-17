@@ -28,6 +28,15 @@
 #include <CoreCompiler/CCBase.h>
 #include <CoreCompiler/CCDiagnostic.h>
 
+typedef CF_ENUM(UInt8, CCJobType) {
+    kCCJobTypeCompiler = 0,
+    kCCJobTypeDriver,
+    kCCJobTypeSwiftCompiler,
+    kCCJobTypeSwiftDriver,
+    kCCJobTypeLinker,
+    kCCJobTypeUnknown
+};
+
 typedef struct __CCJob *CCJobRef;
 
 CC_EXPORT CFTypeID CCJobGetTypeID(void);
@@ -38,5 +47,7 @@ CC_EXPORT CCJobType CCJobGetType(CCJobRef job);
 CC_EXPORT CFArrayRef CCJobGetArguments(CCJobRef job);
 
 CC_EXPORT Boolean CCJobExecuteJob(CCJobRef job, CFArrayRef *outDiagnostic, CFStringRef *outMainSource);
+
+CC_EXPORT Boolean CCJobTypeSupportsMultithreading(CCJobType type);
 
 #endif /* CCJOB_H */

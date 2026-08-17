@@ -28,6 +28,22 @@
 #include <CoreCompiler/CCBase.h>
 #include <CoreCompiler/CCFileSourceLocation.h>
 
+typedef CF_ENUM(UInt8, CCDiagnosticType) {
+    kCCDiagnosticTypeFile = 0,
+    kCCDiagnosticTypeTargetFile,
+    kCCDiagnosticTypeInternal,
+    kCCDiagnosticTypeUnknown,
+};
+
+typedef CF_ENUM(UInt8, CCDiagnosticLevel) {
+    kCCDiagnosticLevelNote = 0,
+    kCCDiagnosticLevelRemark,
+    kCCDiagnosticLevelWarning,
+    kCCDiagnosticLevelError,
+    kCCDiagnosticLevelFatal,
+    kCCDiagnosticLevelUnknown,
+};
+
 typedef struct __CCDiagnostic *CCDiagnosticRef;
 
 CC_EXPORT CFTypeID CCDiagnosticGetTypeID(void);

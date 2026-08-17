@@ -30,6 +30,7 @@
 #import <MobileDevelopmentKit/MDKJob.h>
 #import <MobileDevelopmentKit/MDKFile.h>
 #import <MobileDevelopmentKit/MDKSDK.h>
+#import <CoreCompiler/CCDriver.h>
 
 @class MDKDriver;
 

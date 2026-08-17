@@ -157,3 +157,9 @@ CC_EXPORT Boolean CCJobExecuteJob(CCJobRef job,
             return false;
     }
 }
+
+Boolean CCJobTypeSupportsMultithreading(CCJobType type)
+{
+    /* TODO: implement multithreading support for the swift compiler */
+    return (type == kCCJobTypeCompiler);
+}
