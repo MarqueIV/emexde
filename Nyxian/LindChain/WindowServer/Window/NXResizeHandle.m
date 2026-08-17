@@ -22,20 +22,64 @@
 
 #import <LindChain/WindowServer/Window/NXResizeHandle.h>
 
-@implementation NXResizeHandle
+@implementation NXResizeHandle {
+    UIView *_backgroundView;
+}
 
 - (instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
-    self.layer.masksToBounds = YES;
-    self.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
-    UIView *backgroundView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width*sqrt(2), frame.size.height*sqrt(2))];
-    backgroundView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.2];
-    backgroundView.center = CGPointMake(frame.size.width, frame.size.height);
-    backgroundView.transform = CGAffineTransformMakeRotation(M_PI_4);
-    backgroundView.layer.cornerRadius = 8;
-    [self addSubview:backgroundView];
+    if(self)
+    {
+        self.layer.masksToBounds = YES;
+        self.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+        
+        _backgroundView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, frame.size.width*sqrt(2), frame.size.height*sqrt(2))];
+        if(_backgroundView == nil)
+        {
+            return nil;
+        }
+        
+        _backgroundView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.2]; // Normal state
+        _backgroundView.center = CGPointMake(frame.size.width, frame.size.height);
+        _backgroundView.transform = CGAffineTransformMakeRotation(M_PI_4);
+        _backgroundView.layer.cornerRadius = 8;
+        
+        [self addSubview:_backgroundView];
+    }
     return self;
+}
+
+- (void)setGlowing:(BOOL)glowing
+{
+    [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction animations:^{
+        if(glowing)
+        {
+            self->_backgroundView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.6];
+        }
+        else
+        {
+            self->_backgroundView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.2];
+        }
+    } completion:nil];
+}
+
+- (void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [super touchesBegan:touches withEvent:event];
+    [self setGlowing:YES];
+}
+
+- (void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [super touchesEnded:touches withEvent:event];
+    [self setGlowing:NO];
+}
+
+- (void)touchesCancelled:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    [super touchesCancelled:touches withEvent:event];
+    [self setGlowing:NO];
 }
 
 #if DEBUG

@@ -45,6 +45,7 @@
 @end
 
 @interface UIApplicationSceneSettings : NSObject
+@property(assign, nonatomic, readonly) UIUserInterfaceStyle userInterfaceStyle;
 @end
 
 @interface UIApplicationSceneClientSettings : NSObject

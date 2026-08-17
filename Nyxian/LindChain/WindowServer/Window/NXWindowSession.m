@@ -110,9 +110,4 @@
     
 }
 
-- (void)cancelInteractiveResize
-{
-    
-}
-
 @end

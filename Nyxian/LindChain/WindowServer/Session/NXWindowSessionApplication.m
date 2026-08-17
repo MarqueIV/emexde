@@ -35,8 +35,8 @@
     UIView *_contentView;
     FBScene *_scene;
     
-    UIImageView *_resizeSnapshotView;
     NSArray<NSLayoutConstraint*> *_contentViewConstraints;
+    CGSize _resizeFrozenSize;
     BOOL _isInteractivelyResizing;
 }
 
@@ -72,9 +72,9 @@
         contentView.alpha = 0.0;
     }
     [self.view addSubview:contentView];
-
+    
     contentView.translatesAutoresizingMaskIntoConstraints = NO;
-
+    
     /* keep a reference so the resize path can drop/restore pinning */
     _contentViewConstraints = @[
         [contentView.heightAnchor constraintEqualToAnchor:self.view.heightAnchor],
@@ -83,7 +83,7 @@
         [contentView.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
     ];
     [NSLayoutConstraint activateConstraints:_contentViewConstraints];
-
+    
     if(_contentView != nil)
     {
         UIView *currentContentView = _contentView;
@@ -94,7 +94,7 @@
             if(finished) [currentContentView removeFromSuperview];
         }];
     }
-
+    
     _contentView = contentView;
 }
 
@@ -133,25 +133,24 @@
 
 + (void)bringSessionToFrontWithBundleIdentifier:(NSString*)bundleIdentifier
 {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if(UIDevice.currentDevice.userInterfaceIdiom != UIUserInterfaceIdiomPad) return;
-        NXWindowServer *windowServer = [NXWindowServer shared];
-        assert(windowServer != nil);
+    assert([NSThread isMainThread]);
+    if(UIDevice.currentDevice.userInterfaceIdiom != UIUserInterfaceIdiomPad) return;
+    NXWindowServer *windowServer = [NXWindowServer shared];
+    assert(windowServer != nil);
+    
+    for(NSNumber *key in windowServer.windows)
+    {
+        NXWindow *window = windowServer.windows[key];
         
-        for(NSNumber *key in windowServer.windows)
+        if(window != nil &&
+           [window.session isKindOfClass:[NXWindowSessionApplication class]] &&
+           [((NXWindowSessionApplication*)(window.session)).process.bundleIdentifier isEqualToString:bundleIdentifier])
         {
-            NXWindow *window = windowServer.windows[key];
-            
-            if(window != nil &&
-               [window.session isKindOfClass:[NXWindowSessionApplication class]] &&
-               [((NXWindowSessionApplication*)(window.session)).process.bundleIdentifier isEqualToString:bundleIdentifier])
-            {
-                [window.view.superview bringSubviewToFront:window.view];
-                [window focusWindow];
-                break;
-            }
+            [window.view.superview bringSubviewToFront:window.view];
+            [window focusWindow];
+            break;
         }
-    });
+    }
 }
 
 - (BOOL)bindInApplicationWindow
@@ -246,7 +245,7 @@
     }
     
     self.contentView = self.sceneHostingController.sceneViewController.view;
-    self.contentView.clipsToBounds = NO;
+    self.contentView.clipsToBounds = YES;
     self.scenePresenter = [self.contentView valueForKey:@"_scenePresenter"];
     self.scene = self.scenePresenter.scene;
     
@@ -319,7 +318,7 @@
     [_scene updateSettingsWithBlock:^(UIMutableApplicationSceneSettings *settings) {
         settings.foreground = NO;
     }];
- 
+    
     [_process sendSignal:SIGUSR1];
     
     /* deactivate the presenter */
@@ -337,17 +336,22 @@
 {
     assert([NSThread isMainThread]);
     
-    if(!self.process.process.running || self.process.isSuspended || !diff)
+    if(diff == nil || _scene == nil || !self.process.process.running || self.process.isSuspended || !diff)
     {
         return;
     }
     
     UIMutableApplicationSceneSettings *baseSettings = [diff settingsByApplyingToMutableCopyOfSettings:settings];
-    UIApplicationSceneTransitionContext *newContext = [context copy];
-    newContext.actions = nil;
+    if(baseSettings.userInterfaceStyle == _scene.settings.userInterfaceStyle)
+    {
+        return;
+    }
     
     UIMutableApplicationSceneSettings *newSettings = [_scene.settings mutableCopy];
     newSettings.userInterfaceStyle = baseSettings.userInterfaceStyle;
+    
+    UIApplicationSceneTransitionContext *newContext = [context copy];
+    newContext.actions = nil;
     
     [_scene updateSettings:newSettings withTransitionContext:newContext completion:nil];
 }
@@ -407,6 +411,117 @@
     return windowName ?: self.process.displayName;
 }
 
+- (void)beginInteractiveResize
+{
+    assert([NSThread isMainThread]);
+    if(_isInteractivelyResizing || _contentView == nil)
+    {
+        return;
+    }
+    
+    [self.view layoutIfNeeded];
+    CGSize frozen = _contentView.bounds.size;
+    if(frozen.width < 1.0 || frozen.height < 1.0)
+    {
+        return;
+    }
+    
+    _isInteractivelyResizing = YES;
+    _resizeFrozenSize = frozen;
+    if(_contentViewConstraints)
+    {
+        [NSLayoutConstraint deactivateConstraints:_contentViewConstraints];
+    }
+    _contentView.translatesAutoresizingMaskIntoConstraints = YES;
+    _contentView.bounds = (CGRect){CGPointZero, frozen};
+    _contentView.userInteractionEnabled = NO;
+    
+    [self updateInteractiveResizeTransform];
+}
+
+- (void)updateInteractiveResizeTransform
+{
+    if(!_isInteractivelyResizing || _contentView == nil)
+    {
+        return;
+    }
+    
+    CGSize target = self.view.bounds.size;
+    if(target.width < 1.0 || target.height < 1.0)
+    {
+        return;
+    }
+    
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];  /* otherwise every frame gets an implicit 0.25s animation */
+    CALayer *layer = _contentView.layer;
+    layer.transform = CATransform3DMakeScale(target.width  / _resizeFrozenSize.width, target.height / _resizeFrozenSize.height, 1.0);
+    layer.position = CGPointMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds));
+    [CATransaction commit];
+}
+
+- (void)viewDidLayoutSubviews
+{
+    [super viewDidLayoutSubviews];
+    if(_isInteractivelyResizing)
+    {
+        [self updateInteractiveResizeTransform];
+    }
+}
+
+- (void)commitInteractiveResize
+{
+    assert([NSThread isMainThread]);
+    if(!_isInteractivelyResizing)
+    {
+        return;
+    }
+    _isInteractivelyResizing = NO;
+    
+    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
+    if(_contentViewConstraints)
+    {
+        [NSLayoutConstraint activateConstraints:_contentViewConstraints];
+    }
+    
+    UIMutableApplicationSceneSettings *settings = [_scene.settings mutableCopy];
+    settings.frame = self.view.frame;
+    
+    __weak typeof(self) weakSelf = self;
+    __block BOOL settled = NO;
+    void (^unstretch)(void) = ^{
+        if(settled)
+        {
+            return;
+        }
+        settled = YES;
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if(strongSelf == nil || strongSelf->_contentView == nil)
+        {
+            return;
+        }
+        
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        strongSelf->_contentView.layer.transform = CATransform3DIdentity;
+        strongSelf->_contentView.translatesAutoresizingMaskIntoConstraints = NO;
+        if(strongSelf->_contentViewConstraints)
+        {
+            [NSLayoutConstraint activateConstraints:strongSelf->_contentViewConstraints];
+        }
+        [strongSelf.view layoutIfNeeded];
+        [CATransaction commit];
+        
+        strongSelf->_contentView.userInteractionEnabled = YES;
+    };
+    
+    [_scene updateSettings:settings withTransitionContext:nil completion:^{
+        dispatch_async(dispatch_get_main_queue(), unstretch);
+    }];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 250 * NSEC_PER_MSEC), dispatch_get_main_queue(), unstretch);
+}
+
 #if DEBUG
 
 - (void)dealloc
@@ -415,88 +530,5 @@
 }
 
 #endif /* DEBUG */
-
-- (void)beginInteractiveResize
-{
-    assert([NSThread isMainThread]);
-    if(_isInteractivelyResizing || _contentView == nil)
-    {
-        return;
-    }
-    _isInteractivelyResizing = YES;
-    
-    if(_contentViewConstraints)
-    {
-        [NSLayoutConstraint deactivateConstraints:_contentViewConstraints];
-    }
-    
-    __weak typeof(self) weakSelf = self;
-    [_process setSnapshotReceivedCallback:^(UIImage *snapshot){
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong typeof(self)strongSelf = weakSelf;
-            if(strongSelf)
-            {
-                strongSelf->_resizeSnapshotView = [[UIImageView alloc] initWithImage:self.process.snapshot];
-                strongSelf->_resizeSnapshotView.userInteractionEnabled = NO;
-                strongSelf->_resizeSnapshotView.contentMode = UIViewContentModeScaleToFill;
-                strongSelf->_resizeSnapshotView.frame = strongSelf.view.bounds;
-                strongSelf->_resizeSnapshotView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-                [strongSelf.view addSubview:strongSelf->_resizeSnapshotView];
-                strongSelf->_contentView.frame = strongSelf->_contentView.frame;
-                strongSelf->_contentView.translatesAutoresizingMaskIntoConstraints = YES;
-                [strongSelf->_process setSnapshotReceivedCallback:nil];
-            }
-        });
-    }];
-    [_process sendSignal:SIGUSR1];
-}
-
-- (void)commitInteractiveResize
-{
-    assert([NSThread isMainThread]);
-    [_process setSnapshotReceivedCallback:nil];
-    if(!_isInteractivelyResizing)
-    {
-        return;
-    }
-    _isInteractivelyResizing = NO;
-    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    if(_contentViewConstraints)
-    {
-        [NSLayoutConstraint activateConstraints:_contentViewConstraints];
-    }
-    
-    [self.view layoutIfNeeded];
-    UIImageView *snapshotView = _resizeSnapshotView;
-    _resizeSnapshotView = nil;
-    
-    _contentView.alpha = 0.0;
-    [UIView animateWithDuration:0.18 animations:^{
-        self->_contentView.alpha  = 1.0;
-        snapshotView.alpha  = 0.0;
-    } completion:^(BOOL finished){
-        [snapshotView removeFromSuperview];
-    }];
-}
-
-- (void)cancelInteractiveResize
-{
-    assert([NSThread isMainThread]);
-    [_process setSnapshotReceivedCallback:nil];
-    if(!_isInteractivelyResizing)
-    {
-        return;
-    }
-    _isInteractivelyResizing = NO;
-    
-    _contentView.translatesAutoresizingMaskIntoConstraints = NO;
-    if(_contentViewConstraints)
-    {
-        [NSLayoutConstraint activateConstraints:_contentViewConstraints];
-    }
-    
-    [_resizeSnapshotView removeFromSuperview];
-    _resizeSnapshotView = nil;
-}
 
 @end

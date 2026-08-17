@@ -136,6 +136,7 @@
         [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(resizeWindow:)];
         resizeGesture.minimumNumberOfTouches = 1;
         resizeGesture.maximumNumberOfTouches = 1;
+        resizeGesture.cancelsTouchesInView = NO;
         
         _resizeHandle = [[NXResizeHandle alloc] initWithFrame:CGRectMake(_contentStack.frame.size.width - 44, _contentStack.frame.size.height - 44, 44, 44)];
         [_resizeHandle addGestureRecognizer:resizeGesture];
@@ -406,7 +407,6 @@
         case UIGestureRecognizerStateFailed:
             [self updateOriginalFrame];
             [self.session commitInteractiveResize];
-            [self.session cancelInteractiveResize];
             break;
         default:
             break;
