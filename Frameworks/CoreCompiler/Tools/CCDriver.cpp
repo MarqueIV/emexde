@@ -118,9 +118,10 @@ static void CCDriverFinalize(CFTypeRef cf)
         std::destroy_at(&driverRef->clangCompilation);
         std::destroy_at(&driverRef->clangDriver);
         std::destroy_at(&driverRef->clangDiagnosticEngine);
-        std::destroy_at(&driverRef->argPtr);
-        std::destroy_at(&driverRef->argStorage);
     }
+    
+    std::destroy_at(&driverRef->argPtr);
+    std::destroy_at(&driverRef->argStorage);
 }
 
 static const CFRuntimeClass gCCDriverClass = {
