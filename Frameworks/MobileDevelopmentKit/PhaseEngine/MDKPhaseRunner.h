@@ -52,6 +52,9 @@
 - (BOOL)runPhasesWithPhases:(NSArray * _Nonnull)phases;
 - (BOOL)runPhases;
 
+- (void)runPhasesWithCompletion:(void (^ _Nonnull)(BOOL success, BOOL terminated))completion;
+- (void)terminateWithCompletion:(void (^ _Nonnull)(void))completion;
+
 @end
 
 #endif /* MDKPHASERUNNER_H */

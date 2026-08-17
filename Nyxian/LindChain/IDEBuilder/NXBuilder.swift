@@ -23,7 +23,7 @@ import Foundation
 import Combine
 import MobileDevelopmentKit
 
-class LDEPhaseRunner: MDKPhaseRunner {
+class NXPhaseRunner: MDKPhaseRunner {
     private var pstep: Double = 0.0 // TODO: needs to be float for extremely large projects
     private var steps: Int = 0 {
         didSet {
@@ -72,12 +72,12 @@ class LDEPhaseRunner: MDKPhaseRunner {
     }
 }
 
-class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
+class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
     private let project: NXProject
     
     private let database: DebugDatabase
     
-    private var phaseRunner: LDEPhaseRunner
+    private var phaseRunner: NXPhaseRunner
     private let dependencyScanner: MDKDependencyScanner
     
     private let incrementalBuild: Bool = UserDefaults.standard.object(forKey: "LDEIncrementalBuild") as? Bool ?? true
@@ -141,7 +141,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
             self.database.clearDatabase() /* nothing valid anymore */
         }
         
-        guard let phaseRunner = LDEPhaseRunner(engine: phaseEngine) else {
+        guard let phaseRunner = NXPhaseRunner(engine: phaseEngine) else {
             return nil
         }
         self.phaseRunner = phaseRunner
@@ -211,7 +211,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         }
     }
     
-    func headsup(buildType: Builder.BuildType) throws {
+    func headsup(buildType: NXBuilder.BuildType) throws {
         let type = project.projectConfig.schemeKind
         if(type != .app && type != .utility) {
             throw NSError(domain: "com.cr4zy.nyxian.builder.headsup", code: 1, userInfo: [NSLocalizedDescriptionKey:"Project type \(type) is unknown."])
@@ -276,7 +276,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         }
     }
     
-    func install(buildType: Builder.BuildType, executablePathCallback: @escaping (String?) -> Void) throws {
+    func install(buildType: NXBuilder.BuildType, executablePathCallback: @escaping (String?) -> Void) throws {
         let spinnerStart = DispatchWorkItem { XCButton.startSpinning() }
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: spinnerStart)
         defer {
@@ -353,7 +353,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
     }
     
     static func buildProject(withProject project: NXProject,
-                             buildType: Builder.BuildType,
+                             buildType: NXBuilder.BuildType,
                              completion: @escaping (Bool,String?) -> Void) {
         project.projectConfig.reloadData()
         
@@ -361,11 +361,11 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         
         var execPath: String?
         
-        MDKPthreadDispatch {
+        DispatchQueue.global().async {
             NXBootstrap.shared().waitTillDone()
             
             var result: Bool = true
-            guard let builder: Builder = Builder(
+            guard let builder: NXBuilder = NXBuilder(
                 project: project
             ) else {
                 completion(false,nil)
@@ -421,7 +421,7 @@ class Builder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
 
 func buildProjectWithArgumentUI(targetViewController: UIViewController,
                                 project: NXProject,
-                                buildType: Builder.BuildType,
+                                buildType: NXBuilder.BuildType,
                                 completion: @escaping (Bool,String?) -> Void = { _,_ in }) {
     autoreleasepool {
         targetViewController.navigationItem.titleView?.isUserInteractionEnabled = false
@@ -430,13 +430,13 @@ func buildProjectWithArgumentUI(targetViewController: UIViewController,
         
         let barButton: UIBarButtonItem = UIBarButtonItem(customView: XCButton.shared())
         
-        Builder.builds = true
+        NXBuilder.builds = true
         targetViewController.navigationItem.setRightBarButtonItems([barButton], animated: true)
         targetViewController.navigationItem.setHidesBackButton(true, animated: true)
         
         NXDocumentManager.shared().saveAll {
             NXDocumentManager.shared().changeAllLockState(toBoolean: true)
-            Builder.buildProject(withProject: project, buildType: buildType) { result, fastPath in
+            NXBuilder.buildProject(withProject: project, buildType: buildType) { result, fastPath in
                 NXDocumentManager.shared().changeAllLockState(toBoolean: false)
                 DispatchQueue.main.async {
                     targetViewController.navigationItem.setRightBarButtonItems(oldBarButtons, animated: true)
@@ -444,7 +444,7 @@ func buildProjectWithArgumentUI(targetViewController: UIViewController,
                     targetViewController.navigationController?.navigationBar.isUserInteractionEnabled = true
                     targetViewController.navigationItem.titleView?.isUserInteractionEnabled = true
                     
-                    Builder.builds = false
+                    NXBuilder.builds = false
                     
                     if !result {
                         let loggerView = UINavigationController(rootViewController: UIDebugViewController(project: project))

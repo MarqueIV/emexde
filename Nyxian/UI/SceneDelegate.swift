@@ -228,7 +228,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
     }
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        if tabBarController.selectedViewController === viewController && Builder.builds {
+        if tabBarController.selectedViewController === viewController && NXBuilder.builds {
             return false
         }
         if viewController.tabBarItem.tag == 2 {

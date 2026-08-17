@@ -26,7 +26,10 @@
 #import <MobileDevelopmentKit/MDKThreadPoolGroup.h>
 #import <CoreCompiler/CCUtils.h>
 
-@implementation MDKPhaseRunner
+@implementation MDKPhaseRunner {
+    _Atomic BOOL _isTerminated;
+    MDKThreadPoolGroup *_activeThreadPoolGroup;
+}
 
 + (instancetype)runnerWithEngine:(MDKPhaseEngine*)engine
 {
@@ -88,8 +91,8 @@
          * and handles jobs with a round robin like threading
          * mechanism, but improved for CoreCompiler use.
          */
-        MDKThreadPoolGroup *threadPoolGroup = [[MDKThreadPoolGroup alloc] initWithThreads:threadCount];
-        if(threadPoolGroup == nil)
+        _activeThreadPoolGroup = [[MDKThreadPoolGroup alloc] initWithThreads:threadCount];
+        if(_activeThreadPoolGroup == nil)
         {
             /*
              * in-case it fails which is very unlikely we fallback
@@ -107,23 +110,30 @@
         CFIndex count = jobs.count;
         for(CFIndex i = 0; i < count; i++)
         {
-            [threadPoolGroup enter];
+            [_activeThreadPoolGroup enter];
         }
         
         /* finally running the jobs */
         for(MDKJob *job in jobs)
         {
-            [threadPoolGroup dispatchExecution:^{
+            __weak typeof(self) weakSelf = self;
+            [_activeThreadPoolGroup dispatchExecution:^{
+                __strong typeof(self) strongSelf = weakSelf;
+                if(strongSelf == nil || strongSelf->_isTerminated)
+                {
+                    return;
+                }
+                
                 if(![self runJob:job withinPhase:phase])
                 {
-                    threadPoolGroup.lockdown = YES;
+                    strongSelf->_activeThreadPoolGroup.lockdown = YES;
                 }
             } withCompletion:nil];
         }
         
-        [threadPoolGroup wait];
+        [_activeThreadPoolGroup wait];
         
-        if(threadPoolGroup.lockdown)
+        if(_activeThreadPoolGroup.lockdown)
         {
             return NO;
         }
@@ -136,7 +146,7 @@ fallback_no_multithreading:
         /* finally running the jobs */
         for(MDKJob *job in jobs)
         {
-            if(![self runJob:job withinPhase:phase])
+            if(_isTerminated || ![self runJob:job withinPhase:phase])
             {
                 return NO;
             }
@@ -150,6 +160,11 @@ fallback_no_multithreading:
 {
     for(id rawPhase in phases)
     {
+        if(_isTerminated)
+        {
+            return NO;
+        }
+        
         if([rawPhase isKindOfClass:[MDKPhase class]])
         {
             MDKPhase *phase = rawPhase;
@@ -192,6 +207,56 @@ fallback_no_multithreading:
     }
     
     return YES;
+}
+
+- (void)runPhasesWithCompletion:(void (^ _Nonnull)(BOOL success, BOOL terminated))completion
+{
+    __weak typeof(self) weakSelf = self;
+    dispatch_queue_t backgroundQueue = dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0);
+    dispatch_async(backgroundQueue, ^{
+        if(completion == nil)
+        {
+            return;
+        }
+        
+        __strong typeof(self) strongSelf = weakSelf;
+        if(strongSelf == nil)
+        {
+            completion(NO, NO);
+            return;
+        }
+        
+        BOOL success = [strongSelf runPhases];
+        completion(success, strongSelf->_isTerminated);
+    });
+}
+
+- (void)terminateWithCompletion:(void (^ _Nonnull)(void))completion
+{
+    __weak typeof(self) weakSelf = self;
+    dispatch_queue_t backgroundQueue = dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0);
+    dispatch_async(backgroundQueue, ^{
+        if(completion == nil)
+        {
+            return;
+        }
+        
+        __strong typeof(self) strongSelf = weakSelf;
+        if(strongSelf == nil)
+        {
+            completion();
+            return;
+        }
+        
+        strongSelf->_isTerminated = YES;
+        if(strongSelf->_activeThreadPoolGroup)
+        {
+            strongSelf->_activeThreadPoolGroup.lockdown = YES;
+            [strongSelf->_activeThreadPoolGroup wait];
+        }
+        
+        completion();
+    });
 }
 
 @end
