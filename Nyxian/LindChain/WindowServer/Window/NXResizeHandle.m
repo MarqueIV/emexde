@@ -24,6 +24,7 @@
 
 @implementation NXResizeHandle {
     UIView *_backgroundView;
+    dispatch_block_t _restoreBlock;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -45,14 +46,56 @@
         _backgroundView.transform = CGAffineTransformMakeRotation(M_PI_4);
         _backgroundView.layer.cornerRadius = 8;
         
+        UITapGestureRecognizer *doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleDoubleTap:)];
+        doubleTap.numberOfTapsRequired = 2;
+        [self addGestureRecognizer:doubleTap];
+        
         [self addSubview:_backgroundView];
     }
     return self;
 }
 
+- (void)handleDoubleTap:(UITapGestureRecognizer *)recognizer
+{
+    [self hideTemporarilyForDuration:2.0];
+}
+
+- (void)hideTemporarilyForDuration:(NSTimeInterval)duration
+{
+    if(_restoreBlock != NULL)
+    {
+        dispatch_block_cancel(_restoreBlock);
+        _restoreBlock = NULL;
+    }
+    
+    self.userInteractionEnabled = NO;
+    
+    [UIView animateWithDuration:0.30 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+        self.alpha = 0.0;
+    } completion:nil];
+    
+    __weak typeof(self) weakSelf = self;
+    _restoreBlock = dispatch_block_create(0, ^{
+        typeof(self) strongSelf = weakSelf;
+        if(strongSelf == nil)
+        {
+            return;
+        }
+        strongSelf->_restoreBlock = NULL;
+        [UIView animateWithDuration:0.50 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
+            strongSelf.alpha = 1.0;
+        } completion:^(BOOL finished) {
+            strongSelf.userInteractionEnabled = YES;
+            [strongSelf setGlowing:NO];
+        }];
+    });
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(duration * NSEC_PER_SEC)), dispatch_get_main_queue(), _restoreBlock);
+}
+
 - (void)setGlowing:(BOOL)glowing
 {
-    [UIView animateWithDuration:0.15 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction animations:^{
+    [UIView animateWithDuration:0.30 delay:0.0 options:UIViewAnimationOptionBeginFromCurrentState | UIViewAnimationOptionAllowUserInteraction animations:^{
         if(glowing)
         {
             self->_backgroundView.backgroundColor = [UIColor colorWithWhite:1 alpha:0.6];
