@@ -108,20 +108,6 @@ int ksurface_sethostname(NSString *hostname)
     return 0;
 }
 
-static inline void ksurface_kinit_kalloc(void)
-{
-    assert(ksurface == NULL);
-    
-    ksurface = malloc(sizeof(ksurface_mapping_t));
-    if(ksurface == NULL)
-    {
-        /* shall never happen */
-        environment_panic("allocating ksurface failed got NULL pointer from malloc");
-    }
-    
-    klog_log("ksurface:kinit:kalloc", "allocated ksurface @ %p", ksurface);
-}
-
 void ksurface_kinit_get_keys(void)
 {
     if(ksurface->priv_key != NULL || ksurface->pub_key != NULL)
@@ -141,11 +127,21 @@ void ksurface_kinit_get_keys(void)
         /* shall never happen */
         environment_panic("failed to get code signature key pair");
     }
-    klog_log("ksurface:kinit:kinfo", "got code signature key pair");
+    klog_log("ksurface:kinit:kalloc", "got code signature key pair");
 }
 
-static inline void ksurface_kinit_kinfo(void)
+static inline void ksurface_kinit_kalloc(void)
 {
+    assert(ksurface == NULL);
+    
+    ksurface = malloc(sizeof(ksurface_mapping_t));
+    if(ksurface == NULL)
+    {
+        /* shall never happen */
+        environment_panic("allocating ksurface failed got NULL pointer from malloc");
+    }
+    klog_log("ksurface:kinit:kalloc", "allocated ksurface @ %p", ksurface);
+    
     /* get code signature key pair */
     ksurface_kinit_get_keys();
     
@@ -155,14 +151,14 @@ static inline void ksurface_kinit_kinfo(void)
      * well this is for the softies which can only take
      * one at a time.
      */
-    klog_log("ksurface:kinit:kinfo", "initializing locks");
+    klog_log("ksurface:kinit:kalloc", "initializing global locks");
     pthread_rwlock_t *wls[3] = { &(ksurface->proc_info.struct_lock),  &(ksurface->host_info.struct_lock), &(ksurface->tty_info.struct_lock) };
     for(unsigned char i = 0; i < 3; i++)
     {
-        klog_log("ksurface:kinit:kinfo", "initializing lock @ %p", wls[i]);
+        klog_log("ksurface:kinit:kalloc", "initializing global lock @ %p", wls[i]);
         if(pthread_rwlock_init(wls[i], NULL) != 0)
         {
-            environment_panic("failed to initialize lock @ %p", wls[i]);
+            environment_panic("failed to initialize global lock @ %p", wls[i]);
         }
     }
     
@@ -171,11 +167,14 @@ static inline void ksurface_kinit_kinfo(void)
      * is a very efficient data struc..., bruh
      * just use google.. im not your CS teacher.
      */
-    klog_log("ksurface:kinit:kinfo", "initializing radix trees");
+    klog_log("ksurface:kinit:kalloc", "initializing radix trees");
     ksurface->proc_info.tree.root = NULL;
     ksurface->proc_info.proc_count = 0;
     ksurface->tty_info.tty.root = NULL;
-    
+}
+
+static inline void ksurface_kinit_kinfo(void)
+{
     /* restoring hostname */
     NSString *hostname = [[NSUserDefaults standardUserDefaults] stringForKey:@"LDEHostname"] ?: @"localhost";
     klog_log("ksurface:kinit:kinfo", "setting up hostname with \"%s\"", [hostname UTF8String]);
