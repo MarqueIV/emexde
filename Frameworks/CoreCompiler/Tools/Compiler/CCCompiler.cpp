@@ -51,7 +51,7 @@ CC_CXX_EXPORT CCASTUnitRef CCASTUnitCreateWithASTUnit(CFAllocatorRef allocator, 
 CCASTUnitRef CCCompilerJobExecute(CCJobRef job)
 {
     assert(job != nullptr);
-    assert(CCJobGetType(job) == CCJobTypeCompiler);
+    assert(CCJobGetType(job) == kCCJobTypeCompiler);
 
     CFArrayRef argsArray = CCJobGetArguments(job);
 

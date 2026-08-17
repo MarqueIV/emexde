@@ -222,49 +222,49 @@ CCFileType CCFileGetType(CCFileRef file)
     CFStringRef extension = CFURLCopyPathExtension(file->fileURL);
     if(extension == nil)
     {
-        return CCFileTypeUnknown;
+        return kCCFileTypeUnknown;
     }
 
     /* FIXME: get header types later by project indexing */
-    CCFileType type = CCFileTypeUnknown;
+    CCFileType type = kCCFileTypeUnknown;
 
     if(CFEqual(CFSTR("c"), extension))
     {
-        type = CCFileTypeC;
+        type = kCCFileTypeC;
     }
     else if(CFEqual(CFSTR("cpp"), extension) ||
             CFEqual(CFSTR("cc"), extension) ||
             CFEqual(CFSTR("cxx"), extension) ||
             CFEqual(CFSTR("c++"), extension))
     {
-        type = CCFileTypeCXX;
+        type = kCCFileTypeCXX;
     }
     else if(CFEqual(CFSTR("hpp"), extension) ||
             CFEqual(CFSTR("hh"), extension) ||
             CFEqual(CFSTR("h++"), extension) ||
             CFEqual(CFSTR("hxx"), extension))
     {
-        type = CCFileTypeCXXHeader;
+        type = kCCFileTypeCXXHeader;
     }
     else if(CFEqual(CFSTR("h"), extension))
     {
-        type = CCFileTypeObjCHeader;
+        type = kCCFileTypeObjCHeader;
     }
     else if(CFEqual(CFSTR("m"), extension))
     {
-        type = CCFileTypeObjC;
+        type = kCCFileTypeObjC;
     }
     else if(CFEqual(CFSTR("mm"), extension))
     {
-        type = CCFileTypeObjCXX;
+        type = kCCFileTypeObjCXX;
     }
     else if(CFEqual(CFSTR("swift"), extension))
     {
-        type = CCFileTypeSwift;
+        type = kCCFileTypeSwift;
     }
     else if(CFEqual(CFSTR("o"), extension))
     {
-        type = CCFileTypeObject;
+        type = kCCFileTypeObject;
     }
 
     CFRelease(extension);

@@ -49,7 +49,7 @@ Boolean CCLinkerJobExecute(CCJobRef job,
     os_unfair_lock_lock(&lock);
     
     assert(job != nullptr);
-    assert(CCJobGetType(job) == CCJobTypeLinker);
+    assert(CCJobGetType(job) == kCCJobTypeLinker);
 
     CFArrayRef argsArray = CCJobGetArguments(job);
 
@@ -95,9 +95,9 @@ Boolean CCLinkerJobExecute(CCJobRef job,
             return retCode == 0;
         }
 
-        CCDiagnosticLevel level = (retCode == 0) ? CCDiagnosticLevelWarning : CCDiagnosticLevelError;
+        CCDiagnosticLevel level = (retCode == 0) ? kCCDiagnosticLevelWarning : kCCDiagnosticLevelError;
         CFStringRef message = CFStringCreateWithCString(allocator, errBuf.c_str(), kCFStringEncodingUTF8);
-        CCDiagnosticRef diagnosticRef = CCDiagnosticCreate(allocator, CCDiagnosticTypeInternal, level, CFSTR("linker"), nullptr, message);
+        CCDiagnosticRef diagnosticRef = CCDiagnosticCreate(allocator, kCCDiagnosticTypeInternal, level, CFSTR("linker"), nullptr, message);
         CFRelease(message);
         if(diagnosticRef != nullptr)
         {

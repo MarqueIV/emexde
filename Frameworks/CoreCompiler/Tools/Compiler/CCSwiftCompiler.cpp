@@ -114,7 +114,7 @@ CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
                                             CFStringRef *outMainSource)
 {
     assert(job != nullptr);
-    assert(CCJobGetType(job) == CCJobTypeSwiftCompiler);
+    assert(CCJobGetType(job) == kCCJobTypeSwiftCompiler);
     
     CFArrayRef argsArray = CCJobGetArguments(job);
     
@@ -160,27 +160,27 @@ CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
     
     for(auto &d : obs.consumer.diags)
     {
-        CCDiagnosticLevel level = CCDiagnosticLevelUnknown;
+        CCDiagnosticLevel level = kCCDiagnosticLevelUnknown;
         
         switch(d.kind)
         {
             case swift::DiagnosticKind::Error:
-                level = CCDiagnosticLevelError;
+                level = kCCDiagnosticLevelError;
                 break;
             case swift::DiagnosticKind::Warning:
-                level = CCDiagnosticLevelWarning;
+                level = kCCDiagnosticLevelWarning;
                 break;
             case swift::DiagnosticKind::Remark:
-                level = CCDiagnosticLevelRemark;
+                level = kCCDiagnosticLevelRemark;
                 break;
             case swift::DiagnosticKind::Note:
-                level = CCDiagnosticLevelNote;
+                level = kCCDiagnosticLevelNote;
                 break;
             default:
                 break;
         }
         
-        if(level == CCDiagnosticLevelUnknown)
+        if(level == kCCDiagnosticLevelUnknown)
         {
             continue;
         }
@@ -200,7 +200,7 @@ CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
             CFRelease(file);
         }
         
-        CCDiagnosticRef diagnostic = CCDiagnosticCreate(kCFAllocatorSystemDefault, CCDiagnosticTypeFile, level, mainSource, fileSourceLocation, messageStr);
+        CCDiagnosticRef diagnostic = CCDiagnosticCreate(kCFAllocatorSystemDefault, kCCDiagnosticTypeFile, level, mainSource, fileSourceLocation, messageStr);
         CFRelease(messageStr);
         CFRelease(fileSourceLocation);
         if(diagnostic == nullptr)

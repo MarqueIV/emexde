@@ -27,20 +27,20 @@
 Boolean CCJobTypeSupportsMultithreading(CCJobType type)
 {
     /* TODO: implement multithreading support for the swift compiler */
-    return (type == CCJobTypeCompiler);
+    return (type == kCCJobTypeCompiler);
 }
 
 Boolean CCFileTypeIsClangFile(CCFileType type)
 {
-    return (type < CCFileTypeSwift);
+    return (type < kCCFileTypeSwift);
 }
 
 Boolean CCFileTypeIsSwiftFile(CCFileType type)
 {
-    return (type == CCFileTypeSwift);
+    return (type == kCCFileTypeSwift);
 }
 
 Boolean CCFileTypeIsObjectFile(CCFileType type)
 {
-    return (type == CCFileTypeObject);
+    return (type == kCCFileTypeObject);
 }

@@ -109,7 +109,7 @@ CC_EXPORT Boolean CCJobExecuteJob(CCJobRef job,
 {
     switch(job->type)
     {
-        case CCJobTypeCompiler:
+        case kCCJobTypeCompiler:
         {
             CCASTUnitRef ASTUnit = CCCompilerJobExecute(job);
             if(ASTUnit == nil)
@@ -139,11 +139,11 @@ CC_EXPORT Boolean CCJobExecuteJob(CCJobRef job,
             
             return !didErrorOccur;
         }
-        case CCJobTypeSwiftCompiler:
+        case kCCJobTypeSwiftCompiler:
         {
             return CCSwiftCompilerJobExecute(job, outDiagnostic, outMainSource);
         }
-        case CCJobTypeLinker:
+        case kCCJobTypeLinker:
         {
             if(outMainSource != nil)
             {
@@ -151,7 +151,7 @@ CC_EXPORT Boolean CCJobExecuteJob(CCJobRef job,
             }
             return CCLinkerJobExecute(job, outDiagnostic);
         }
-        case CCJobTypeUnknown:
+        case kCCJobTypeUnknown:
             /* fallthrough */
         default:
             return false;

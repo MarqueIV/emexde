@@ -106,14 +106,14 @@ static void CCDriverInit(CFTypeRef cf)
 static void CCDriverFinalize(CFTypeRef cf)
 {
     CCDriverRef driverRef = (CCDriverRef)cf;
-    if(driverRef->type == CCDriverTypeSwift)
+    if(driverRef->type == kCCDriverTypeSwift)
     {
         std::destroy_at(&driverRef->swiftCompilation);
         std::destroy_at(&driverRef->swiftToolChain);
         std::destroy_at(&driverRef->swiftDriver);
         std::destroy_at(&driverRef->swiftDiagnosticEngine);
     }
-    else if(driverRef->type == CCDriverTypeClang)
+    else if(driverRef->type == kCCDriverTypeClang)
     {
         std::destroy_at(&driverRef->clangCompilation);
         std::destroy_at(&driverRef->clangDriver);
@@ -163,7 +163,7 @@ CCDriverRef CCDriverCreate(CFAllocatorRef allocator,
     driverRef->type = type;
     driverRef->argStorage = CCArrayToStringVector(arguments);
 
-    if(type == CCDriverTypeClang)
+    if(type == kCCDriverTypeClang)
     {
         driverRef->argStorage.insert(driverRef->argStorage.begin(), "-fuse-ld=lld");
         driverRef->argStorage.insert(driverRef->argStorage.begin(), "clang");
@@ -181,7 +181,7 @@ CCDriverRef CCDriverCreate(CFAllocatorRef allocator,
 
     switch(type)
     {
-        case CCDriverTypeClang:
+        case kCCDriverTypeClang:
         {
             IntrusiveRefCntPtr<clang::DiagnosticIDs> DiagID(new clang::DiagnosticIDs());
             clang::DiagnosticOptions DiagOpts;
@@ -199,7 +199,7 @@ CCDriverRef CCDriverCreate(CFAllocatorRef allocator,
             
             break;
         }
-        case CCDriverTypeSwift:
+        case kCCDriverTypeSwift:
         {
             driverRef->swiftDiagnosticEngine = std::make_unique<swift::DiagnosticEngine>(driverRef->swiftSourceManager);
             driverRef->swiftDiagnosticEngine->addConsumer(driverRef->swiftPrintingDiagnosticConsumer);
@@ -231,15 +231,15 @@ static CCJobType _CCJobTypeGetFromClangCommand(const clang::driver::Command *Cmd
     if(clang::isa<clang::driver::CompileJobAction>(source) ||
        clang::isa<clang::driver::AssembleJobAction>(source))
     {
-        return CCJobTypeCompiler;
+        return kCCJobTypeCompiler;
     }
     else if(clang::isa<clang::driver::LinkJobAction>(source))
     {
-        return CCJobTypeLinker;
+        return kCCJobTypeLinker;
     }
     else
     {
-        return CCJobTypeUnknown;
+        return kCCJobTypeUnknown;
     }
 }
 
@@ -256,14 +256,14 @@ static CCJobType _CCJobTypeGetFromSwiftJob(const swift::driver::Job *J)
         case K::GeneratePCHJob:
         case K::AutolinkExtractJob:
         case K::VerifyModuleInterfaceJob:
-            return CCJobTypeSwiftCompiler;
+            return kCCJobTypeSwiftCompiler;
         case K::DynamicLinkJob:
         case K::StaticLinkJob:
-            return CCJobTypeDriver;
+            return kCCJobTypeDriver;
         case K::InterpretJob:
         case K::REPLJob:
         default:
-            return CCJobTypeUnknown;
+            return kCCJobTypeUnknown;
     }
 }
 
@@ -392,7 +392,7 @@ CFArrayRef CCDriverCreateJobs(CCDriverRef driver)
     
     switch(driver->type)
     {
-        case CCDriverTypeClang:
+        case kCCDriverTypeClang:
         {
             using namespace clang::driver;
             using llvm::isa; using llvm::cast; using llvm::dyn_cast;
@@ -514,7 +514,7 @@ CFArrayRef CCDriverCreateJobs(CCDriverRef driver)
             }
             break;
         }
-        case CCDriverTypeSwift:
+        case kCCDriverTypeSwift:
         {
             using llvm::dyn_cast;
             using K = swift::driver::Action::Kind;
@@ -636,7 +636,7 @@ CFArrayRef CCDriverCreateJobs(CCDriverRef driver)
                  * of a clang driver arg, what is even funnier is that
                  * it adds c and objc files to the linker flags lmfao.
                  */
-                if(type == CCJobTypeDriver)
+                if(type == kCCJobTypeDriver)
                 {
                     CollapseArgsToWl(argsArray);
                     
@@ -684,14 +684,14 @@ CFURLRef CCDriverCopySysrootURL(CCDriverRef driver)
 
     switch(driver->type)
     {
-        case CCDriverTypeClang:
+        case kCCDriverTypeClang:
             if(!driver->clangCompilation)
             {
                 return nullptr;
             }
             cxxstr = driver->clangCompilation->getSysRoot().str();
             break;
-        case CCDriverTypeSwift:
+        case kCCDriverTypeSwift:
         {
             if(!driver->swiftCompilation)
             {

@@ -36,47 +36,47 @@
 #endif
 
 typedef CF_ENUM(uint8_t, CCDiagnosticType) {
-    CCDiagnosticTypeFile = 0,
-    CCDiagnosticTypeTargetFile,
-    CCDiagnosticTypeInternal,
-    CCDiagnosticTypeUnknown,
+    kCCDiagnosticTypeFile = 0,
+    kCCDiagnosticTypeTargetFile,
+    kCCDiagnosticTypeInternal,
+    kCCDiagnosticTypeUnknown,
 };
 
 typedef CF_ENUM(uint8_t, CCDiagnosticLevel) {
-    CCDiagnosticLevelNote = 0,
-    CCDiagnosticLevelRemark,
-    CCDiagnosticLevelWarning,
-    CCDiagnosticLevelError,
-    CCDiagnosticLevelFatal,
-    CCDiagnosticLevelUnknown,
+    kCCDiagnosticLevelNote = 0,
+    kCCDiagnosticLevelRemark,
+    kCCDiagnosticLevelWarning,
+    kCCDiagnosticLevelError,
+    kCCDiagnosticLevelFatal,
+    kCCDiagnosticLevelUnknown,
 };
 
 typedef CF_ENUM(uint8_t, CCJobType) {
-    CCJobTypeCompiler = 0,
-    CCJobTypeDriver,
-    CCJobTypeSwiftCompiler,
-    CCJobTypeSwiftDriver,
-    CCJobTypeLinker,
-    CCJobTypeUnknown
+    kCCJobTypeCompiler = 0,
+    kCCJobTypeDriver,
+    kCCJobTypeSwiftCompiler,
+    kCCJobTypeSwiftDriver,
+    kCCJobTypeLinker,
+    kCCJobTypeUnknown
 };
 
 typedef CF_ENUM(uint8_t, CCFileType) {
-    CCFileTypeC = 0,
-    CCFileTypeCHeader,
-    CCFileTypeCXX,
-    CCFileTypeCXXHeader,
-    CCFileTypeObjC,
-    CCFileTypeObjCHeader,
-    CCFileTypeObjCXX,
-    CCFileTypeObjCXXHeader,
-    CCFileTypeSwift,
-    CCFileTypeObject,
-    CCFileTypeUnknown,
+    kCCFileTypeC = 0,
+    kCCFileTypeCHeader,
+    kCCFileTypeCXX,
+    kCCFileTypeCXXHeader,
+    kCCFileTypeObjC,
+    kCCFileTypeObjCHeader,
+    kCCFileTypeObjCXX,
+    kCCFileTypeObjCXXHeader,
+    kCCFileTypeSwift,
+    kCCFileTypeObject,
+    kCCFileTypeUnknown,
 };
 
 typedef CF_ENUM(uint8_t, CCDriverType) {
-    CCDriverTypeClang = 0,
-    CCDriverTypeSwift,
+    kCCDriverTypeClang = 0,
+    kCCDriverTypeSwift,
 };
 
 CC_EXPORT Boolean CCJobTypeSupportsMultithreading(CCJobType type);

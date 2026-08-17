@@ -121,7 +121,7 @@ Boolean _CCASTUnitRefillDiagnosticArray(CCMutableASTUnitRef mutableUnit)
     /* now indice for indice */
     for(CFIndex i = 0; i < count; i++)
     {
-        CCDiagnosticType type = CCDiagnosticTypeFile;
+        CCDiagnosticType type = kCCDiagnosticTypeFile;
         CCDiagnosticLevel level;
         CFURLRef fileURL = nullptr;
         CCSourceLocation location;
@@ -140,7 +140,7 @@ Boolean _CCASTUnitRefillDiagnosticArray(CCMutableASTUnitRef mutableUnit)
                 char filePath[PATH_MAX];
                 if(CFURLGetFileSystemRepresentation(CCFileGetFileURL(mutableUnit->file), true, (UInt8*)filePath, sizeof(filePath)))
                 {
-                    type = (strncmp(filePath, loc.getFilename(), PATH_MAX) == 0) ? CCDiagnosticTypeTargetFile : CCDiagnosticTypeFile;
+                    type = (strncmp(filePath, loc.getFilename(), PATH_MAX) == 0) ? kCCDiagnosticTypeTargetFile : kCCDiagnosticTypeFile;
                 }
             }
 
@@ -149,7 +149,7 @@ Boolean _CCASTUnitRefillDiagnosticArray(CCMutableASTUnitRef mutableUnit)
         }
         else
         {
-            type = CCDiagnosticTypeInternal;
+            type = kCCDiagnosticTypeInternal;
             location = CCSourceLocationZero;
 
             fileNameStr = mutableUnit->unit->getOriginalSourceFileName().str();
@@ -184,22 +184,22 @@ Boolean _CCASTUnitRefillDiagnosticArray(CCMutableASTUnitRef mutableUnit)
         switch(diag.getLevel())
         {
             case clang::DiagnosticsEngine::Note:
-                level = CCDiagnosticLevelNote;
+                level = kCCDiagnosticLevelNote;
                 break;
             case clang::DiagnosticsEngine::Remark:
-                level = CCDiagnosticLevelRemark;
+                level = kCCDiagnosticLevelRemark;
                 break;
             case clang::DiagnosticsEngine::Warning:
-                level = CCDiagnosticLevelWarning;
+                level = kCCDiagnosticLevelWarning;
                 break;
             case clang::DiagnosticsEngine::Error:
-                level = CCDiagnosticLevelError;
+                level = kCCDiagnosticLevelError;
                 break;
             case clang::DiagnosticsEngine::Fatal:
-                level = CCDiagnosticLevelFatal;
+                level = kCCDiagnosticLevelFatal;
                 break;
             default:
-                level = CCDiagnosticLevelUnknown;
+                level = kCCDiagnosticLevelUnknown;
                 break;
         }
 
@@ -268,7 +268,7 @@ static const char *_CCASTUnitLangFlagForFile(CCFileRef file)
 {
     switch(CCFileGetType(file))
     {
-        case CCFileTypeC:
+        case kCCFileTypeC:
             return "c";
         /*
          * MARK: special mapping, due to missing indexing in CoreCompiler for now
@@ -276,18 +276,18 @@ static const char *_CCASTUnitLangFlagForFile(CCFileRef file)
          * case CCFileTypeCHeader:
          *    return "c-header";
         */
-        case CCFileTypeObjC:
+        case kCCFileTypeObjC:
             return "objective-c";
-        case CCFileTypeCHeader:
-        case CCFileTypeObjCHeader:
+        case kCCFileTypeCHeader:
+        case kCCFileTypeObjCHeader:
             return "objective-c-header";
-        case CCFileTypeCXX:
+        case kCCFileTypeCXX:
             return "c++";
-        case CCFileTypeCXXHeader:
+        case kCCFileTypeCXXHeader:
             return "c++-header";
-        case CCFileTypeObjCXX:
+        case kCCFileTypeObjCXX:
             return "objective-c++";
-        case CCFileTypeObjCXXHeader:
+        case kCCFileTypeObjCXXHeader:
             return "objective-c++-header";
         default:
             return nullptr;

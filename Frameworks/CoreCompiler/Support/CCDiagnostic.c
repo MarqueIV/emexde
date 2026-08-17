@@ -103,7 +103,7 @@ static CFHashCode CCDiagnosticHash(CFTypeRef cf)
 static CFStringRef CCDiagnosticCopyFormattingDesc(CFTypeRef cf, CFDictionaryRef options)
 {
     CCDiagnosticRef diagnostic = (CCDiagnosticRef)cf;
-    if(diagnostic->type != CCDiagnosticTypeInternal)
+    if(diagnostic->type != kCCDiagnosticTypeInternal)
     {
         return CFStringCreateWithFormat(kCFAllocatorSystemDefault, NULL, CFSTR("%@: \"%@\""), diagnostic->fileSourceLocation, diagnostic->message);
     }
