@@ -26,37 +26,27 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
     var textField: NXTextFieldTableCell?
     
     var cert: ComplexImportTableCell?
-    let callback: () -> Void
     
-    init(style: UITableView.Style,
-         callback: @escaping () -> Void) {
-        self.callback = callback
-        super.init(style: style)
-    }
-    
-    @MainActor required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    let importButton: UIBarButtonItem = UIBarButtonItem()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.title = "Set Up Signing"
         
-        let barbutton: UIBarButtonItem = UIBarButtonItem()
-        barbutton.title = "Import"
-        barbutton.target = self
-        barbutton.action = #selector(submitButton)
+        importButton.title = "Import"
+        importButton.target = self
+        importButton.action = #selector(importButtonTapped)
         if #available(iOS 26.0, *) {
-            barbutton.style = .prominent
+            importButton.style = .prominent
         }
         
         let cancelButton: UIBarButtonItem = UIBarButtonItem()
         cancelButton.title = "Cancel"
         cancelButton.target = self
-        cancelButton.action = #selector(closeButton)
+        cancelButton.action = #selector(closeButtonTapped)
         
-        navigationItem.rightBarButtonItem = barbutton
+        navigationItem.rightBarButtonItem = importButton
         navigationItem.leftBarButtonItem = cancelButton
         
         self.tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -127,26 +117,49 @@ class CertificateImporter: UIThemedTableViewController, UITextFieldDelegate {
         return true
     }
     
-    @objc func submitButton() {
-        do {
-            if let cert = cert,
-               let url = cert.url {
-                let p12Data: Data = try Data(contentsOf: url)
-                LCUtils.certificateData = p12Data
-                LCUtils.certificatePassword = textField?.text ?? ""
+    @objc func importButtonTapped() {
+        let spinner = UIActivityIndicatorView(style: .medium)
+        spinner.startAnimating()
+        navigationItem.setRightBarButton(UIBarButtonItem(customView: spinner), animated: true)
+        
+        let cert = self.cert
+        let password = self.textField?.text ?? ""
+        
+        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            do {
+                if let cert = cert,
+                   let url = cert.url {
+                    let p12Data: Data = try Data(contentsOf: url)
+                    
+                    LCUtils.validateCertificate(withCertificateData: p12Data, withPassword: password) { [weak self] status, experiationDate, someWords in
+                        guard let self = self else { return }
+                        if status == 0 {
+                            LCUtils.certificateData = p12Data
+                            LCUtils.certificatePassword = password
+                            DispatchQueue.main.async {
+                                self.dismiss(animated: true)
+                            }
+                            return
+                        }
+                        NotificationServer.NotifyUser(level: .error, notification: someWords ?? "A Unknown issue has happened importing the certificate, please report this issue. (error = \(status))")
+                        DispatchQueue.main.async {
+                            self.navigationItem.setRightBarButton(self.importButton, animated: true)
+                        }
+                    }
+                } else {
+                    guard let self = self else { return }
+                    NotificationServer.NotifyUser(level: .error, notification: "Select a certificate first.")
+                    DispatchQueue.main.async {
+                        self.navigationItem.setRightBarButton(self.importButton, animated: true)
+                    }
+                }
+            } catch {
+                NotificationServer.NotifyUser(level: .error, notification: "Something went wrong importing the certificate! (\(error.localizedDescription))")
             }
-        } catch {
-            NotificationServer.NotifyUser(level: .error, notification: "Something went wrong importing the certificate! \(error.localizedDescription)")
         }
-        
-        self.dismiss(animated: true)
-        
-        callback()
     }
     
-    @objc func closeButton() {
+    @objc func closeButtonTapped() {
         self.dismiss(animated: true)
-        
-        callback()
     }
 }

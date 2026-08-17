@@ -22,6 +22,56 @@
 import UIKit
 import UIOnboarding
 
+func checkSigningSetup() {
+    LCUtils.validateCertificate { status, experiationDate, someWords in
+        if status == 0 || status == 999 {
+            return
+        }
+        
+        DispatchQueue.main.async {
+            let alert = UIAlertController(
+                title: {
+                    switch status {
+                        default:
+                            return "Signing Isn't Set Up"
+                    }
+                }(),
+                message: {
+                    switch status {
+                        default:
+                            return "Nyxian needs a signing certificate to install and launch the apps you build. Without one you can still write and compile code, but you won't be able to run it on this device."
+                }
+            }(), preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Not Now", style: .cancel))
+            alert.addAction(UIAlertAction(title: "Set Up Signing", style: .default) { _ in
+                let importPopup: CertificateImporter = CertificateImporter(style: .insetGrouped)
+                let importSettings: UINavigationController = UINavigationController(rootViewController: importPopup)
+                importSettings.modalPresentationStyle = .formSheet
+                
+                // dynamic size
+                if UIDevice.current.userInterfaceIdiom == .phone {
+                    if let sheet = importSettings.sheetPresentationController {
+                        sheet.animateChanges {
+                            sheet.detents = [
+                                .custom { _ in
+                                    return 200
+                                }
+                            ]
+                        }
+                            
+                        sheet.prefersGrabberVisible = true
+                    }
+                }
+                
+                getTopViewController()?.present(importSettings, animated: true)
+            })
+            
+            getTopViewController()?.present(alert, animated: true)
+        }
+    }
+}
+
 struct UIOnboardingHelper {
     static func setUpIcon() -> UIImage {
         return .init(named: "IconPreviewDefaultOld")!
@@ -211,6 +261,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         self.window?.makeKeyAndVisible()
         
         if let _: NSNumber = UserDefaults.standard.object(forKey: "NXOnboardingSentinel") as? NSNumber {
+            checkSigningSetup()
             return
         }
         
@@ -239,5 +290,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         
         // storing sentinel so it will not appear again
         UserDefaults.standard.set(NSNumber(booleanLiteral: true), forKey: "NXOnboardingSentinel")
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            checkSigningSetup()
+        }
     }
 }

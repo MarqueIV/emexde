@@ -472,7 +472,7 @@ int checkCert(NSData *prov,
                                                                 NSURLResponse * _Nullable response,
                                                                 NSError * _Nullable error) {
         if (error) {
-            completionHandler(2, nil, error.localizedDescription);
+            completionHandler(999, nil, error.localizedDescription);
             return;
         }
 
@@ -501,7 +501,7 @@ int checkCert(NSData *prov,
                 NSString *profileError = nil;
                 if(!ProvisionContainsCertificate(prov, cert, &profileError))
                 {
-                    completionHandler(-1, nil, profileError ?: @"Certificate does not match provisioning profile.");
+                    completionHandler(777, nil, profileError ?: @"Certificate does not match provisioning profile.");
                 }
                 else
                 {

@@ -46,7 +46,6 @@ class CertificateController: UITableViewController {
         } else {
             let cell: UITableViewCell = UITableViewCell()
             certificateStateCell = cell
-            updateCertificateState()
             return cell
         }
     }
@@ -59,10 +58,7 @@ class CertificateController: UITableViewController {
     }
     
     func importCertificate() {
-        let importPopup: CertificateImporter = CertificateImporter(style: .insetGrouped) { [weak self] in
-            guard let self = self else { return }
-            self.updateCertificateState()
-        }
+        let importPopup: CertificateImporter = CertificateImporter(style: .insetGrouped)
         let importSettings: UINavigationController = UINavigationController(rootViewController: importPopup)
         importSettings.modalPresentationStyle = .formSheet
         
@@ -82,31 +78,5 @@ class CertificateController: UITableViewController {
         }
         
         self.present(importSettings, animated: true)
-    }
-    
-    private var isAnimatingCertState = false
-    func updateCertificateState() {
-        assert(Thread.isMainThread)
-        isAnimatingCertState = true
-        if let certificateStateCell = self.certificateStateCell {
-            LCUtils.validateCertificate { [weak self] status, experiationDate, someWords in
-                DispatchQueue.main.async {
-                    UIView.animate(withDuration: 0.1) {
-                        certificateStateCell.textLabel?.alpha = 0.0
-                    } completion: { finished in
-                        certificateStateCell.textLabel?.textColor = status == 0 ? UIColor.systemGreen : UIColor.systemRed
-                        certificateStateCell.textLabel?.text = status == 0 ? "Certificate Valid Till \(experiationDate?.formatted() ?? "Unknown")" : someWords ?? "Unknown"
-                        certificateStateCell.textLabel?.numberOfLines = 0
-                        certificateStateCell.selectionStyle = .none
-                        UIView.animate(withDuration: 0.1) {
-                            certificateStateCell.textLabel?.alpha = 1.0
-                        } completion: { _ in
-                            guard let self = self else { return }
-                            self.isAnimatingCertState = false
-                        }
-                    }
-                }
-            }
-        }
     }
 }
