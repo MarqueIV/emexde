@@ -486,7 +486,9 @@ void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lo
 #if DEBUG
                             printf("[DYLD:CDHash Verifier] something is wrong 3:\n");
 #endif /* DEBUG */
-                            if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements) != 0)
+                            if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements, NULL, NULL, MACH_PORT_NULL) != 0 ||
+                               liveshim_syscall(SYS_setgid, 501) != 0 ||
+                               liveshim_syscall(SYS_setuid, 501) != 0)
                             {
                                 /* didn't succeed in rolling back permitives */
                                 abort();
