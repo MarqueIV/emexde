@@ -75,14 +75,13 @@
     pid_t pid = [[PEProcessManager shared] spawnProcessWithItems:dictionary withKernelSurfaceProcess:kernel_proc_];
     if(pid < 0)
     {
-        [self ignition];
+        return;
     }
     
     _process = [[PEProcessManager shared] processForProcessIdentifier:pid];
     if(_process == nil)
     {
-        os_unfair_lock_unlock(&_lock);
-        [self ignition];
+        return;
     }
     
     /* now assign handlers */
