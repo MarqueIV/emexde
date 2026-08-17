@@ -28,14 +28,14 @@ static inline UIColor *RGBHex(uint32_t hex)
 
 @implementation NXWindowBar {
     UIView *_bottomBorder;
-
+    
     UIView *_dotContainer;
     UIStackView *_buttonStack;
-
+    
     NSLayoutConstraint *_islandWidthConstraint;
     NSLayoutConstraint *_islandHeightConstraint;
     NSLayoutConstraint *_windowBarHeightConstraint;
-
+    
     BOOL _islandExpanded;
     NSTimer *_collapseTimer;
     
@@ -52,10 +52,10 @@ static inline UIColor *RGBHex(uint32_t hex)
 {
     self = [super init];
     if (!self) return nil;
-
+    
     self.translatesAutoresizingMaskIntoConstraints = NO;
     self.clipsToBounds = NO;
-
+    
     BOOL isiPad  = (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad);
     CGFloat barH = isiPad ? 38.0 : 50.0;
     
@@ -63,7 +63,7 @@ static inline UIColor *RGBHex(uint32_t hex)
     _safeAreaFill.translatesAutoresizingMaskIntoConstraints = NO;
     _safeAreaFill.backgroundColor = UIColor.quaternarySystemFillColor;
     [self addSubview:_safeAreaFill];
-
+    
     [NSLayoutConstraint activateConstraints:@[
         [_safeAreaFill.topAnchor constraintEqualToAnchor:self.topAnchor],
         [_safeAreaFill.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
@@ -81,14 +81,14 @@ static inline UIColor *RGBHex(uint32_t hex)
         [blurView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
         [blurView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
     ]];
-
+    
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.text = title;
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _titleLabel.textAlignment = NSTextAlignmentCenter;
     _titleLabel.font = [UIFont systemFontOfSize:isiPad ? 13 : 17 weight:UIFontWeightSemibold];
     [self addSubview:_titleLabel];
-
+    
     UIView *border = [[UIView alloc] init];
     border.translatesAutoresizingMaskIntoConstraints = NO;
     border.backgroundColor = UIColor.systemGray3Color;
@@ -97,7 +97,7 @@ static inline UIColor *RGBHex(uint32_t hex)
     
     _windowBarHeightConstraint = [self.heightAnchor constraintEqualToConstant:barH];
     _windowBarHeightConstraint.active = YES;
-
+    
     if([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad)
     {
         [_titleLabel.centerYAnchor constraintEqualToAnchor:self.bottomAnchor constant:-19.0].active = YES;
@@ -114,13 +114,12 @@ static inline UIColor *RGBHex(uint32_t hex)
         [border.trailingAnchor constraintEqualToAnchor:self.trailingAnchor],
         [border.bottomAnchor constraintEqualToAnchor:self.bottomAnchor],
     ]];
-
+    
     if(isiPad)
     {
         _islandExpanded = NO;
         
         UIVisualEffect *effect;
-        
         if(@available(iOS 26.0, *))
         {
             effect = [UIGlassEffect effectWithStyle:UIGlassEffectStyleClear];
@@ -137,20 +136,20 @@ static inline UIColor *RGBHex(uint32_t hex)
         /* FIXME: weird liquid glass artifacts get rendered... */
         island.layer.cornerRadius = 13.0;
         island.layer.cornerCurve = kCACornerCurveContinuous;
-
+        
         [self addSubview:island];
         _buttonIsland = island;
-
+        
         UIView *dotContainer = [[UIView alloc] init];
         dotContainer.translatesAutoresizingMaskIntoConstraints = NO;
         [island.contentView addSubview:dotContainer];
         _dotContainer = dotContainer;
-
+        
         _closeDot = [self _dotWithColor:RGBHex(0xFF5F57)];
         _maxDot = [self _dotWithColor:RGBHex(0x28C840)];
         [dotContainer addSubview:_closeDot];
         [dotContainer addSubview:_maxDot];
-
+        
         [NSLayoutConstraint activateConstraints:@[
             [_closeDot.leadingAnchor constraintEqualToAnchor:dotContainer.leadingAnchor],
             [_closeDot.centerYAnchor constraintEqualToAnchor:dotContainer.centerYAnchor],
@@ -164,7 +163,7 @@ static inline UIColor *RGBHex(uint32_t hex)
             [dotContainer.centerXAnchor constraintEqualToAnchor:island.centerXAnchor],
             [dotContainer.centerYAnchor constraintEqualToAnchor:island.centerYAnchor],
         ]];
-
+        
         _closeButton = [self _islandButtonWithImage:@"xmark.circle.fill" withBackgroundColor:RGBHex(0xFF5F57) /*borderColor:UIColor.systemRedColor*/ callback:closeCallback];
         
         __weak typeof(self) weakSelf = self;
@@ -177,7 +176,7 @@ static inline UIColor *RGBHex(uint32_t hex)
                 [strongSelf collapseIsland];
             }
         }];
-
+        
         UIStackView *stack = [[UIStackView alloc] initWithArrangedSubviews:@[_closeButton, _maximizeButton]];
         stack.axis = UILayoutConstraintAxisHorizontal;
         stack.spacing = 8;
@@ -187,7 +186,7 @@ static inline UIColor *RGBHex(uint32_t hex)
         stack.transform = CGAffineTransformMakeScale(0.5, 0.5);
         [island.contentView addSubview:stack];
         _buttonStack = stack;
-
+        
         [NSLayoutConstraint activateConstraints:@[
             [stack.centerXAnchor constraintEqualToAnchor:island.centerXAnchor],
             [stack.centerYAnchor constraintEqualToAnchor:island.centerYAnchor],
@@ -196,16 +195,16 @@ static inline UIColor *RGBHex(uint32_t hex)
             [_maximizeButton.widthAnchor constraintEqualToConstant:30.0],
             [_maximizeButton.heightAnchor constraintEqualToConstant:30.0],
         ]];
-
+        
         _islandWidthConstraint = [island.widthAnchor  constraintEqualToConstant:48.0];
         _islandHeightConstraint = [island.heightAnchor constraintEqualToConstant:26.0];
         [NSLayoutConstraint activateConstraints:@[
-            [island.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:7],
+            [island.leadingAnchor constraintEqualToAnchor:self.leadingAnchor constant:6],
             [island.topAnchor constraintEqualToAnchor:_titleLabel.centerYAnchor constant:-13.0],
             _islandWidthConstraint,
             _islandHeightConstraint,
         ]];
-
+        
         UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
         [island.contentView addGestureRecognizer:tap];
         
@@ -219,7 +218,7 @@ static inline UIColor *RGBHex(uint32_t hex)
     barBackground.frame = self.bounds;
     barBackground.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [self insertSubview:barBackground atIndex:0];
-
+    
     return self;
 }
 
@@ -257,7 +256,7 @@ static inline UIColor *RGBHex(uint32_t hex)
     _islandExpanded = YES;
     
     UIView *layoutRoot = _buttonIsland.superview ?: self;
-
+    
     [layoutRoot layoutIfNeeded];
     [UIView animateWithDuration:0.44 delay:0 usingSpringWithDamping:0.60 initialSpringVelocity:0.6 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
         [self layoutIfNeeded];
@@ -273,7 +272,7 @@ static inline UIColor *RGBHex(uint32_t hex)
         
         [layoutRoot layoutIfNeeded];
     } completion:nil];
-
+    
     [self resetCollapseTimer];
 }
 
@@ -285,12 +284,12 @@ static inline UIColor *RGBHex(uint32_t hex)
     }
     
     _islandExpanded = NO;
-
+    
     [_collapseTimer invalidate];
     _collapseTimer = nil;
     
     UIView *layoutRoot = _buttonIsland.superview ?: self;
-
+    
     [layoutRoot layoutIfNeeded];
     [UIView animateWithDuration:0.34 delay:0 usingSpringWithDamping:0.78 initialSpringVelocity:0.2 options:UIViewAnimationOptionBeginFromCurrentState animations:^{
         [self layoutIfNeeded];
@@ -336,7 +335,7 @@ static inline UIColor *RGBHex(uint32_t hex)
     cfg.preferredSymbolConfigurationForImage = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightSemibold];
     cfg.image = [UIImage systemImageNamed:name];
     cfg.baseForegroundColor = backgroundColor;
-
+    
     UIButton *btn = [UIButton buttonWithConfiguration:cfg primaryAction:nil];
     btn.translatesAutoresizingMaskIntoConstraints = NO;
     
