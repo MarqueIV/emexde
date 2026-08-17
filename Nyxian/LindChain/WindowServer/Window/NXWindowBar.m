@@ -267,9 +267,9 @@ static inline UIColor *RGBHex(uint32_t hex)
         self->_buttonStack.alpha = 1.0;
         self->_buttonStack.transform = CGAffineTransformIdentity;
         
-        self->_islandWidthConstraint.constant  = 80.0;
-        self->_islandHeightConstraint.constant = 40.0;
-        self->_buttonIsland.layer.cornerRadius = 20.0;
+        self->_islandWidthConstraint.constant  = 90.0;
+        self->_islandHeightConstraint.constant = 50.0;
+        self->_buttonIsland.layer.cornerRadius = 25.0;
         
         [layoutRoot layoutIfNeeded];
     } completion:nil];
@@ -333,7 +333,7 @@ static inline UIColor *RGBHex(uint32_t hex)
                             callback:(void (^)(void))callback
 {
     UIButtonConfiguration *cfg = [UIButtonConfiguration plainButtonConfiguration];
-    cfg.preferredSymbolConfigurationForImage = [UIImageSymbolConfiguration configurationWithPointSize:17 weight:UIImageSymbolWeightSemibold];
+    cfg.preferredSymbolConfigurationForImage = [UIImageSymbolConfiguration configurationWithPointSize:20 weight:UIImageSymbolWeightSemibold];
     cfg.image = [UIImage systemImageNamed:name];
     cfg.baseForegroundColor = backgroundColor;
 
