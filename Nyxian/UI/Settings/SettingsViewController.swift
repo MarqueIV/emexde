@@ -37,9 +37,9 @@ class SettingsViewController: UIThemedTableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 #if DEBUG
-        return 6
+        return NXApplicationState.extensionLessMode ? 3 : 6
 #else
-        return 5
+        return NXApplicationState.extensionLessMode ? 3 : 5
 #endif // DEBUG
     }
 
@@ -53,12 +53,22 @@ class SettingsViewController: UIThemedTableViewController {
             cell.textLabel?.text = "Toolchain"
             break
         case 1:
-            cell.imageView?.image = UIImage(systemName: "bolt.shield.fill")
-            cell.textLabel?.text = "Management"
+            if NXApplicationState.extensionLessMode {
+                cell.imageView?.image = UIImage(systemName: "paintbrush.fill")
+                cell.textLabel?.text = "Customization"
+            } else {
+                cell.imageView?.image = UIImage(systemName: "bolt.shield.fill")
+                cell.textLabel?.text = "Management"
+            }
             break
         case 2:
-            cell.imageView?.image = UIImage(systemName: "app.badge.fill")
-            cell.textLabel?.text = "Applications"
+            if NXApplicationState.extensionLessMode {
+                cell.imageView?.image = UIImage(systemName: "person.3.fill")
+                cell.textLabel?.text = "Credits"
+            } else {
+                cell.imageView?.image = UIImage(systemName: "app.badge.fill")
+                cell.textLabel?.text = "Applications"
+            }
             break
         case 3:
             cell.imageView?.image = UIImage(systemName: "paintbrush.fill")
@@ -97,9 +107,17 @@ class SettingsViewController: UIThemedTableViewController {
             case 0:
                 return ToolChainViewController(style: .insetGrouped)
             case 1:
-                return ManagementViewController(style: .insetGrouped)
+                if NXApplicationState.extensionLessMode {
+                    return CustomizationViewController(style: .insetGrouped)
+                } else {
+                    return ManagementViewController(style: .insetGrouped)
+                }
             case 2:
-                return ApplicationManagementViewController.shared
+                if NXApplicationState.extensionLessMode {
+                    return CreditsViewController(style: .insetGrouped)
+                } else {
+                    return ApplicationManagementViewController.shared
+                }
             case 3:
                 return CustomizationViewController(style: .insetGrouped)
 #if DEBUG

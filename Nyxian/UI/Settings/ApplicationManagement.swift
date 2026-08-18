@@ -352,8 +352,8 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                         
                         self.present(alert, animated: true)
                         
-                        checkSigningSetup() { success in
-                            if !success {
+                        checkSigningSetup() { codeSignigSetup in
+                            if !codeSignigSetup {
                                 alert.dismiss(animated: true)
                                 return
                             }

@@ -22,7 +22,64 @@
 import UIKit
 import UIOnboarding
 
+fileprivate func errorFallback(title: String, message: String) {
+    let alert = UIAlertController(
+        title: title,
+        message: message,
+        preferredStyle: .alert
+    )
+    
+    alert.addAction(UIAlertAction(title: "Close", style: .default))
+
+    DispatchQueue.main.async {
+        NXWindowServer.shared().rootViewController?.present(
+            alert,
+            animated: true
+        )
+    }
+}
+
+struct NXApplicationState {
+    static var extensionExists: Bool = {
+        return PEGetLiveProcessBundle() != nil
+    }()
+    
+    static var extensionCorrectlyEntitled: Bool = {
+        return PEExtensionHasGetTaskAllowed()
+    }()
+    
+    static var extensionLessMode: Bool = {
+        return !extensionExists || !extensionCorrectlyEntitled;
+    }()
+}
+
 func checkSigningSetup(completionHandler: @escaping (Bool) -> Void = { _ in }, showAlert: Bool = true) {
+    if !NXApplicationState.extensionExists {
+        errorFallback(title: "Extension Not Found", message: """
+        The required NSExtension could not be found.
+
+        Make sure the app was installed with its extension intact and that it wasn't removed during signing or installation.
+        
+        App is now in extension-less mode, meaning apps cannot run within Nyxian until the problem has been resolved.
+        """)
+        completionHandler(false)
+        return
+    }
+    
+    if !NXApplicationState.extensionCorrectlyEntitled {
+        errorFallback(title: "Unsupported Provisioning Profile", message: """
+        Extension doesn't have the "get-task-allow" entitlement.
+
+        Distribution certificates are not supported. You must use a Developer certificate issued by Apple.
+
+        The 7 day certificate is a Developer certificate.
+        
+        App is now in extension-less mode, meaning apps cannot run within Nyxian until the problem has been resolved.
+        """)
+        completionHandler(false)
+        return
+    }
+    
     LCUtils.validateCertificate { status, someWords in
         completionHandler(status == 0)
         if status == 0 || !showAlert {
@@ -172,64 +229,6 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
             return;
         }
         
-        func errorFallback(title: String, message: String) {
-            self.window?.rootViewController = UIViewController()
-            self.window?.rootViewController?.view.backgroundColor = currentTheme!.backgroundColor
-
-            let alert = UIAlertController(
-                title: title,
-                message: nil,
-                preferredStyle: .alert
-            )
-            
-            let textColor = UIColor { trait in
-                trait.userInterfaceStyle == .dark
-                    ? UIColor(white: 0.75, alpha: 1.0)
-                    : UIColor(white: 0.20, alpha: 1.0)
-            }
-            
-            alert.setValue(
-                NSAttributedString(
-                    string: message,
-                    attributes: [
-                        .foregroundColor: textColor,
-                        .font: UIFont.systemFont(ofSize: 13)
-                    ]
-                ),
-                forKey: "attributedMessage"
-            )
-
-            self.window?.makeKeyAndVisible()
-
-            DispatchQueue.main.async {
-                self.window?.rootViewController?.present(
-                    alert,
-                    animated: true
-                )
-            }
-        }
-        
-        if PEGetLiveProcessBundle() == nil
-        {
-            errorFallback(title: "Extension Not Found", message: """
-            The required NSExtension could not be found.
-
-            Make sure the app was installed with its extension intact and that it wasn't removed during signing or installation.
-            """)
-            return
-        }
-        
-        if !PEExtensionHasGetTaskAllowed() {
-            errorFallback(title: "Unsupported Provisioning Profile", message: """
-            Extension doesn't have the "get-task-allow" entitlement.
-
-            Distribution certificates are not supported. You must use a Developer certificate issued by Apple.
-
-            The 7 day certificate is a Developer certificate.
-            """)
-            return
-        }
-        
         NXBootstrap.shared().bootstrap()
         
         let themedTabViewController: UIThemedTabViewController = UIThemedTabViewController()
@@ -247,11 +246,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         
         if UIDevice.current.userInterfaceIdiom == .phone {
             if #available(iOS 26.0, *) {
-                let fakeViewController: UIViewController = UIViewController()
-                fakeViewController.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 2)
-                fakeViewController.tabBarItem.title = "Switcher"
-                fakeViewController.tabBarItem.image = UIImage(systemName: "iphone.app.switcher")
-                viewControllers.append(fakeViewController)
+                if !NXApplicationState.extensionLessMode {
+                    let fakeViewController: UIViewController = UIViewController()
+                    fakeViewController.tabBarItem = UITabBarItem(tabBarSystemItem: .search, tag: 2)
+                    fakeViewController.tabBarItem.title = "Switcher"
+                    fakeViewController.tabBarItem.image = UIImage(systemName: "iphone.app.switcher")
+                    viewControllers.append(fakeViewController)
+                }
             }
         }
         

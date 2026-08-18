@@ -287,8 +287,8 @@ class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         if(buildType == .RunningApp) {
             var success: Bool = false;
             let semaphore = DispatchSemaphore(value: 0)
-            checkSigningSetup() { reply in
-                success = reply
+            checkSigningSetup() { codeSigningSetup in
+                success = codeSigningSetup
                 semaphore.signal()
             }
             semaphore.wait()
