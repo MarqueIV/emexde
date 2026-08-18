@@ -21,10 +21,10 @@
 
 import UIKit
 
-class VirtualEnvironmentViewController: UIThemedTableViewController {
+class ManagementViewController: UIThemedTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
-        title = "Virtual Environment"
+        title = "Management"
         view.backgroundColor = .systemBackground
     }
     

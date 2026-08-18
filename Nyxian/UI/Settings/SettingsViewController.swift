@@ -37,9 +37,9 @@ class SettingsViewController: UIThemedTableViewController {
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 #if DEBUG
-        return 7
-#else
         return 6
+#else
+        return 5
 #endif // DEBUG
     }
 
@@ -53,32 +53,28 @@ class SettingsViewController: UIThemedTableViewController {
             cell.textLabel?.text = "Toolchain"
             break
         case 1:
+            cell.imageView?.image = UIImage(systemName: "bolt.shield.fill")
+            cell.textLabel?.text = "Management"
+            break
+        case 2:
             cell.imageView?.image = UIImage(systemName: "app.badge.fill")
             cell.textLabel?.text = "Applications"
             break
-        case 2:
+        case 3:
             cell.imageView?.image = UIImage(systemName: "paintbrush.fill")
             cell.textLabel?.text = "Customization"
             break
-        case 3:
-            cell.imageView?.image = UIImage(systemName: "checkmark.seal.text.page.fill")
-            cell.textLabel?.text = "Certificate"
-            break
-        case 4:
-            cell.imageView?.image = UIImage(systemName: "shippingbox.fill")
-            cell.textLabel?.text = "Virtual Environment"
-            break
 #if DEBUG
-        case 5:
+        case 4:
             cell.imageView?.image = UIImage(systemName: "ant.fill")
             cell.textLabel?.text = "Kernel Log"
             break
-        case 6:
+        case 5:
             cell.imageView?.image = UIImage(systemName: "person.3.fill")
             cell.textLabel?.text = "Credits"
             break
 #else
-        case 5:
+        case 4:
             cell.imageView?.image = UIImage(systemName: "person.3.fill")
             cell.textLabel?.text = "Credits"
             break
@@ -99,22 +95,20 @@ class SettingsViewController: UIThemedTableViewController {
         guard let viewController: UIViewController = {
             switch index {
             case 0:
-                return ToolChainController(style: .insetGrouped)
+                return ToolChainViewController(style: .insetGrouped)
             case 1:
-                return ApplicationManagementViewController.shared
+                return ManagementViewController(style: .insetGrouped)
             case 2:
-                return CustomizationViewController(style: .insetGrouped)
+                return ApplicationManagementViewController.shared
             case 3:
-                return CertificateController(style: .insetGrouped)
-            case 4:
-                return VirtualEnvironmentViewController(style: .insetGrouped)
+                return CustomizationViewController(style: .insetGrouped)
 #if DEBUG
-            case 5:
+            case 4:
                 return KernelLogViewController()
-            case 6:
+            case 5:
                 return CreditsViewController(style: .insetGrouped)
 #else
-            case 5:
+            case 6:
                 return CreditsViewController(style: .insetGrouped)
 #endif // DEBUG
             default:
