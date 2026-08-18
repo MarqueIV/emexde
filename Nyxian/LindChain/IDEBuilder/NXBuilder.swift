@@ -23,17 +23,15 @@ import Foundation
 import Combine
 import MobileDevelopmentKit
 
-class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
-    private let project: NXProject
+class NXBuilder: NSObject, MDKPhaseRunnerDelegate {
+    private(set) var project: NXProject
+    private(set) var projectDirty: Bool
+    
+    private(set) var dependencyScanner: MDKDependencyScanner
+    private(set) var phaseRunner: NXPhaseRunner
     
     private let database: DebugDatabase
-    
-    private var phaseRunner: NXPhaseRunner
-    private let dependencyScanner: MDKDependencyScanner
-    
     private let incrementalBuild: Bool = UserDefaults.standard.object(forKey: "LDEIncrementalBuild") as? Bool ?? true
-    private let projectDirty: Bool
-    
     private let argsString: String
     
     static var builds: Bool = false
@@ -80,45 +78,6 @@ class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         
         phaseEngine.delegate = self
         self.phaseRunner.delegate = self
-    }
-    
-    func driver(_ driver: MDKDriver,
-                outputPathForInputFile file: MDKFile) -> String? {
-        return "\(self.project.cacheURL.path)/\(NXExpectedObjectFileURLForFileURL(NXRelativeURLFromBaseURLToFullURL(self.project.url, file.fileURL)).path)"
-    }
-    
-    func driver(_ driver: MDKDriver,
-                skipCompileForInputFile file: MDKFile) -> Bool {
-        if !CCFileTypeIsSwiftFile(file.type),
-           !self.projectDirty {
-            
-            let path: String = file.fileURL.path
-            let objectPath = "\(self.project.cacheURL.path)/\(NXExpectedObjectFileURLForFileURL(NXRelativeURLFromBaseURLToFullURL(self.project.url, file.fileURL)).path)"
-            
-            // Checking if the source file is newer than the compiled object file
-            guard let sourceDate = try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date,
-                  let objectDate = try? FileManager.default.attributesOfItem(atPath: objectPath)[.modificationDate] as? Date,
-                  objectDate > sourceDate else {
-                return false
-            }
-            
-            // Checking if the header files included by the source code are newer than the object file
-            guard let headers = self.dependencyScanner.headerFiles(for: file) else {
-                return false
-            }
-            
-            for header in headers {
-                guard let fileURL = header.fileURL,
-                      let headerDate = try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.modificationDate] as? Date,
-                      objectDate > headerDate else {
-                    return false
-                }
-            }
-            
-            return true
-        } else {
-            return false
-        }
     }
     
     func runner(_ runner: MDKPhaseRunner,
