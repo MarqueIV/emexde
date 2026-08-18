@@ -107,7 +107,7 @@ all: FILE := Nyxian.ipa
 all: clean check compile package-app clean
 
 # Dependencies
-CoreCompiler/CoreCompilerSupportLibs:
+Frameworks/CoreCompiler/CoreCompilerSupportLibs:
 	cd LLVM-On-iOS; $(MAKE)
 	rm -rf Frameworks/CoreCompiler/CoreCompilerSupportLibs/
 	cp -r LLVM-On-iOS/CoreCompilerSupportLibs Frameworks/CoreCompiler/CoreCompilerSupportLibs/
@@ -119,7 +119,7 @@ update-config:
 	./version.sh
 
 # Methods
-compile: CoreCompiler/CoreCompilerSupportLibs
+compile: Frameworks/CoreCompiler/CoreCompilerSupportLibs
 	chmod +x version.sh
 	./version.sh
 	xcodebuild \
