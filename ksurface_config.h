@@ -33,7 +33,8 @@
  * -------------------------------------------------------------------- */
 
 /* kernel process properties */
-#define KSURFACE_EMIT_KERNEL_TASK   1  /* adds kernel task entry, instead of Nyxian entry */
+#define KSURFACE_EMIT_KERNEL_TASK   1   /* adds kernel task entry, instead of Nyxian entry */
+#define KSURFACE_EMIT_LAUNCHD       1   /* adds a launchd entry */
 
 /* syscalling coverage */
 #define KSURFACE_SYS_IO_ENABLED     0   /* very early in development */

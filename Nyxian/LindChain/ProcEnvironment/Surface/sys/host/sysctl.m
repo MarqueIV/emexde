@@ -331,7 +331,7 @@ int sysctl_kernprocargs2(sysctl_req_t *req)
     }
 
     pid_t pid = (pid_t)req->name[2];
-#ifdef KSURFACE_EMIT_KERNEL_TASK
+#if KSURFACE_EMIT_KERNEL_TASK
     if(pid == 0)
     {
         req->err = EINVAL;
