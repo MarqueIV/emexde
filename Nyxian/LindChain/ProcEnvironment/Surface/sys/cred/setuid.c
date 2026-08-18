@@ -24,6 +24,39 @@
 #include <LindChain/ProcEnvironment/Surface/entitlement.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 
+ksurface_proc_ucred_backup_t proc_make_ucred_backup(ksurface_proc_t *proc)
+{
+    return (ksurface_proc_ucred_backup_t){
+        .ruid = proc_getruid(proc),
+        .euid = proc_geteuid(proc),
+        .svuid = proc_getsvuid(proc),
+        .rgid = proc_getrgid(proc),
+        .egid = proc_getegid(proc),
+        .svgid = proc_getsvgid(proc),
+    };
+}
+
+void proc_set_sugid_if_applicable(ksurface_proc_t *proc,
+                                  ksurface_proc_ucred_backup_t backup)
+{
+    if(entitlement_got_entitlement(proc_getmaxentitlements(proc), PEEntitlementPlatform) &&
+       entitlement_got_entitlement(proc_getmaxentitlements(proc), PEEntitlementPlatformRoot))
+    {
+        /* is platform root, it is trusted to begin with */
+        return;
+    }
+    
+    if(proc_getruid(proc) != backup.ruid  ||
+       proc_geteuid(proc) != backup.euid  ||
+       proc_getsvuid(proc) != backup.svuid ||
+       proc_getrgid(proc) != backup.rgid  ||
+       proc_getegid(proc) != backup.egid  ||
+       proc_getsvgid(proc) != backup.svgid)
+    {
+        proc->bsd.kp_proc.p_flag |= P_SUGID;
+    }
+}
+
 bool proc_is_privileged(ksurface_proc_t *proc)
 {
     /* Checking if process is entitled to elevate. */
@@ -46,6 +79,7 @@ DEFINE_SYSCALL_HANDLER(setuid)
 {
     /* syscall wrapper */
     kvo_wrlock(sys_proc_);
+    ksurface_proc_ucred_backup_t ucred_backup = proc_make_ucred_backup(sys_proc_);
     
     /* getting args, nu checks needed the syscall server does them */
     uid_t uid = (uid_t)args[0];
@@ -80,11 +114,7 @@ DEFINE_SYSCALL_HANDLER(setuid)
     sys_return_failure(EPERM);
     
 out_update:
-    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
-       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
-    {
-        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
-    }
+    proc_set_sugid_if_applicable(sys_proc_, ucred_backup);
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -93,6 +123,7 @@ DEFINE_SYSCALL_HANDLER(seteuid)
 {
     /* syscall wrapper */
     kvo_wrlock(sys_proc_);
+    ksurface_proc_ucred_backup_t ucred_backup = proc_make_ucred_backup(sys_proc_);
     
     /* getting args, nu checks needed the syscall server does them */
     uid_t euid = (uid_t)args[0];
@@ -125,11 +156,7 @@ DEFINE_SYSCALL_HANDLER(seteuid)
     sys_return_failure(EPERM);
     
 out_update:
-    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
-       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
-    {
-        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
-    }
+    proc_set_sugid_if_applicable(sys_proc_, ucred_backup);
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -138,6 +165,7 @@ DEFINE_SYSCALL_HANDLER(setreuid)
 {
     /* syscall wrapper */
     kvo_wrlock(sys_proc_);
+    ksurface_proc_ucred_backup_t ucred_backup = proc_make_ucred_backup(sys_proc_);
     
     /* getting args, nu checks needed the syscall server does them */
     uid_t ruid = (uid_t)args[0];
@@ -191,11 +219,7 @@ DEFINE_SYSCALL_HANDLER(setreuid)
         }
     }
     
-    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
-       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
-    {
-        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
-    }
+    proc_set_sugid_if_applicable(sys_proc_, ucred_backup);
     kvo_unlock(sys_proc_);
     sys_return;
 }

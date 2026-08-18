@@ -31,6 +31,7 @@ DEFINE_SYSCALL_HANDLER(setgid)
     gid_t gid = (gid_t)args[0];
     
     kvo_wrlock(sys_proc_);
+    ksurface_proc_ucred_backup_t ucred_backup = proc_make_ucred_backup(sys_proc_);
     
     /* checking privelege */
     if(proc_is_privileged(sys_proc_))
@@ -61,11 +62,7 @@ DEFINE_SYSCALL_HANDLER(setgid)
     sys_return_failure(EPERM);
     
 out_update:
-    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
-       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
-    {
-        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
-    }
+    proc_set_sugid_if_applicable(sys_proc_, ucred_backup);
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -76,6 +73,7 @@ DEFINE_SYSCALL_HANDLER(setegid)
     gid_t egid = (gid_t)args[0];
     
     kvo_wrlock(sys_proc_);
+    ksurface_proc_ucred_backup_t ucred_backup = proc_make_ucred_backup(sys_proc_);
     
     /* checking privelege */
     if(proc_is_privileged(sys_proc_))
@@ -105,11 +103,7 @@ DEFINE_SYSCALL_HANDLER(setegid)
     sys_return_failure(EPERM);
     
 out_update:
-    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
-       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
-    {
-        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
-    }
+    proc_set_sugid_if_applicable(sys_proc_, ucred_backup);
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -117,6 +111,7 @@ out_update:
 DEFINE_SYSCALL_HANDLER(setregid)
 {
     kvo_wrlock(sys_proc_);
+    ksurface_proc_ucred_backup_t ucred_backup = proc_make_ucred_backup(sys_proc_);
     
     /* getting arguments */
     gid_t rgid = (gid_t)args[0];
@@ -170,11 +165,7 @@ DEFINE_SYSCALL_HANDLER(setregid)
         }
     }
     
-    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
-       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
-    {
-        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
-    }
+    proc_set_sugid_if_applicable(sys_proc_, ucred_backup);
     kvo_unlock(sys_proc_);
     sys_return;
 }
