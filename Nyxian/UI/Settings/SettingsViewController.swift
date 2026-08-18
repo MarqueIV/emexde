@@ -126,7 +126,7 @@ class SettingsViewController: UIThemedTableViewController {
             case 5:
                 return CreditsViewController(style: .insetGrouped)
 #else
-            case 6:
+            case 4:
                 return CreditsViewController(style: .insetGrouped)
 #endif // DEBUG
             default:
