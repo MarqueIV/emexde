@@ -19,6 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+import MobileDevelopmentKit
+
 extension NXBuilder: MDKDriverDelegate {
     func driver(_ driver: MDKDriver,
                 outputPathForInputFile file: MDKFile) -> String? {

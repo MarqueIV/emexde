@@ -23,14 +23,14 @@ import Foundation
 import Combine
 import MobileDevelopmentKit
 
-class NXBuilder: NSObject, MDKPhaseRunnerDelegate {
+final class NXBuilder: NSObject {
     private(set) var project: NXProject
     private(set) var projectDirty: Bool
+    private(set) var database: DebugDatabase
     
     private(set) var dependencyScanner: MDKDependencyScanner
     private(set) var phaseRunner: NXPhaseRunner
     
-    private let database: DebugDatabase
     private let incrementalBuild: Bool = UserDefaults.standard.object(forKey: "LDEIncrementalBuild") as? Bool ?? true
     private let argsString: String
     
@@ -78,26 +78,6 @@ class NXBuilder: NSObject, MDKPhaseRunnerDelegate {
         
         phaseEngine.delegate = self
         self.phaseRunner.delegate = self
-    }
-    
-    func runner(_ runner: MDKPhaseRunner,
-                multithreadingThreadCountFor phase: MDKPhase) -> CFIndex {
-        return CFIndex(LDEGetUserSetThreadCount())
-    }
-    
-    func runner(_ runner: MDKPhaseRunner,
-                phase: MDKPhase,
-                finishedRunning job: MDKJob,
-                withResultingDiagnostics diagnostics: [MDKDiagnostic]?,
-                withMainSource mainSource: String?,
-                wasSuccessful success: Bool) {
-        if let diagnostics = diagnostics {
-            if job.type == .linker {
-                self.database.addDiagnosticMessages(title: "Linker", items: diagnostics, clearPrevious: true)
-            } else if let mainSource = mainSource {
-                self.database.setFileDebug(ofPath: mainSource, synItems: diagnostics)
-            }
-        }
     }
     
     func headsup(buildType: NXBuilder.BuildType) throws {
