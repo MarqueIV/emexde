@@ -24,6 +24,8 @@
 
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 
+bool proc_is_privileged(ksurface_proc_t *proc);
+
 DEFINE_SYSCALL_HANDLER(setuid);
 DEFINE_SYSCALL_HANDLER(seteuid);
 DEFINE_SYSCALL_HANDLER(setreuid);

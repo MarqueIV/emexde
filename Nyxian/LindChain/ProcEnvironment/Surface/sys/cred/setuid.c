@@ -32,6 +32,12 @@ bool proc_is_privileged(ksurface_proc_t *proc)
         return true;
     }
     
+    if(entitlement_got_entitlement(proc_getmaxentitlements(proc), PEEntitlementPlatform) &&
+       entitlement_got_entitlement(proc_getmaxentitlements(proc), PEEntitlementPlatformRoot))
+    {
+        return true;
+    }
+    
     /* It's not, so we check if the process is root. */
     return proc_getruid(proc) == 0;
 }
@@ -74,7 +80,11 @@ DEFINE_SYSCALL_HANDLER(setuid)
     sys_return_failure(EPERM);
     
 out_update:
-    sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
+       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
+    {
+        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    }
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -115,7 +125,11 @@ DEFINE_SYSCALL_HANDLER(seteuid)
     sys_return_failure(EPERM);
     
 out_update:
-    sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
+       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
+    {
+        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    }
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -177,7 +191,11 @@ DEFINE_SYSCALL_HANDLER(setreuid)
         }
     }
     
-    sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
+       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
+    {
+        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    }
     kvo_unlock(sys_proc_);
     sys_return;
 }

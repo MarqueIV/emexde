@@ -21,10 +21,9 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/sys/cred/setgid.h>
+#include <LindChain/ProcEnvironment/Surface/sys/cred/setuid.h>
 #include <LindChain/ProcEnvironment/Surface/entitlement.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
-
-extern bool proc_is_privileged(ksurface_proc_t *proc);
 
 DEFINE_SYSCALL_HANDLER(setgid)
 {
@@ -62,7 +61,11 @@ DEFINE_SYSCALL_HANDLER(setgid)
     sys_return_failure(EPERM);
     
 out_update:
-    sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
+       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
+    {
+        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    }
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -102,7 +105,11 @@ DEFINE_SYSCALL_HANDLER(setegid)
     sys_return_failure(EPERM);
     
 out_update:
-    sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
+       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
+    {
+        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    }
     kvo_unlock(sys_proc_);
     sys_return;
 }
@@ -163,7 +170,11 @@ DEFINE_SYSCALL_HANDLER(setregid)
         }
     }
     
-    sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatform) ||
+       !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_), PEEntitlementPlatformRoot))
+    {
+        sys_proc_->bsd.kp_proc.p_flag |= P_SUGID;
+    }
     kvo_unlock(sys_proc_);
     sys_return;
 }
