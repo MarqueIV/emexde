@@ -620,12 +620,10 @@ class SplitScreenDetailViewController: UIViewController, FBProcessObserver {
                 NotificationCenter.default.post(name: NSNotification.Name("RunAct"), object: nil)
             }))
         }
-        if self.project.projectConfig.schemeKind == .app {
-            barButtons.append(UIBarButtonItem(image: UIImage(systemName: "archivebox.fill"), primaryAction: UIAction { [weak self] _ in
-                guard let self = self else { return }
-                buildProjectWithArgumentUI(targetViewController: self, project: self.project, buildType: .InstallPackagedApp)
-            }))
-        }
+        barButtons.append(UIBarButtonItem(image: UIImage(systemName: "archivebox.fill"), primaryAction: UIAction { [weak self] _ in
+            guard let self = self else { return }
+            buildProjectWithArgumentUI(targetViewController: self, project: self.project, buildType: .InstallPackagedApp)
+        }))
         barButtons.append(UIBarButtonItem(image: UIImage(systemName: "exclamationmark.triangle.fill"), primaryAction: UIAction { [weak self] _ in
             guard let self = self else { return }
             let loggerView = UINavigationController(rootViewController: UIDebugViewController(project: self.project))

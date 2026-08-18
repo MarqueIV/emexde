@@ -343,8 +343,13 @@ class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
                 executablePathCallback(path)
             }
         } else {
-            macho_after_sign(self.project.machoURL.path, self.project.entitlementsConfig.entitlement)
-            try self.package()
+            if(self.project.projectConfig.signMachOWithNyxianEntitlements)
+            {
+                macho_after_sign(self.project.machoURL.path, self.project.entitlementsConfig.entitlement)
+            }
+            if self.project.projectConfig.schemeKind == .app {
+                try self.package()
+            }
         }
     }
     
@@ -459,7 +464,11 @@ func buildProjectWithArgumentUI(targetViewController: UIViewController,
                         loggerView.modalPresentationStyle = .formSheet
                         targetViewController.present(loggerView, animated: true)
                     } else if buildType == .InstallPackagedApp {
-                        share(url: project.packageURL, remove: true)
+                        if project.projectConfig.schemeKind == .app {
+                            share(url: project.packageURL, remove: true)
+                        } else {
+                            share(url: project.machoURL, remove: true)
+                        }
                     }
                     
                     completion(result, fastPath)
