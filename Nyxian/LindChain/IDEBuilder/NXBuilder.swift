@@ -51,37 +51,16 @@ class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         
         self.dependencyScanner = MDKDependencyScanner(arguments: self.project.projectConfig.compilerFlags)
         
-        guard let swiftFiles = LDEFilesFinder(self.project.url.path, ["swift"], ["Resources","Config"]),
-              let codeFiles = LDEFilesFinder(self.project.url.path, ["c","cpp","m","mm"], ["Resources","Config"]) else {
-            self.database.addMessage(message: "A fatal error has happened finding code files.", severity: .error)
+        let phaseEngine: NXPhaseEngine
+        do {
+            phaseEngine = try NXPhaseEngine(project: self.project)
+        } catch {
+            self.database.addMessage(message: error.localizedDescription, severity: .error)
             self.database.saveDatabase(toPath: project.cacheURL.appendingPathComponent("debug.json").path)
             return nil
         }
         
-        var driverFlags: [String] = []
-        driverFlags.append(contentsOf: swiftFiles)
-        driverFlags.append(contentsOf: codeFiles)
-        driverFlags.append("-o")
-        driverFlags.append(self.project.machoURL.path)
-        
-        let phaseEngine: MDKPhaseEngine
-        if swiftFiles.isEmpty && codeFiles.isEmpty {
-            self.database.addMessage(message: "Nothing to build. No code files were found, please create a code file.", severity: .error)
-            self.database.saveDatabase(toPath: project.cacheURL.appendingPathComponent("debug.json").path)
-            return nil
-        } else if !swiftFiles.isEmpty {
-            driverFlags.append(contentsOf: self.project.projectConfig.swiftFlags)
-            driverFlags.append("-module-name")
-            driverFlags.append(NXMakeContentCodeFriendly(self.project.projectConfig.displayName))
-            
-            phaseEngine = MDKPhaseEngine(swiftFlags: driverFlags, withOtherClangFlags: self.project.projectConfig.compilerFlags, withOtherLinkerFlags: self.project.projectConfig.linkerFlags)
-        } else {
-            driverFlags.append(contentsOf: self.project.projectConfig.compilerFlags)
-            
-            phaseEngine = MDKPhaseEngine(clangFlags: driverFlags, withOtherLinkerFlags: self.project.projectConfig.linkerFlags)
-        }
-        
-        self.argsString = driverFlags.joined(separator: " ")
+        self.argsString = self.project.projectConfig.swiftFlags.joined(separator: " ") + self.project.projectConfig.compilerFlags.joined(separator: " ")
         
         // Check if the args string matches up
         if self.incrementalBuild,
@@ -171,8 +150,6 @@ class NXBuilder: NSObject, MDKDriverDelegate, MDKPhaseRunnerDelegate {
         guard let osVersionNeeded: MDKOSVersion = MDKOSVersion(versionString: project.projectConfig.deploymentTarget) else {
             throw NSError(domain: "com.cr4zy.nyxian.builder.headsup", code: 1, userInfo: [NSLocalizedDescriptionKey:"Target \"\(self.project.projectConfig.displayName ?? "Unknown") (\(self.project.projectConfig.bundleid ?? "Unknown"))\" cannot be build, host version cannot be compared. Version \(project.projectConfig.deploymentTarget!) is not valid."])
         }
-        
-        
         
         // Nyxian requirement check
         let minimumOSVersion: MDKOSVersion = MDKOSVersion(versionString: NXOSVersion.NXOSVersionSupportedBuildVersions.first)!
