@@ -238,6 +238,19 @@ static inline void ksurface_kinit_kproc(void)
     }
     klog_log("ksurface:kinit:kproc", "allocated kernel process @ %p", kproc);
     
+#if KSURFACE_EMIT_KERNEL_TASK
+    /* setting up properties */
+    proc_setpid(kproc, 0);
+    proc_setppid(kproc, 0);
+    proc_setsid(kproc, 0);
+    strlcpy(kproc->bsd.kp_proc.p_comm, "kernel_task", MAXCOMLEN);
+#else
+    /* setting up properties */
+    pid_t pid = getpid();
+    proc_setpid(kproc, pid);
+    proc_setppid(kproc, PID_LAUNCHD);   /* this is done, because when debugging it has a other ppid */
+    proc_setsid(kproc, pid);
+    
     /* writing executable path */
     uint32_t bufsize = PATH_MAX;
     if(_NSGetExecutablePath(kproc->nyx.executable_path, &bufsize) > 0)
@@ -258,12 +271,8 @@ static inline void ksurface_kinit_kproc(void)
         environment_panic("failed to aquire task name of kernel it self");
     }
     kproc->task = task;
+#endif /* KSURFACE_EMIT_KERNEL_TASK */
     
-    /* setting up properties */
-    pid_t pid = getpid();
-    proc_setpid(kproc, pid);
-    proc_setppid(kproc, PID_LAUNCHD);   /* this is done, because when debugging it has a other ppid */
-    proc_setsid(kproc, pid);
     proc_setentitlements(kproc, PEEntitlementKernel);
     proc_setmaxentitlements(kproc, PEEntitlementKernel);
     
