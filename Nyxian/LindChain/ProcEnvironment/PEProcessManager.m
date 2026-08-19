@@ -63,7 +63,7 @@
       withKernelSurfaceProcess:(ksurface_proc_t*)proc
 {    
     /* creating a process */
-    PEProcess *process = [[PEProcess alloc] initWithItems:items withKernelSurfaceProcess:proc withSession:nil];
+    PEProcess *process = [[PEProcess alloc] initWithItems:items withKernelSurfaceProcess:proc];
     if(process == nil)
     {
         return -1;
@@ -95,43 +95,22 @@
         proc = kernel_proc_;
     }
     
-    NXWindowSessionApplication *session = nil;
     PEProcess *existingProcess = [self processForBundleIdentifier:bundleIdentifier];
-    
     if(existingProcess != nil)
     {
-        NXWindowSession *windowSession = [[NXWindowServer shared] windowSessionForIdentifier:existingProcess.wid];
-        if(windowSession != nil)
+        NXWindowSession *windowSession = [[NXWindowServer shared] windowSessionForBundleIdentifier:existingProcess.bundleIdentifier];
+        if(windowSession != nil && windowSession.window != nil && !doRestartIfRunning)
         {
-            if(doRestartIfRunning)
+            
+            if(UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone)
             {
-                if(UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad)
-                {
-                    if([windowSession isKindOfClass:[NXWindowSessionApplication class]])
-                    {
-                        [((NXWindowSessionApplication*) windowSession) prepareForInject];
-                        session = (NXWindowSessionApplication*)windowSession;
-                    }
-                }
-                
-                [existingProcess terminate];
-            }
-            else if(windowSession.window != nil)
-            {
-                if(UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPhone)
-                {
-                    [[NXWindowServer shared] activateWindowForIdentifier:windowSession.windowIdentifier animated:true withCompletion:nil];
-                }
-                else
-                {
-                    [windowSession.window focusWindow];
-                }
-                return existingProcess.pid;
+                [[NXWindowServer shared] activateWindowForIdentifier:windowSession.windowIdentifier animated:true withCompletion:nil];
             }
             else
             {
-                [existingProcess terminate];
+                [windowSession.window focusWindow];
             }
+            return existingProcess.pid;
         }
         else
         {
@@ -162,7 +141,7 @@
         @"PEWorkingDirectory": [applicationObject.containerPath stringByAppendingPathComponent:@"/Documents"]
     }];
     
-    PEProcess *process = [[PEProcess alloc] initWithItems:mutableItems withKernelSurfaceProcess:proc withSession:session];
+    PEProcess *process = [[PEProcess alloc] initWithItems:mutableItems withKernelSurfaceProcess:proc];
     if(process == nil)
     {
         return -1;
