@@ -90,11 +90,6 @@
                  withKernelSurfaceProcess:(ksurface_proc_t*)proc
                        doRestartIfRunning:(BOOL)doRestartIfRunning
 {
-    if(proc == NULL)
-    {
-        proc = kernel_proc_;
-    }
-    
     PEProcess *existingProcess = [self processForBundleIdentifier:bundleIdentifier];
     if(existingProcess != nil)
     {
@@ -141,7 +136,7 @@
         @"PEWorkingDirectory": [applicationObject.containerPath stringByAppendingPathComponent:@"/Documents"]
     }];
     
-    PEProcess *process = [[PEProcess alloc] initWithItems:mutableItems withKernelSurfaceProcess:proc];
+    PEProcess *process = [[PEProcess alloc] initWithItems:mutableItems withKernelSurfaceProcess:proc ?: kernel_proc_];
     if(process == nil)
     {
         return -1;

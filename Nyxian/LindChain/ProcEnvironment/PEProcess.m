@@ -96,8 +96,9 @@
             return nil;
         }
         
-        ksurface_proc_t *child = proc_fork(proc ?: kernel_proc_, self.pid, [self.executablePath UTF8String]);
-        if(child == NULL)
+        ksurface_proc_t *child = NULL;
+        kern_return_t kr = proc_fork_plus_exec(proc ?: kernel_proc_, &child, self.pid, [self.executablePath UTF8String]);
+        if(kr != KERN_SUCCESS)
         {
             [self terminate];
             proctil(kProctilActionUnlock);
