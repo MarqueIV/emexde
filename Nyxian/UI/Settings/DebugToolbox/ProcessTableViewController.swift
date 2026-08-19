@@ -23,7 +23,9 @@
 
 import UIKit
 
-class DebugToolboxViewController: UIThemedTableViewController {
+class ProcessTableViewController: UIThemedTableViewController {
+    var allProcesses: [PESurfaceProcDescriptor] = PESurfaceStatic.allProcesses
+    
     init() {
         super.init(style: .insetGrouped)
     }
@@ -34,11 +36,11 @@ class DebugToolboxViewController: UIThemedTableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.title = "Debug"
+        self.title = "Process Table"
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 3
+        return self.allProcesses.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -46,16 +48,8 @@ class DebugToolboxViewController: UIThemedTableViewController {
         cell.accessoryType = .disclosureIndicator
 
         switch indexPath.row {
-        case 0:
-            cell.textLabel?.text = "Kernel Log"
-            break
-        case 1:
-            cell.textLabel?.text = "Process Table"
-            break
-        case 2:
-            cell.textLabel?.text = "TTY Table"
-            break
         default:
+            cell.textLabel?.text = "\(self.allProcesses[indexPath.row].rawProc, default: "0x0")"
             break
         }
 
@@ -64,26 +58,6 @@ class DebugToolboxViewController: UIThemedTableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        navigateToController(for: indexPath.row, animated: true)
-    }
-
-    private func navigateToController(for index: Int, animated: Bool) {
-        guard let viewController: UIViewController = {
-            switch index {
-            case 0:
-                return KernelLogViewController()
-            case 1:
-                return ProcessTableViewController()
-            default:
-                return nil
-            }
-        }() else { return }
-
-        navigationController?.pushViewController(viewController, animated: animated)
-    }
-    
-    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
-        return "Rawrrr"
     }
 }
 
