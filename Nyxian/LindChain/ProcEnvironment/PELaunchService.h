@@ -24,19 +24,8 @@
 
 #import <Foundation/Foundation.h>
 #import <LindChain/ProcEnvironment/PEProcess.h>
-#import <os/lock.h>
 
-@interface PELaunchService : NSObject <PEProcessObserver> {
-    os_unfair_lock _lock;
-    PEProcess *_process;
-    NSXPCListenerEndpoint *_endpoint;
-    NSDictionary *_dictionary;
-    
-    /* properties for async access */
-    NSString *_executablePath;
-    NSString *_serviceIdentifier;
-    BOOL _autoRestart;
-}
+@interface PELaunchService : NSObject <PEProcessObserver>
 
 @property (nonatomic,readonly,getter=getProcess) PEProcess *process;
 @property (nonatomic,readonly,getter=getExecutablePath) NSString *executablePath;

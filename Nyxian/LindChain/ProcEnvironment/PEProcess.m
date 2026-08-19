@@ -44,16 +44,16 @@
      withKernelSurfaceProcess:(ksurface_proc_t*)proc
                   withSession:(NXWindowSessionApplication*)session
 {
+    if(proctil(kProctilActionCount) != KERN_SUCCESS)
+    {
+        return nil;
+    }
+    
     self = [super init];
     if(self)
     {
         _observers = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality capacity:0];
         _lock = OS_UNFAIR_LOCK_INIT;
-        
-        if(proctil(kProctilActionCount) != KERN_SUCCESS)
-        {
-            return nil;
-        }
         
         if(proctil(kProctilActionLock) != KERN_SUCCESS)
         {

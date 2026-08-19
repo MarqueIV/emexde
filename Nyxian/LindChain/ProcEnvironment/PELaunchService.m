@@ -21,8 +21,19 @@
 
 #import <LindChain/ProcEnvironment/PELaunchService.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
+#import <os/lock.h>
 
-@implementation PELaunchService
+@implementation PELaunchService {
+    os_unfair_lock _lock;
+    PEProcess *_process;
+    NSXPCListenerEndpoint *_endpoint;
+    NSDictionary *_dictionary;
+    
+    /* properties for async access */
+    NSString *_executablePath;
+    NSString *_serviceIdentifier;
+    BOOL _autoRestart;
+}
 
 + (instancetype)launchServiceWithPlistPath:(NSString*)plistPath
 {
