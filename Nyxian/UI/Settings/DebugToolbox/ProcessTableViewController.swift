@@ -40,18 +40,61 @@ class ProcessViewController: UIThemedTableViewController {
         self.title = "\(self.process.rawProc, default: "0x0")"
     }
     
+    override func numberOfSections(in tableView: UITableView) -> Int {
+        return 3
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
+        switch section {
+            case 0:
+                return 2
+            case 1:
+                return 6
+            case 2:
+                return 1
+            default:
+                return 0
+        }
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
 
-        switch indexPath.row {
+        switch indexPath.section {
         case 0:
-            cell.textLabel?.text = "PID: \(self.process.pid)"
+            switch indexPath.row {
+            case 0:
+                cell.textLabel?.text = "PID: \(self.process.pid)"
+            case 1:
+                cell.textLabel?.text = "PPID: \(self.process.ppid)"
+            default:
+                break
+            }
         case 1:
-            cell.textLabel?.text = "PPID: \(self.process.ppid)"
+            switch indexPath.row {
+            case 0:
+                cell.textLabel?.text = "EUID: \(self.process.euid)"
+            case 1:
+                cell.textLabel?.text = "RUID: \(self.process.ruid)"
+            case 2:
+                cell.textLabel?.text = "SVUID: \(self.process.svuid)"
+            case 3:
+                cell.textLabel?.text = "EGID: \(self.process.egid)"
+            case 4:
+                cell.textLabel?.text = "RGID: \(self.process.rgid)"
+            case 5:
+                cell.textLabel?.text = "SVGID: \(self.process.svgid)"
+            default:
+                break
+            }
+        case 2:
+            switch indexPath.row {
+            case 0:
+                let hexString = String(format: "0x%016llx", self.process.entitlement.rawValue)
+                cell.textLabel?.text = "Entitlements: \(hexString)"
+            default:
+                break
+            }
         default:
             break
         }

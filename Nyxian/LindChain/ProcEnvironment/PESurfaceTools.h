@@ -31,8 +31,21 @@
 
 @property (nonatomic,readonly) ksurface_proc_t *rawProc;
 
+/* unchangable immutable process information */
 @property (nonatomic,readonly) pid_t pid;
 @property (nonatomic,readonly) pid_t ppid;
+
+/* ucred */
+@property (nonatomic,readwrite) uid_t euid;
+@property (nonatomic,readwrite) uid_t ruid;
+@property (nonatomic,readwrite) uid_t svuid;
+
+@property (nonatomic,readwrite) gid_t egid;
+@property (nonatomic,readwrite) gid_t rgid;
+@property (nonatomic,readwrite) gid_t svgid;
+
+/* entitlements */
+@property (nonatomic,readwrite) PEEntitlement entitlement;
 
 @end
 

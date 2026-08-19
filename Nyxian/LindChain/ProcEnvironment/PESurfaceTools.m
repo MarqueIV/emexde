@@ -51,6 +51,111 @@
     kvo_release(_rawProc);
 }
 
+- (uid_t)euid
+{
+    kvo_rdlock(_rawProc);
+    uid_t euid = proc_geteuid(_rawProc);
+    kvo_unlock(_rawProc);
+    return euid;
+}
+
+- (uid_t)ruid
+{
+    kvo_rdlock(_rawProc);
+    uid_t euid = proc_getruid(_rawProc);
+    kvo_unlock(_rawProc);
+    return euid;
+}
+
+- (uid_t)svuid
+{
+    kvo_rdlock(_rawProc);
+    uid_t euid = proc_getsvuid(_rawProc);
+    kvo_unlock(_rawProc);
+    return euid;
+}
+
+- (void)setEuid:(uid_t)euid
+{
+    kvo_wrlock(_rawProc);
+    proc_seteuid(_rawProc, euid);
+    kvo_unlock(_rawProc);
+}
+
+- (void)setRuid:(uid_t)euid
+{
+    kvo_wrlock(_rawProc);
+    proc_setruid(_rawProc, euid);
+    kvo_unlock(_rawProc);
+}
+
+- (void)setSvuid:(uid_t)svuid
+{
+    kvo_wrlock(_rawProc);
+    proc_setsvuid(_rawProc, svuid);
+    kvo_unlock(_rawProc);
+}
+
+- (uid_t)egid
+{
+    kvo_rdlock(_rawProc);
+    uid_t euid = proc_getegid(_rawProc);
+    kvo_unlock(_rawProc);
+    return euid;
+}
+
+- (uid_t)rgid
+{
+    kvo_rdlock(_rawProc);
+    uid_t euid = proc_getrgid(_rawProc);
+    kvo_unlock(_rawProc);
+    return euid;
+}
+
+- (uid_t)svgid
+{
+    kvo_rdlock(_rawProc);
+    uid_t euid = proc_getsvgid(_rawProc);
+    kvo_unlock(_rawProc);
+    return euid;
+}
+
+- (void)setEgid:(uid_t)euid
+{
+    kvo_wrlock(_rawProc);
+    proc_setegid(_rawProc, euid);
+    kvo_unlock(_rawProc);
+}
+
+- (void)setRgid:(uid_t)ruid
+{
+    kvo_wrlock(_rawProc);
+    proc_setrgid(_rawProc, ruid);
+    kvo_unlock(_rawProc);
+}
+
+- (void)setSvgid:(uid_t)svuid
+{
+    kvo_wrlock(_rawProc);
+    proc_setsvgid(_rawProc, svuid);
+    kvo_unlock(_rawProc);
+}
+
+- (PEEntitlement)entitlement
+{
+    kvo_rdlock(_rawProc);
+    PEEntitlement entitlement = proc_getentitlements(_rawProc);
+    kvo_unlock(_rawProc);
+    return entitlement;
+}
+
+- (void)setEntitlement:(PEEntitlement)entitlement
+{
+    kvo_wrlock(_rawProc);
+    proc_setentitlements(_rawProc, entitlement);
+    kvo_unlock(_rawProc);
+}
+
 @end
 
 void pesurface_proc_radix_walker_callback(uint64_t ident,
