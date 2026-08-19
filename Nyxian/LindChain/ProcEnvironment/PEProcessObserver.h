@@ -19,20 +19,18 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef NXWINDOWSESSIONTERMINAL_H
-#define NXWINDOWSESSIONTERMINAL_H
+#ifndef PRPROCESSOBSERVER_H
+#define PRPROCESSOBSERVER_H
 
-#import <LindChain/WindowServer/Window/NXWindowSession.h>
-#import <LindChain/ProcEnvironment/PEProcess.h>
+#import <Foundation/Foundation.h>
 
-@interface NXWindowSessionTerminal : NXWindowSession <PEProcessObserver>
+@class PEProcess;
 
-@property (nonatomic,strong) NSString *utilityPath;
+@protocol PEProcessObserver <NSObject>
 
-@property (nonatomic,weak) PEProcess *process;
-
-- (instancetype)initWithUtilityPath:(NSString*)utilityPath;
+@optional
+- (void)process:(PEProcess*)process didExitWithWait4Code:(int)code;
 
 @end
 
-#endif /* NXWINDOWSESSIONTERMINAL_H */
+#endif /* PRPROCESSOBSERVER_H */

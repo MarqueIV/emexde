@@ -85,13 +85,7 @@
     }
     
     /* now assign handlers */
-    if(self.shouldAutorestart)
-    {
-        __weak typeof(self) weakSelf = self;
-        [_process setExitingCallback:^{
-            [weakSelf ignition];
-        }];
-    }
+    [_process addObserver:self];
     
     os_unfair_lock_unlock(&_lock);
 }
@@ -128,6 +122,14 @@
 - (void)dealloc
 {
     [_process sendSignal:SIGKILL];
+}
+
+- (void)process:(PEProcess *)process didExitWithWait4Code:(int)code
+{
+    if(self.shouldAutorestart)
+    {
+        [self ignition];
+    }
 }
 
 @end

@@ -26,7 +26,7 @@
 #import <LindChain/ProcEnvironment/PEProcess.h>
 #import <os/lock.h>
 
-@interface PELaunchService : NSObject {
+@interface PELaunchService : NSObject <PEProcessObserver> {
     os_unfair_lock _lock;
     PEProcess *_process;
     NSXPCListenerEndpoint *_endpoint;
