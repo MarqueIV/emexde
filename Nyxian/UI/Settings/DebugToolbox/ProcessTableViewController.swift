@@ -23,6 +23,47 @@
 
 import UIKit
 
+class ProcessViewController: UIThemedTableViewController {
+    let process: PESurfaceProcDescriptor
+    
+    init(process: PESurfaceProcDescriptor) {
+        self.process = process
+        super.init(style: .insetGrouped)
+    }
+    
+    @MainActor required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self.title = "\(self.process.rawProc, default: "0x0")"
+    }
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 2
+    }
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+
+        switch indexPath.row {
+        case 0:
+            cell.textLabel?.text = "PID: \(self.process.pid)"
+        case 1:
+            cell.textLabel?.text = "PPID: \(self.process.ppid)"
+        default:
+            break
+        }
+
+        return cell
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
 class ProcessTableViewController: UIThemedTableViewController {
     var allProcesses: [PESurfaceProcDescriptor] = PESurfaceStatic.allProcesses
     
@@ -58,6 +99,7 @@ class ProcessTableViewController: UIThemedTableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        navigationController?.pushViewController(ProcessViewController(process: self.allProcesses[indexPath.row]), animated: true)
     }
 }
 

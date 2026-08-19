@@ -29,7 +29,10 @@
 
 @interface PESurfaceProcDescriptor : NSObject
 
-@property (nonatomic) ksurface_proc_t *rawProc;
+@property (nonatomic,readonly) ksurface_proc_t *rawProc;
+
+@property (nonatomic,readonly) pid_t pid;
+@property (nonatomic,readonly) pid_t ppid;
 
 @end
 

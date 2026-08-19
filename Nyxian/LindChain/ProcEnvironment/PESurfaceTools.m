@@ -31,9 +31,24 @@
     self = [super init];
     if(self)
     {
+        if(!kvo_retain(proc))
+        {
+            return nil;
+        }
+        
         _rawProc = proc;
+        
+        kvo_rdlock(proc);
+        _pid = proc_getpid(proc);
+        _ppid = proc_getppid(proc);
+        kvo_unlock(proc);
     }
     return self;
+}
+
+- (void)dealloc
+{
+    kvo_release(_rawProc);
 }
 
 @end
