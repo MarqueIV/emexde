@@ -148,4 +148,10 @@ struct ksurface_proc {
     } nyx;
 };
 
+typedef enum: uint32_t {
+    kProcEventTypeKill =        1ull << 6,
+    kProcEventTypeWait4 =       1ull << 7,
+    kProcEventTypeWaitTask =    1ull << 8,
+} ProcEventType;
+
 #endif /* PROC_DEF_H */

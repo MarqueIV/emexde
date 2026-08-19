@@ -61,7 +61,7 @@ bool wait4_proc_event_handler(kvobject_event_type_t type,
     
     switch(type)
     {
-        case kvObjEventCustom0: /* state change happened */
+        case kProcEventTypeWait4:   /* state change happened */
             
             /* looking if state change already happened */
             if((((payload->options & WSTOPPED) == WSTOPPED) && WIFSTOPPED(child->nyx.p_status)) ||
@@ -230,7 +230,7 @@ DEFINE_SYSCALL_HANDLER(wait4)
     payload->waitonpid = pid;
     
     /* register event */
-    kern_return_t ksr = kvo_event_register(sys_proc_, kvObjEventCustom0, wait4_proc_event_handler, payload, NULL);
+    kern_return_t ksr = kvo_event_register(sys_proc_, kProcEventTypeWait4, wait4_proc_event_handler, payload, NULL);
     if(ksr != KERN_SUCCESS)
     {
         mach_port_deallocate(mach_task_self(), sys_task_);  /* drop the reference, created prior */

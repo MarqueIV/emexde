@@ -389,7 +389,7 @@ kern_return_t proc_zombify(ksurface_proc_t *proc)
     kern_return_t ksr = proc_parent_for_proc(proc, &parent);
     if(ksr == KERN_SUCCESS)
     {
-        kvo_event_trigger(parent, kvObjEventCustom0, (uintptr_t)proc);
+        kvo_event_trigger(parent, kProcEventTypeWait4, (uintptr_t)proc);
         
         PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(parent)];
         if(process != nil)
@@ -419,7 +419,7 @@ kern_return_t proc_state_change(ksurface_proc_t *proc,
     proc->nyx.p_status = status;
     pthread_mutex_unlock(&(parent->children.mutex));
     
-    kvo_event_trigger(parent, kvObjEventCustom0, (uintptr_t)proc);
+    kvo_event_trigger(parent, kProcEventTypeWait4, (uintptr_t)proc);
     
     PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(parent)];
     kvo_release(parent);
