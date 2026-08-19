@@ -19,9 +19,9 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-import UIKit
-
 #if DEBUG
+
+import UIKit
 
 class DebugToolboxViewController: UIThemedTableViewController {
     init() {
@@ -38,7 +38,7 @@ class DebugToolboxViewController: UIThemedTableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
+        return 4
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -48,6 +48,12 @@ class DebugToolboxViewController: UIThemedTableViewController {
         switch indexPath.row {
         case 0:
             cell.textLabel?.text = "Kernel Log"
+            break
+        case 1:
+            cell.textLabel?.text = "Process Table"
+            break
+        case 2:
+            cell.textLabel?.text = "TTY Table"
             break
         default:
             break
