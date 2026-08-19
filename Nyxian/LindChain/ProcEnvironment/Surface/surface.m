@@ -264,10 +264,11 @@ static inline void ksurface_kinit_kproc(void)
 #endif /* KSURFACE_EMIT_KERNEL_TASK */
     
     /* otherwise a child in the tree can see us as a other pid */
+    kern_return_t kr;
 #if !KSURFACE_EMIT_KERNEL_TASK && !KSURFACE_EMIT_LAUNCHD
     /* kernel shall only expose its task name */
     task_t task;
-    kern_return_t kr = task_get_special_port(mach_task_self(), TASK_NAME_PORT, &task);
+    kr = task_get_special_port(mach_task_self(), TASK_NAME_PORT, &task);
     if(kr != KERN_SUCCESS)
     {
         /* shall never happen */
@@ -277,21 +278,22 @@ static inline void ksurface_kinit_kproc(void)
 #endif /* !KSURFACE_EMIT_KERNEL_TASK && !KSURFACE_EMIT_LAUNCHD */
     
     kproc->bsd.kp_proc.p_flag = P_SYSTEM | P_LP64;
-    proc_setentitlements(kproc, PEEntitlementKernel);
-    proc_setmaxentitlements(kproc, PEEntitlementKernel);
+    proc_setentitlements(kproc, kPEEntitlementKernel);
+    proc_setmaxentitlements(kproc, kPEEntitlementKernel);
     
     /* storing kernel proc */
     klog_log("ksurface:kinit:kproc", "inserting kernel process");
-    kern_return_t error = proc_insert(kproc);
-    if(error != KERN_SUCCESS)
+    kr = proc_insert(kproc);
+    if(kr != KERN_SUCCESS)
     {
         /* shall never happen */
         environment_panic("failed to insert kernel process");
     }
     
 #if KSURFACE_EMIT_LAUNCHD
-    ksurface_proc_t *launchdproc = proc_fork(kproc, 1, "/sbin/launchd");
-    if(launchdproc == NULL)
+    ksurface_proc_t *launchdproc;
+    kr = proc_fork_plus_exec(kproc, &launchdproc, 1, "/sbin/launchd");
+    if(kr != KERN_SUCCESS)
     {
         /* shall never happen */
         environment_panic("got NULL launchd process");

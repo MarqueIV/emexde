@@ -42,7 +42,7 @@ DEFINE_SYSCALL_HANDLER(pectl_launchservice)
     {
         case kPECTLLaunchServiceGetEndpoint:
         {
-            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), PEEntitlementLaunchServicesGetEndpoint))
+            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), kPEEntitlementLaunchServicesGetEndpoint))
             {
                 sys_return_failure(EPERM);
             }
@@ -96,7 +96,7 @@ DEFINE_SYSCALL_HANDLER(pectl_launchservice)
         {
             sys_need_in_ports(1, MACH_MSG_TYPE_MOVE_SEND);
             
-            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), PEEntitlementLaunchServicesSetEndpoint))
+            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), kPEEntitlementLaunchServicesSetEndpoint))
             {
                 sys_return_failure(EPERM);
             }
@@ -212,7 +212,7 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
              * used to only allow the spawn of binaries which are already signed.
              * all this is done to ensure the user does consent do these things!
              */
-            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_), PEEntitlementProcessSpawn))
+            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_), kPEEntitlementProcessSpawn))
             {
                 sys_return_failure(EPERM);
             }
@@ -276,7 +276,7 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
             sys_return;
         }
         case kPECTLCodeSigningAllEntitlements:
-            return PEEntitlementAll;
+            return kPEEntitlementAll;
         case kPECTLCodeSigningGetEntitlements:
         {
             return proc_getentitlements(sys_proc_snapshot_);
@@ -306,8 +306,8 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
         case kPECTLCodeSigningDropAllEntitlements:
         {
             kvo_wrlock(sys_proc_);
-            proc_setmaxentitlements(sys_proc_, PEEntitlementNone);
-            proc_setentitlements(sys_proc_, PEEntitlementNone);
+            proc_setmaxentitlements(sys_proc_, kPEEntitlementNone);
+            proc_setentitlements(sys_proc_, kPEEntitlementNone);
             kvo_unlock(sys_proc_);
             sys_return;
         }
@@ -365,7 +365,7 @@ DEFINE_SYSCALL_HANDLER(pectl_userspace)
     switch(action)
     {
         case kPECTLUserspaceReboot:
-            if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), PEEntitlementPlatform))
+            if(!entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), kPEEntitlementPlatform))
             {
                 sys_return_failure(EPERM);
             }

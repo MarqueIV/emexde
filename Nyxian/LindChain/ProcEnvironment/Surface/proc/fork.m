@@ -63,7 +63,7 @@ kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
      * will return the entitlements of
      * sayed executable.
      */
-    PEEntitlement entitlement = PEEntitlementNone;
+    PEEntitlement entitlement = kPEEntitlementNone;
     PEEntitlement currentEntitlement = proc_getentitlements(child_new);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
@@ -72,7 +72,7 @@ kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
        [nsPath isEqualToString:@"/usr/libexec/containerd"] ||
        [nsPath isEqualToString:@"/usr/libexec/installd"])
     {
-        entitlement = PEEntitlementSystemDaemon;
+        entitlement = kPEEntitlementSystemDaemon;
     }
     else if([[PEContainer shared] entitlementBlobForExecutableAtPath:nsPath withResult:&resultBlob])
     {
@@ -96,7 +96,7 @@ kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
      * have in case it is non platform and setting
      * currentEntitlement to entitlement.
      */
-    if(!entitlement_got_entitlement(currentMaxEntitlement, PEEntitlementPlatform))
+    if(!entitlement_got_entitlement(currentMaxEntitlement, kPEEntitlementPlatform))
     {
         /*
          * child gets nothing extra, removing
@@ -118,11 +118,11 @@ kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
          * this code here, but iOS doesn't allow JIT so that would make
          * Nyxian and ksurface crash immediately.
          */
-        currentEntitlement = PEEntitlementNone;
+        currentEntitlement = kPEEntitlementNone;
         proc_setmobilecred(child_new);
         proc_setsid(child_new, child_pid);
     }
-    else if(entitlement_got_entitlement(currentEntitlement, PEEntitlementProcessSpawnInheriteEntitlements))
+    else if(entitlement_got_entitlement(currentEntitlement, kPEEntitlementProcessSpawnInheriteEntitlements))
     {
         /*
          * entitlements which shall be stripped regardless
@@ -131,17 +131,17 @@ kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
          * wants to debug they need to spawn the child process
          * or debug a process in the same session.
          */
-        entitlement_strip(currentEntitlement, PEEntitlementPlatform | PEEntitlementPlatformRoot | PEEntitlementTaskForPid | PEEntitlementProcessElevate);
+        entitlement_strip(currentEntitlement, kPEEntitlementPlatform | kPEEntitlementPlatformRoot | kPEEntitlementTaskForPid | kPEEntitlementProcessElevate);
     }
     else
     {
         /* inherites nothing */
-        currentEntitlement = PEEntitlementNone;
+        currentEntitlement = kPEEntitlementNone;
     }
     
     /* checking for special platform root credentials */
-    if(entitlement_got_entitlement(entitlement, PEEntitlementPlatformRoot) &&
-       entitlement_got_entitlement(entitlement, PEEntitlementPlatform))
+    if(entitlement_got_entitlement(entitlement, kPEEntitlementPlatformRoot) &&
+       entitlement_got_entitlement(entitlement, kPEEntitlementPlatform))
     {
         /*
          * child process exeuctable is platform binary and has
