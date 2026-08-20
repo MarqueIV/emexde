@@ -19,24 +19,30 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef HWHKHOOKTHREADCONTEXT_H
-#define HWHKHOOKTHREADCONTEXT_H
+#import "CFRuntime.h"
+#import "HWHKHook.h"
 
-#import <Foundation/Foundation.h>
-#import <MobileDevelopmentKit/MDKCFType.h>
-#import <LindChain/ProcEnvironment/HWHook/HWHKHook.h>
-#import <LindChain/ProcEnvironment/HWHook/HWHookThreadContext.h>
+@implementation HWHKHook
 
-@interface HWHKHookThreadContext : MDKCFType
++ (void)load
+{
+    _CFRuntimeBridgeClasses(HWHookGetTypeID(), "HWHKHook");
+}
 
-+ (instancetype)current;
-+ (instancetype)context;
++ (instancetype)hookWithPointerToSymbol:(void *)symbol
+                  withReplacementSymbol:(void *)replacement
+{
+    return (__bridge_transfer HWHKHook*)HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, symbol, replacement);
+}
 
-- (BOOL)enter;
-- (BOOL)exit;
+- (void*)symbolPtr
+{
+    return HWHookGetSymbolPtr((__bridge HWHookRef)self);
+}
 
-- (BOOL)addHook:(HWHKHook*)hook;
+- (void*)replacementPtr
+{
+    return HWHookGetReplacementPtr((__bridge HWHookRef)self);
+}
 
 @end
-
-#endif /* HWHKHOOKTHREADCONTEXT_H */

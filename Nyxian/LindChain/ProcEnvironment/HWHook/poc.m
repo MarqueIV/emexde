@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LindChain/ProcEnvironment/HWHook/HWHKHookThreadContext.h>
+#include <Frameworks/HWHook/HWHKHookThreadContext.h>
 
 int hook_open(const char *path, int flags, ...)
 {

@@ -19,20 +19,24 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef HWHKHOOK_H
-#define HWHKHOOK_H
+#ifndef HWHKHOOKTHREADCONTEXT_H
+#define HWHKHOOKTHREADCONTEXT_H
 
 #import <Foundation/Foundation.h>
-#import <MobileDevelopmentKit/MDKCFType.h>
-#import <LindChain/ProcEnvironment/HWHook/HWHook.h>
+#import "HWHookThreadContext.h"
+#import "HWHKCFType.h"
+#import "HWHKHook.h"
 
-@interface HWHKHook : MDKCFType
+@interface HWHKHookThreadContext : HWHKCFType
 
-@property (nonatomic,readonly) void *symbolPtr;
-@property (nonatomic,readonly) void *replacementPtr;
++ (instancetype)current;
++ (instancetype)context;
 
-+ (instancetype)hookWithPointerToSymbol:(void*)symbol withReplacementSymbol:(void*)replacement;
+- (BOOL)enter;
+- (BOOL)exit;
+
+- (BOOL)addHook:(HWHKHook*)hook;
 
 @end
 
-#endif /* HWHKHOOK_H */
+#endif /* HWHKHOOKTHREADCONTEXT_H */

@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/Private/CoreFoundation/CFRuntime.h>
-#import <LindChain/ProcEnvironment/HWHook/HWHKHookThreadContext.h>
+#import "CFRuntime.h"
+#import "HWHKHookThreadContext.h"
 
 @implementation HWHKHookThreadContext
 

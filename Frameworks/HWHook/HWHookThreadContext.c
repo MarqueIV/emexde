@@ -19,8 +19,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LindChain/Private/CoreFoundation/CFRuntime.h>
-#include <LindChain/ProcEnvironment/HWHook/HWHookThreadContext.h>
+#include "CFRuntime.h"
+#include "HWHookThreadContext.h"
 #include <pthread.h>
 #include <mach/mach.h>
 
