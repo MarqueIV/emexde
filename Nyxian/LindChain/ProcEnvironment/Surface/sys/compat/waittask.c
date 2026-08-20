@@ -27,7 +27,7 @@ typedef struct waittask_payload {
     recv_buffer_t *buffer;
 } waittask_payload_t;
 
-bool waittask_proc_event_handler(kvobject_event_type_t type,
+bool waittask_proc_event_handler(uint32_t type,
                                  uint64_t val,
                                  kvobject_event_t *event)
 {

@@ -450,7 +450,6 @@ int checkCert(NSData *prov,
     OCSP_request_add0_id(req, cert_id);  // Ownership transferred to request
     cert_id = OCSP_cert_to_id(nullptr, (X509*)cert, issuer);
     unsigned char* der = 0;
-    int len = i2d_OCSP_REQUEST(req, &der);
     
     OPENSSL_free(der);
     if (aia) {
