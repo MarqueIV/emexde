@@ -82,6 +82,7 @@ static int hook_fcntl(int fildes,
     char path[PATH_MAX];
     if(__fcntl(fildes, F_GETPATH, path) != -1)
     {
+        printf("[hook_fcntl:call] (fildes = %d, cmd: %d, param: %p)\n", fildes, cmd, param);
         printf("[hook_fcntl] (ret = %d, path: %s)\n", ret, path);
     }
     
@@ -103,6 +104,7 @@ static void *hook_mmap(void *addr,
     char path[PATH_MAX];
     if(__fcntl(fd, F_GETPATH, path) != -1)
     {
+        printf("[hook_mmap:call] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
         printf("[hook_mmap] (ret = %p, path: %s)\n", ret, path);
     }
     
