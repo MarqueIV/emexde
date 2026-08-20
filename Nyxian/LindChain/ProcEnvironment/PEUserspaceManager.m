@@ -114,7 +114,7 @@
     }
     klog_log(domain, "%@ [ok]", [self class]);
     
-    klog_log(domain, "spinning up userspace launch services");
+    /* spinning up the launch services */
     [[PELaunchServiceManager shared] reloadAllEntries];
     
     /* mark current boot as successful */

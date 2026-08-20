@@ -20,7 +20,6 @@
 */
 
 #import <LindChain/ProcEnvironment/PEProcess.h>
-#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/WindowServer/NXWindowServer.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
@@ -198,7 +197,7 @@
         kern_return_t error = proc_zombify(self.proc);
         if(error != KERN_SUCCESS)
         {
-            klog_log("LDEProcess", "failed to remove pid %d", self.pid);
+            klog_log("PEProcess:processDidExit", "failed to remove pid %d", self.pid);
         }
     }
     
@@ -206,8 +205,6 @@
     [self enumerateObservers:^(id<PEProcessObserver> observer) {
         [observer process:self didExitWithWait4Code:arg1.exitContext.underlyingContext.legacyCode];
     }];
-    
-    [[PEProcessManager shared] unregisterProcessWithProcessIdentifier:self.pid];
 }
 
 - (void)processWillExit:(FBProcess *)arg1
