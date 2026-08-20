@@ -61,49 +61,55 @@
 
 - (void)boot
 {
-    static atomic_flag flag = ATOMIC_FLAG_INIT;
-    assert(!atomic_flag_test_and_set(&flag));
-    
     const char *domain = "PEUserspaceManager:boot";
-    if(PEGetLiveProcessBundle() != NULL && PEExtensionHasGetTaskAllowed())
+    
+    /* boot shall only happen once */
+    static atomic_flag flag = ATOMIC_FLAG_INIT;
+    if(atomic_flag_test_and_set(&flag))
     {
-        klog_log(domain, "spinning up micro kernel");
-        ksurface_kinit();
-        
-        klog_log(domain, "spinning up userspace management subsystems");
-        PEProcessManager *processManager = [PEProcessManager shared];
-        if(processManager == nil)
-        {
-            environment_panic(domain, "PEProcessManager didn't spin up");
-        }
-        else
-        {
-            klog_log(domain, "PEProcessManager [ok]");
-        }
-        
-        PEBootstrapRegistry *bootstrapRegistry = [PEBootstrapRegistry shared];
-        if(bootstrapRegistry == nil)
-        {
-            environment_panic(domain, "PEBootstrapRegistry didn't spin up");
-        }
-        else
-        {
-            klog_log(domain, "PEBootstrapRegistry [ok]");
-        }
-        
-        PELaunchServiceManager *launchServiceManager = [PELaunchServiceManager shared];
-        if(launchServiceManager == nil)
-        {
-            environment_panic(domain, "PELaunchServiceManager didn't spin up");
-        }
-        else
-        {
-            klog_log(domain, "PELaunchServiceManager [ok]");
-        }
-        
-        klog_log(domain, "spinning up userspace launch services");
-        [launchServiceManager reloadAllEntries];
+        environment_panic(domain, "boot called twice");
     }
+    
+    /* extension must be available */
+    if(PEGetLiveProcessBundle() == NULL ||
+       !PEExtensionHasGetTaskAllowed())
+    {
+        klog_log(domain, "Cannot spin up anything, extension is malformed");
+        return;
+    }
+    
+    /* now we can spin up that baby =3 */
+    klog_log(domain, "spinning up micro kernel");
+    ksurface_kinit();
+    
+    /* now the actual userspace */
+    klog_log(domain, "spinning up userspace management subsystems");
+    void (^CheckSubsystem)(id instance, Class class) = ^(id instance, Class class){
+        if(instance != nil)
+        {
+            klog_log(domain, "%@ [ok]", class);
+        }
+        else
+        {
+            environment_panic(domain, "%@ didn't spin up", class);
+        }
+    };
+    
+    Class UserspaceBootChain[] = {
+        [PEProcessManager class],
+        [PEBootstrapRegistry class],
+        [PELaunchServiceManager class],
+    };
+    
+    for(int index = 0; index < sizeof(UserspaceBootChain) / sizeof(Class); index++)
+    {
+        Class class = UserspaceBootChain[index];
+        id instance = [class shared];
+        CheckSubsystem(instance, class);
+    }
+    
+    klog_log(domain, "spinning up userspace launch services");
+    [[PELaunchServiceManager shared] reloadAllEntries];
 }
 
 - (void)rebootUserspaceWithType_nolock:(PEUserspaceRebootType)type

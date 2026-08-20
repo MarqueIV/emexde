@@ -38,7 +38,7 @@ DEFINE_SYSCALL_HANDLER(kill)
     /*
      * checking if the caller process that makes the call is the same process,
      * also checks if the caller process has the entitlement to kill
-     * and checks if the process has permitive over the other process.
+     * and checks if the process has primitive over the other process.
      */
     if(!proc_snapshot_primitive_over_pid_allowed(sys_proc_snapshot_, pid, kPEEntitlementProcessKill, kPEEntitlementNone))
     {

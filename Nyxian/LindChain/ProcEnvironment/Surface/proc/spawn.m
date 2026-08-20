@@ -244,7 +244,8 @@ kern_return_t proc_kill(ksurface_proc_t *child,
     if(proc_getpid(child) == 1)
     {
         kvo_unlock(child);
-        if(sig == SIGKILL)
+        if(sig == SIGKILL ||
+           sig == SIGTERM)
         {
             [[PEUserspaceManager shared] rebootUserspace];
         }
