@@ -30,6 +30,7 @@
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proctil.h>
 #import <MobileDevelopmentKit/MDKThreadPool.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 
 @implementation PEProcess {
     NSHashTable<id<PEProcessObserver>> *_observers;
@@ -67,7 +68,57 @@
         if(PEUserspaceManager.shared.isLaunchServiceManagerStable)
         {
             applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:self.executablePath];
+            if(applicationObject && applicationObject.bundlePath && applicationObject.containerPath)
+            {
+                bool wasLocallySigned;
+                PEEntitlement entitlement = entitlement_get_path([applicationObject.executablePath UTF8String], &wasLocallySigned);
+                if(!wasLocallySigned)
+                {
+                    goto continue_assigning;
+                }
+                
+                /* this will override the existing permissions */
+                NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
+                
+                if(entitlement_got_entitlement(entitlement, kPEEntitlementFileRootRW))
+                {
+                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[[NXBootstrap shared] rootfsURL] readOnly:NO]];
+                    goto overwrite_file_permissions;
+                }
+                
+                if(entitlement_got_entitlement(entitlement, kPEEntitlementFileBundleRW))
+                {
+                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:NO]];
+                }
+                else
+                {
+                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES]];
+                }
+                
+                if(entitlement_got_entitlement(entitlement, kPEEntitlementFileContainerRW))
+                {
+                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:NO]];
+                }
+                else
+                {
+                    [filePermissions addObjectsFromArray:@[
+                        [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:YES],
+                        [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readOnly:NO],
+                        [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readOnly:NO],
+                        [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readOnly:NO],
+                    ]];
+                }
+                
+            overwrite_file_permissions:
+                {
+                    NSMutableDictionary *mutableItems = [items mutableCopy];
+                    [mutableItems setObject:filePermissions forKey:@"PEFilePermissions"];
+                    items = mutableItems;
+                }
+            }
         }
+    continue_assigning:
         self.bundleIdentifier = applicationObject ? applicationObject.bundleIdentifier : nil;
         self.displayName = applicationObject ? applicationObject.localizedName : [self.executablePath lastPathComponent];
         
