@@ -53,7 +53,7 @@
 - (void)waitTillDone;
 - (BOOL)isNewest;
 
-+ (NSData * _Nullable)issueSandboxFileExtension:(NSURL * _Nullable)url readOnly:(BOOL)readOnly;
++ (NSData * _Nullable)issueSandboxFileExtensionForURL:(NSURL * _Nullable)url readWrite:(BOOL)readOnly;
 
 @end
 

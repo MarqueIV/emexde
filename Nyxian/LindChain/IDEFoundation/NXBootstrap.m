@@ -409,8 +409,8 @@ static BOOL urlIsContainedIn(NSURL *candidate,
     return self.version == NXBOOTSTRAP_NEWEST_VERSION;
 }
 
-+ (NSData*)issueSandboxFileExtension:(NSURL*)url
-                            readOnly:(BOOL)readOnly
++ (NSData*)issueSandboxFileExtensionForURL:(NSURL*)url
+                                 readWrite:(BOOL)readWrite
 {
     if(!urlIsContainedIn(url, [[NXBootstrap shared] rootfsURL]))
     {
@@ -418,7 +418,7 @@ static BOOL urlIsContainedIn(NSURL *candidate,
     }
     
     extern char *sandbox_extension_issue_file(const char *ext_class, const char *path, uint32_t flags);
-    const char *cls = readOnly ? "com.apple.app-sandbox.read" : "com.apple.app-sandbox.read-write"; /* MARK: note that com.apple.app-sandbox.executable is the only class that doesn't work */
+    const char *cls = readWrite ? "com.apple.app-sandbox.read-write" : "com.apple.app-sandbox.read";    /* MARK: note that com.apple.sandbox.executable is the only class that doesn't work */
     char *tok = sandbox_extension_issue_file(cls, url.path.UTF8String, 0);
     if(tok == NULL)
     {

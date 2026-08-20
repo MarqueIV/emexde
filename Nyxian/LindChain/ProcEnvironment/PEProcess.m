@@ -82,13 +82,13 @@
                 
                 if(entitlement_got_entitlement(entitlement, kPEEntitlementFileRootRW))
                 {
-                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[[NXBootstrap shared] rootfsURL] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtensionForURL:[[NXBootstrap shared] rootfsURL] readWrite:YES]];
                     goto overwrite_file_permissions;
                 }
                 
                 /*if(entitlement_got_entitlement(entitlement, kPEEntitlementFileBundleRW))
                 {*/
-                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readWrite:YES]];
                 /*}
                 else
                 {
@@ -98,15 +98,15 @@
                 
                 if(entitlement_got_entitlement(entitlement, kPEEntitlementFileContainerRW))
                 {
-                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readWrite:YES]];
                 }
                 else
                 {
                     [filePermissions addObjectsFromArray:@[
-                        [NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:YES],
-                        [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readOnly:NO],
-                        [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readOnly:NO],
-                        [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readOnly:NO],
+                        [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readWrite:NO],
+                        [NXBootstrap issueSandboxFileExtensionForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readWrite:YES],
+                        [NXBootstrap issueSandboxFileExtensionForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readWrite:YES],
+                        [NXBootstrap issueSandboxFileExtensionForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readWrite:YES],
                     ]];
                 }
                 
