@@ -110,6 +110,11 @@ typedef CF_OPTIONS(uint64_t, PEEntitlement) {
     /*! Security feature for daemons to start as root process, requires `PEEntitlementPlatform` to be present */
     kPEEntitlementPlatformRoot                      = 1ull << 21,
     
+    /*! New experimentation flags   */
+    kPEEntitlementFileRootRW                        = 1ull << 22,
+    kPEEntitlementFileBundleRW                      = 1ull << 23,
+    kPEEntitlementFileContainerRW                   = 1ull << 24,
+    
     kPEEntitlementSandboxedApplication              = kPEEntitlementNone,
     kPEEntitlementUserApplication                   = kPEEntitlementGetTaskAllowed | kPEEntitlementProcessSpawnInheriteEntitlements | kPEEntitlementProcessEnumeration | kPEEntitlementProcessKill | kPEEntitlementProcessSpawnSignedOnly | kPEEntitlementLaunchServicesGetEndpoint | kPEEntitlementDyldHideLiveProcess,
     kPEEntitlementSystemApplication                 = kPEEntitlementTaskForPid | kPEEntitlementProcessEnumeration | kPEEntitlementProcessKill | kPEEntitlementProcessSpawn | kPEEntitlementLaunchServicesManager | kPEEntitlementDyldHideLiveProcess,
