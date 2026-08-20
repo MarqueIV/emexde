@@ -44,6 +44,9 @@
 #define KSURFACE_SYS_UCRED_ENABLED  1
 #define KSURFACE_SYS_PROC_ENABLED   1
 
+/* security features */
+#define KSURFACE_SEC_SANITIZE_ENTITLEMENTS  1   /* strips unecessary entitlements at launch time */
+
 /* additional nyxian syscalls for now */
 #define SYS_proctb      750     /* MARK: noop */
 #define SYS_getent      751     /* getting processes entitlements */

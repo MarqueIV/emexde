@@ -292,7 +292,7 @@ static inline void ksurface_kinit_kproc(void)
     
 #if KSURFACE_EMIT_LAUNCHD
     ksurface_proc_t *launchdproc;
-    kr = proc_fork_plus_exec(kproc, &launchdproc, 1, "/sbin/launchd");
+    kr = proc_spawn(kproc, &launchdproc, 1, "/sbin/launchd");
     if(kr != KERN_SUCCESS)
     {
         /* shall never happen */

@@ -28,6 +28,7 @@
 #include <OpenSSL/ec.h>
 #include <OpenSSL/pem.h>
 #include <assert.h>
+#include <ksurface_config.h>
 
 kern_return_t entitlement_token_mach_gen(ksurface_ent_blob_t *blob,
                                          const char *cdhash,
@@ -177,6 +178,7 @@ bool entitlement_set_path(const char *path,
 
 PEEntitlement entitlement_sanitize(PEEntitlement base)
 {
+#if KSURFACE_SEC_SANITIZE_ENTITLEMENTS
     base &= kPEEntitlementAll;  /* making sure no unused bit fields are enabled */
     
     /* can it see a other process ever? */
@@ -185,8 +187,7 @@ PEEntitlement entitlement_sanitize(PEEntitlement base)
        !entitlement_got_entitlement(base, kPEEntitlementProcessEnumeration))
     {
         /* you cannot do much when you cannot see the target */
-        entitlement_strip(base, kPEEntitlementTaskForPid);
-        entitlement_strip(base, kPEEntitlementProcessKill);
+        entitlement_strip(base, kPEEntitlementTaskForPid | kPEEntitlementProcessKill);
     }
     
     /* can it spawn a other process ever? */
@@ -203,6 +204,6 @@ PEEntitlement entitlement_sanitize(PEEntitlement base)
         /* you cannot be platformized as root user if you're not platform */
         entitlement_strip(base, kPEEntitlementPlatformRoot);
     }
-    
+#endif /* KSURFACE_SEC_SANITIZE_ENTITLEMENTS */
     return base;
 }
