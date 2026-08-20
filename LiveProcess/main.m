@@ -149,22 +149,25 @@ int LiveProcessMain(int argc, char *argv[])
     gid_t serviceGroupIdentifier = [appInfo[@"PEGroupIdentifier"] unsignedIntValue];
     
     /* for the start */
-    NSData *rootBookmark = appInfo[@"PERoot"];
-    Boolean isStale = false;
-    CFErrorRef error = NULL;
-    CFURLRef rootURL = CFURLCreateByResolvingBookmarkData(kCFAllocatorDefault, (__bridge CFDataRef)rootBookmark, (1UL << 10), NULL, NULL, &isStale, &error);
-    if(rootURL == NULL)
+    NSDictionary *filePermissions = appInfo[@"PEFilePermissions"];
+    for(NSData *filePermission in filePermissions)
     {
-        CFRelease(error);
-        return 1;
-    }
-    
-    /* start root access */
-    Boolean success = CFURLStartAccessingSecurityScopedResource(rootURL);
-    CFRelease(rootURL);
-    if(!success)
-    {
-        return 1;
+        Boolean isStale = false;
+        CFErrorRef error = NULL;
+        CFURLRef url = CFURLCreateByResolvingBookmarkData(kCFAllocatorDefault, (__bridge CFDataRef)filePermission, (1UL << 10), NULL, NULL, &isStale, &error);
+        if(url == NULL)
+        {
+            CFRelease(error);
+            return 1;
+        }
+        
+        /* start root access */
+        Boolean success = CFURLStartAccessingSecurityScopedResource(url);
+        CFRelease(url);
+        if(!success)
+        {
+            return 1;
+        }
     }
     
     /* destroy the payload once in for all */
