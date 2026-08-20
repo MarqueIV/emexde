@@ -191,7 +191,6 @@
         
 - (void)processDidExit:(FBProcess *)arg1
 {
-    [arg1 removeObserver:self];
     if(_proc != NULL)
     {
         /* yep writing official wait4 code~~ */
@@ -201,7 +200,6 @@
         {
             klog_log("PEProcess:processDidExit", "failed to remove pid %d", _pid);
         }
-        kvo_release(_proc);
     }
     
     /* notify observers */
@@ -248,6 +246,10 @@
 
 - (void)dealloc
 {
+    if(_proc != NULL)
+    {
+        kvo_release(_proc);
+    }
     proctil(kProctilActionUncount);
 #if DEBUG
     NSLog(@"deallocated %@", self);

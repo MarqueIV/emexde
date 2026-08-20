@@ -398,20 +398,22 @@ DEFINE_SYSCALL_HANDLER(pectl_misceleanous)
 
 DEFINE_SYSCALL_HANDLER(pectl)
 {
-    PECTLCategory category = (PECTLCategory)args[0];
-    switch(category)
-    {
-        case kPECTLCategoryLaunchService:
-            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_launchservice);
-        case kPECTLCategoryCodeSigning:
-            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_codesigning);
-        case kPECTLCategoryUserInterface:
-            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_userinterface);
-        case kPECTLCategoryUserspace:
-            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_userspace);
-        case kPECTLCategoryMisceleanous:
-            return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_misceleanous);
-        default:
-            sys_return_failure(ENOSYS);
+    @autoreleasepool {
+        PECTLCategory category = (PECTLCategory)args[0];
+        switch(category)
+        {
+            case kPECTLCategoryLaunchService:
+                return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_launchservice);
+            case kPECTLCategoryCodeSigning:
+                return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_codesigning);
+            case kPECTLCategoryUserInterface:
+                return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_userinterface);
+            case kPECTLCategoryUserspace:
+                return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_userspace);
+            case kPECTLCategoryMisceleanous:
+                return SYSCALL_HANDLER_REDIRECT_TO_HANDLER(pectl_misceleanous);
+            default:
+                sys_return_failure(ENOSYS);
+        }
     }
 }

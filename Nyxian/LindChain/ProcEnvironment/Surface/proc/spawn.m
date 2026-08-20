@@ -247,7 +247,9 @@ kern_return_t proc_kill(ksurface_proc_t *child,
         if(sig == SIGKILL ||
            sig == SIGTERM)
         {
-            [[PEUserspaceManager shared] rebootUserspace];
+            @autoreleasepool {
+                [[PEUserspaceManager shared] rebootUserspace];
+            }
         }
         return KERN_SUCCESS;
     }
