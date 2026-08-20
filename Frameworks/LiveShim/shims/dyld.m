@@ -110,7 +110,7 @@ static void *hook_mmap(void *addr,
 
 static HWHKHookThreadContext *HWHKHookDlopenThreadContext(void)
 {
-    static HWHKHookThreadContext *context = NULL;
+    static HWHKHookThreadContext *context = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         char *dyldBase = (char *)_alt_dyld_get_all_image_infos()->dyldImageLoadAddress;
@@ -119,11 +119,21 @@ static HWHKHookThreadContext *HWHKHookDlopenThreadContext(void)
         
         HWHKHook *fcntlHook = [HWHKHook hookWithPointerToSymbol:orig_dyld_fcntl withReplacementSymbol:hook_fcntl];
         HWHKHook *mmapHook = [HWHKHook hookWithPointerToSymbol:orig_dyld_mmap withReplacementSymbol:hook_mmap];
+        if(fcntlHook == nil || mmapHook == nil)
+        {
+            return;
+        }
         fcntlHook.disableContextHooksInFrame = YES;
         mmapHook.disableContextHooksInFrame = YES;
+        
         context = [HWHKHookThreadContext context];
-        [context addHook:fcntlHook];
-        [context addHook:mmapHook];
+        if(context == nil ||
+           ![context addHook:fcntlHook] ||
+           ![context addHook:mmapHook])
+        {
+            context = nil;
+            return;
+        }
     });
     return context;
 }
@@ -138,7 +148,7 @@ void *hook_dlopen(const char *path, int mode)
     printf("[hook_dlopen] %s\n", path);
     
     HWHKHookThreadContext *context = HWHKHookDlopenThreadContext();
-    [context enter];
+    [context enter];    /* is nil safe, so it shall work anyways */
     void *ret = darwin_dlopen(path, mode);
     [context exit];
     return ret;
