@@ -132,14 +132,18 @@
         signal = SIGSTOP;
     }
     
-    if(signal == SIGSTOP)
-    {
-        _isSuspended = YES;
-    }
-    else if(signal == SIGCONT)
-    {
-        _isSuspended = NO;
-    }
+    /*
+     * TODO: this is okay, but we need to use a boolean flag
+     *
+     * if(signal == SIGSTOP)
+     * {
+     *     _isSuspended = YES;
+     * }
+     * else if(signal == SIGCONT)
+     * {
+     *     _isSuspended = NO;
+     * }
+     */
     
     [self.process.nsExtension _kill:signal];
     
@@ -187,7 +191,7 @@
         
 - (void)processDidExit:(FBProcess *)arg1
 {
-    
+    [arg1 removeObserver:self];
     if(_proc != NULL)
     {
         /* yep writing official wait4 code~~ */
@@ -195,7 +199,7 @@
         kern_return_t error = proc_zombify(_proc);
         if(error != KERN_SUCCESS)
         {
-            klog_log("PEProcess:processDidExit", "failed to remove pid %d", self.pid);
+            klog_log("PEProcess:processDidExit", "failed to remove pid %d", _pid);
         }
         kvo_release(_proc);
     }
@@ -221,8 +225,8 @@
     os_unfair_lock_lock(&_lock);
     NSArray<id<PEProcessObserver>> *snapshot = _observers.allObjects;
     os_unfair_lock_unlock(&_lock);
-
-    for (id<PEProcessObserver> observer in snapshot) {
+    for(id<PEProcessObserver> observer in snapshot)
+    {
         block(observer);
     }
 }
