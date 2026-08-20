@@ -44,7 +44,11 @@ static void __HWHookThreadContextFinalize(CFTypeRef cf)
     HWHookThreadContextRef context = (HWHookThreadContextRef)cf;
     if(context->entered)
     {
-        //HWHookThreadContextExit(context);
+        HWHookThreadContextExit(context);
+    }
+    if(context->symbols != NULL)
+    {
+        CFRelease(context->symbols);
     }
 }
 
@@ -77,6 +81,7 @@ typedef struct {
     arm_debug_state64_t state;
     
     bool post_debug_set;
+    bool teardown;
     
     mach_port_t exceptionPort;
     
@@ -157,6 +162,63 @@ void *__HWHookThreadContextServer(void *ctxp)
             printf("[+] set normal thread state\n");
             
             ctx->post_debug_set = true;
+        }
+        else if(ctx->teardown)
+        {
+            printf("[*] target thread requested teardown\n");
+            
+            /* clear hooks */
+            arm_debug_state64_t clear;
+            memset(&clear, 0, sizeof(clear));
+            kern_return_t kr = thread_set_state(request.v.thread.name, ARM_DEBUG_STATE64, (thread_state_t)&clear, ARM_DEBUG_STATE64_COUNT);
+            if(kr != KERN_SUCCESS)
+            {
+                printf("[!] failed to clear debug state\n");
+            }
+            
+            arm_thread_state64_t state;
+            mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
+            kr = thread_get_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, &count);
+            if(kr == KERN_SUCCESS)
+            {
+                state.__pc += 4;
+                thread_set_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
+            }
+            
+            if(ctx->old_count > 0)
+            {
+                for(mach_msg_type_number_t i = 0; i < ctx->old_count; i++)
+                {
+                    thread_set_exception_ports(request.v.thread.name, ctx->old_masks[i], ctx->old_ports[i], ctx->old_behaviors[i], ctx->old_flavors[i]);
+                }
+            }
+            else
+            {
+                thread_set_exception_ports(request.v.thread.name, EXC_MASK_BREAKPOINT, MACH_PORT_NULL, EXCEPTION_DEFAULT, THREAD_STATE_NONE);
+            }
+            
+            mach_port_mod_refs(mach_task_self(), ctx->exceptionPort, MACH_PORT_RIGHT_RECEIVE, -1);
+            mach_port_deallocate(mach_task_self(), ctx->exceptionPort);
+            
+            __Reply__exception_raise_t reply;
+            memset(&reply, 0, sizeof(reply));
+            reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request.v.Head.msgh_bits), 0);
+            reply.Head.msgh_id = request.v.Head.msgh_id + 100;
+            reply.Head.msgh_local_port = MACH_PORT_NULL;
+            reply.Head.msgh_remote_port = request.v.Head.msgh_remote_port;
+            reply.Head.msgh_size = sizeof(reply);
+            reply.NDR = NDR_record;
+            reply.RetCode = KERN_SUCCESS;
+            mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+            mach_msg_destroy(&(request.v.Head));
+            if(mr != KERN_SUCCESS)
+            {
+                printf("[!] failed to send reply to the kernel\n");
+                return NULL;
+            }
+            printf("[+] reply send to the kernel\n");
+            printf("[+] baiii :3\n");
+            return NULL;
         }
         else
         {
@@ -332,17 +394,23 @@ out_recover_thread_exception_ports:
 
 Boolean HWHookThreadContextExit(HWHookThreadContextRef context)
 {
-    if(context == NULL)
+    if(context == NULL || tCurrentContext != context)
     {
         return false;
     }
-    return false;
+    
+    /* safe cause this thread is not causing a exception in here xD */
+    tCurrentServerContext.teardown = true;
+    __asm__ volatile ("brk #2" ::: "memory");
+    tCurrentContext = NULL;
+    
+    return true;
 }
 
 Boolean HWHookThreadContextAppendHook(HWHookThreadContextRef context,
                                       HWHookRef hook)
 {
-    if(context == NULL)
+    if(context == NULL || HWHookThreadContextGetCurrent() == context)
     {
         return false;
     }
@@ -350,53 +418,3 @@ Boolean HWHookThreadContextAppendHook(HWHookThreadContextRef context,
     CFArrayAppendValue(context->symbols, hook);
     return true;
 }
-
-int test_open(const char *path, int flags, ...)
-{
-    printf("hello, from test hook!\n");
-    return 1;
-    
-    mode_t mode = 0;
-    if(flags & O_CREAT)
-    {
-        va_list ap;
-        va_start(ap, flags);
-        mode = (mode_t)va_arg(ap, int);
-        va_end(ap);
-    }
-    
-    HWHookThreadContextExit(HWHookThreadContextGetCurrent());
-    return open(path, flags, mode);
-}
-
-#if 0
-__attribute__((constructor))
-void test_hwhook(void)
-{
-    HWHookRef hook = HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, open, test_open);
-    if(hook == NULL)
-    {
-        exit(1);
-    }
-    
-    HWHookThreadContextRef context = HWHookThreadContextCreate(kCFAllocatorDefault);
-    if(context == NULL)
-    {
-        CFRelease(hook);
-        exit(1);
-    }
-    
-    if(!HWHookThreadContextAppendHook(context, hook) ||
-       !HWHookThreadContextEnter(context))
-    {
-        CFRelease(hook);
-        CFRelease(context);
-        exit(1);
-    }
-    
-    int ret = open("test.txt", O_CREAT | O_RDWR, 0777);
-    printf("hook returned: %d\n", ret);
-    
-    exit(0);
-}
-#endif /* 0 */
