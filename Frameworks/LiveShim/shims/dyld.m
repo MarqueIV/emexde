@@ -24,14 +24,11 @@
 #import <mach-o/dyld_images.h>
 
 /* skidded from LiveContainer */
-extern void* __mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
-extern int __fcntl(int fildes, int cmd, void* param);
-
 static const char mmapSig[] = {0xB0, 0x18, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fcntlSig[] = {0x90, 0x0B, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 
 static int (*orig_dyld_fcntl)(int fildes, int cmd, void *param);
-static int (*orig_dyld_mmap)(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
+static void *(*orig_dyld_mmap)(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
 
 static struct dyld_all_image_infos *_alt_dyld_get_all_image_infos(void)
 {
@@ -76,9 +73,9 @@ static int hook_fcntl(int fildes,
                       void *param)
 {
     printf("[hook_fcntl:args] (fildes = %d, cmd: %d, param: %p)\n", fildes, cmd, param);
-    int ret = __fcntl(fildes, cmd, param);
+    int ret = orig_dyld_fcntl(fildes, cmd, param);
     char path[PATH_MAX];
-    if(__fcntl(fildes, F_GETPATH, path) != -1)
+    if(orig_dyld_fcntl(fildes, F_GETPATH, path) != -1)
     {
         printf("[hook_fcntl:return] (ret = %d, path: %s)\n", ret, path);
     }
@@ -98,9 +95,9 @@ static void *hook_mmap(void *addr,
                        off_t offset)
 {
     printf("[hook_mmap:args] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
-    void *ret = __mmap(addr, len, prot, flags, fd, offset);
+    void *ret = orig_dyld_mmap(addr, len, prot, flags, fd, offset);
     char path[PATH_MAX];
-    if(__fcntl(fd, F_GETPATH, path) != -1)
+    if(orig_dyld_fcntl(fd, F_GETPATH, path) != -1)
     {
         printf("[hook_mmap:return] (ret = %p, path: %s)\n", ret, path);
     }
