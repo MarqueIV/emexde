@@ -39,6 +39,10 @@ CF_EXPORT HWHookThreadContextRef HWHookThreadContextCreate(CFAllocatorRef alloca
 CF_EXPORT Boolean HWHookThreadContextEnter(HWHookThreadContextRef context);
 CF_EXPORT Boolean HWHookThreadContextExit(HWHookThreadContextRef context);
 
+/* disables while being entered */
+CF_EXPORT Boolean HWHookThreadContextEnableHooks(HWHookThreadContextRef context);
+CF_EXPORT Boolean HWHookThreadContextDisableHooks(HWHookThreadContextRef context);
+
 /*
  * you have to exit the context to call the original
  * other than that this hooks symbols until the context

@@ -75,18 +75,16 @@ static int hook_fcntl(int fildes,
                       void *param)
 {
     HWHKHookThreadContext *context = [HWHKHookThreadContext context];
-    [context exit];
+    [context disableHooks];
     
+    int ret = __fcntl(fildes, cmd, param);
     char path[PATH_MAX];
     if(__fcntl(fildes, F_GETPATH, path) != -1)
     {
-        printf("[hook_fcntl] path: %s\n", path);
+        printf("[hook_fcntl] (ret = %d, path: %s)\n", ret, path);
     }
     
-    int ret = __fcntl(fildes, cmd, param);
-    printf("[hook_fcntl] ret = %d\n", ret);
-    
-    [context enter];
+    [context enableHooks];
     return ret;
 }
 
@@ -111,7 +109,7 @@ INTERPOSE(hook_dlopen, dlopen);
 void *hook_dlopen(const char *path, int mode)
 {
     void *(*darwin_dlopen)(const char *path, int mode) = _interpose_dlopen.replacee;
-    printf("[dlopen_hook] %s\n", path);
+    printf("[hook_dlopen] %s\n", path);
     
     HWHKHookThreadContext *context = HWHKHookDlopenThreadContext();
     [context enter];

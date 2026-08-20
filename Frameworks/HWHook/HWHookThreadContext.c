@@ -324,13 +324,7 @@ Boolean HWHookThreadContextEnter(HWHookThreadContextRef context)
     }
     
     /* creating detached HWHookThreadContextServer */
-    mach_msg_type_number_t old_stateCnt = ARM_DEBUG_STATE64_COUNT;
-    kr = thread_get_state(currentThread, ARM_DEBUG_STATE64, (thread_state_t)&tCurrentServerContext.state, &old_stateCnt);
-    if(kr != KERN_SUCCESS)
-    {
-        goto out_stop_server;
-    }
-    
+    memset(&tCurrentServerContext.state, 0, sizeof(tCurrentServerContext.state));
     CFIndex hookCount = CFArrayGetCount(context->symbols);
     for(CFIndex index = 0; index < hookCount; index++)
     {
@@ -383,6 +377,41 @@ Boolean HWHookThreadContextExit(HWHookThreadContextRef context)
     tCurrentServerContext.teardown = true;
     __asm__ volatile ("brk #2" ::: "memory");
     tCurrentContext = NULL;
+    
+    return true;
+}
+
+Boolean HWHookThreadContextEnableHooks(HWHookThreadContextRef context)
+{
+    if(context == NULL || tCurrentContext != context)
+    {
+        return false;
+    }
+    
+    memset(&tCurrentServerContext.state, 0, sizeof(tCurrentServerContext.state));
+    CFIndex hookCount = CFArrayGetCount(context->symbols);
+    for(CFIndex index = 0; index < hookCount; index++)
+    {
+        HWHookRef hook = (HWHookRef)CFArrayGetValueAtIndex(context->symbols, index);
+        tCurrentServerContext.state.__bvr[index] = (uint64_t)HWHookGetSymbolPtr(hook);
+        tCurrentServerContext.state.__bcr[index] = (0xFu << 5) | (0b10u << 1) | 1u;
+    }
+    tCurrentServerContext.post_debug_set = false;
+    __asm__ volatile ("brk #2" ::: "memory");
+    
+    return true;
+}
+
+Boolean HWHookThreadContextDisableHooks(HWHookThreadContextRef context)
+{
+    if(context == NULL || tCurrentContext != context)
+    {
+        return false;
+    }
+    
+    memset(&tCurrentServerContext.state, 0, sizeof(tCurrentServerContext.state));
+    tCurrentServerContext.post_debug_set = false;
+    __asm__ volatile ("brk #2" ::: "memory");
     
     return true;
 }
