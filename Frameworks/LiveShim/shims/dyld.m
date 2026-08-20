@@ -29,9 +29,9 @@ extern int __fcntl(int fildes, int cmd, void* param);
 
 static const char mmapSig[] = {0xB0, 0x18, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fcntlSig[] = {0x90, 0x0B, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
-static const char syscallSig[] = {0x01, 0x10, 0x00, 0xD4};
+
 static int (*orig_dyld_fcntl)(int fildes, int cmd, void *param);
-static int (*orig_dyld_mmap)(int fildes, int cmd, void *param);
+static int (*orig_dyld_mmap)(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
 
 static struct dyld_all_image_infos *_alt_dyld_get_all_image_infos(void)
 {
