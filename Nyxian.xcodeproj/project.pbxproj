@@ -347,7 +347,7 @@
 				LiveShim/LiveShimSyscall.h,
 				LiveShim/mach/fileport.h,
 				LiveShim/mach/fileport.m,
-				LiveShim/shims/dyld.m,
+				LiveShim/shims/dyld.c,
 				LiveShim/shims/io.c,
 				LiveShim/shims/ioctl.c,
 				LiveShim/shims/shim.h,
