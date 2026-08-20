@@ -75,9 +75,6 @@ static int hook_fcntl(int fildes,
                       int cmd,
                       void *param)
 {
-    HWHKHookThreadContext *context = [HWHKHookThreadContext context];
-    [context disableHooks];
-    
     printf("[hook_fcntl:args] (fildes = %d, cmd: %d, param: %p)\n", fildes, cmd, param);
     int ret = __fcntl(fildes, cmd, param);
     char path[PATH_MAX];
@@ -90,7 +87,6 @@ static int hook_fcntl(int fildes,
         printf("[hook_fcntl:return] (ret = %d)\n", ret);
     }
     
-    [context enableHooks];
     return ret;
 }
 
@@ -101,9 +97,6 @@ static void *hook_mmap(void *addr,
                        int fd,
                        off_t offset)
 {
-    HWHKHookThreadContext *context = [HWHKHookThreadContext context];
-    [context disableHooks];
-    
     printf("[hook_mmap:args] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
     void *ret = __mmap(addr, len, prot, flags, fd, offset);
     char path[PATH_MAX];
@@ -115,8 +108,6 @@ static void *hook_mmap(void *addr,
     {
         printf("[hook_mmap:return] (ret = %p)\n", ret);
     }
-    
-    [context enableHooks];
     return ret;
 }
 
@@ -129,9 +120,13 @@ static HWHKHookThreadContext *HWHKHookDlopenThreadContext(void)
         orig_dyld_fcntl = (void *)searchDyldFunction(dyldBase, (char*)fcntlSig, sizeof(fcntlSig));
         orig_dyld_mmap = (void *)searchDyldFunction(dyldBase, (char*)mmapSig, sizeof(mmapSig));
         
+        HWHKHook *fcntlHook = [HWHKHook hookWithPointerToSymbol:orig_dyld_fcntl withReplacementSymbol:hook_fcntl];
+        HWHKHook *mmapHook = [HWHKHook hookWithPointerToSymbol:orig_dyld_mmap withReplacementSymbol:hook_mmap];
+        fcntlHook.disableContextHooksInFrame = YES;
+        mmapHook.disableContextHooksInFrame = YES;
         context = [HWHKHookThreadContext context];
-        [context addHook:[HWHKHook hookWithPointerToSymbol:orig_dyld_fcntl withReplacementSymbol:hook_fcntl]];
-        [context addHook:[HWHKHook hookWithPointerToSymbol:orig_dyld_mmap withReplacementSymbol:hook_mmap]];
+        [context addHook:fcntlHook];
+        [context addHook:mmapHook];
     });
     return context;
 }

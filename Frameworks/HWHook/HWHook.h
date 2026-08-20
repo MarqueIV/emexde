@@ -33,4 +33,7 @@ CF_EXPORT HWHookRef HWHookCreateWithPointerToSymbol(CFAllocatorRef allocator, vo
 CF_EXPORT void *HWHookGetSymbolPtr(HWHookRef hook);
 CF_EXPORT void *HWHookGetReplacementPtr(HWHookRef hook);
 
+CF_EXPORT Boolean HWHookGetDisableContextHooksInFrame(HWHookRef hook);
+CF_EXPORT void HWHookSetDisableContextHooksInFrame(HWHookRef hook, Boolean disableContextHooksInFrame);
+
 #endif /* HWHOOK_H */
