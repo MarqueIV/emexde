@@ -28,6 +28,7 @@
 #import <os/lock.h>
 #import <LindChain/WindowServer/Session/NXWindowSessionApplication.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 
 @implementation PEProcessManager {
     NSMutableDictionary<NSNumber*,PEProcess*> *_processes;
@@ -134,7 +135,11 @@
             @"CFFIXED_USER_HOME": applicationObject.containerPath,
             @"TMPDIR": [applicationObject.containerPath stringByAppendingPathComponent:@"/Tmp"]
         },
-        @"PEWorkingDirectory": [applicationObject.containerPath stringByAppendingPathComponent:@"/Documents"]
+        @"PEWorkingDirectory": [applicationObject.containerPath stringByAppendingPathComponent:@"/Documents"],
+        @"PEFilePermissions": @[
+            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath]],
+            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath]],
+        ]
     }];
     
     PEProcess *process = [[PEProcess alloc] initWithItems:mutableItems withKernelSurfaceProcess:proc ?: kernel_proc_];
