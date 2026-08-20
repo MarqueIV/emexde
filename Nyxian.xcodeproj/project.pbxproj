@@ -234,7 +234,6 @@
 				LindChain/ProcEnvironment/Shims/attrstrnilfix.m,
 				LindChain/ProcEnvironment/Shims/environment.m,
 				LindChain/ProcEnvironment/Shims/libproc.m,
-				LindChain/ProcEnvironment/Shims/panic.m,
 				LindChain/ProcEnvironment/Shims/posix_spawn.m,
 				LindChain/ProcEnvironment/Shims/proxy.m,
 				LindChain/ProcEnvironment/Shims/README.txt,
