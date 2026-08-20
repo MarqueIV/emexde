@@ -87,6 +87,7 @@ static int hook_fcntl(int fildes,
     return ret;
 }
 
+static const char *mmap_sandbox_map_exec_allowed_path = NULL;
 static void *hook_mmap(void *addr,
                        size_t len,
                        int prot,
@@ -96,14 +97,35 @@ static void *hook_mmap(void *addr,
 {
     printf("[hook_mmap:args] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
     void *ret = orig_dyld_mmap(addr, len, prot, flags, fd, offset);
-    char path[PATH_MAX];
-    if(orig_dyld_fcntl(fd, F_GETPATH, path) != -1)
+    if(ret != MAP_FAILED || !(prot & PROT_EXEC) || fd < 0 || mmap_sandbox_map_exec_allowed_path == NULL)
     {
-        printf("[hook_mmap:return] (ret = %p, path: %s)\n", ret, path);
+        goto log_return;
     }
-    else
+    
+    char filePath[PATH_MAX];
+    if(fcntl(fd, F_GETPATH, filePath) != 0)
     {
-        printf("[hook_mmap:return] (ret = %p)\n", ret);
+        goto log_return;
+    }
+    char newTmpPath[PATH_MAX];
+    /* very smart duy, ima be fair using ASLR as a UUID generator is finally something good you've done */
+    sprintf(newTmpPath, "%s/Documents/%p.dylib", mmap_sandbox_map_exec_allowed_path, addr);
+    rename(filePath, newTmpPath);
+    ret = orig_dyld_mmap(addr, len, prot, flags, fd, offset);
+    rename(newTmpPath, filePath);
+    
+    /* return logging */
+log_return:
+    {
+        char path[PATH_MAX];
+        if(orig_dyld_fcntl(fd, F_GETPATH, path) != -1)
+        {
+            printf("[hook_mmap:return] (ret = %p, path: %s)\n", ret, path);
+        }
+        else
+        {
+            printf("[hook_mmap:return] (ret = %p)\n", ret);
+        }
     }
     return ret;
 }
@@ -152,4 +174,22 @@ void *hook_dlopen(const char *path, int mode)
     void *ret = darwin_dlopen(path, mode);
     [context exit];
     return ret;
+}
+
+__attribute__((constructor))
+void LiveShimDlopenHookInit(void)
+{
+    const char *home = getenv("HOME");
+    if(home == NULL)
+    {
+        return;
+    }
+    
+    char *home_copy = strndup(home, MAXPATHLEN);
+    if(home_copy == NULL)
+    {
+        return;
+    }
+    
+    mmap_sandbox_map_exec_allowed_path = home_copy;
 }
