@@ -26,6 +26,7 @@
 #import <LindChain/ProcEnvironment/Surface/entitlement.h>
 #import <LindChain/ProcEnvironment/Surface/obj/kvobject.h>
 #include <sys/sysctl.h>
+#include <ksurface_config.h>
 
 /// Helper macros
 #define proc_getpid(proc) ((proc)->bsd.kp_proc.p_pid)
@@ -63,7 +64,11 @@
 #define proc_setsid(proc, ssid) (proc)->nyx.sid = ssid
 
 #define proc_setmobilecred(proc) proc_setruid(proc, 501); proc_seteuid(proc, 501); proc_setsvuid(proc, 501); proc_setrgid(proc, 501); proc_setegid(proc, 501); proc_setsvgid(proc, 501)
+#if KSURFACE_SYS_UCRED_ENABLED
 #define proc_setrootcred(proc) proc_setruid(proc, 0); proc_seteuid(proc, 0); proc_setsvuid(proc, 0); proc_setrgid(proc, 0); proc_setegid(proc, 0); proc_setsvgid(proc, 0)
+#else
+#define proc_setrootcred(proc)
+#endif /* KSURFACE_SYS_UCRED_ENABLED */
 
 #define pid_is_launchd(pid) (pid == 1)
 

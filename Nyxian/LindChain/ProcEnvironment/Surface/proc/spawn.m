@@ -26,7 +26,9 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/Surface/proc/remove.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
+#import <LindChain/ProcEnvironment/PEUserspaceManager.h>
 #import <LindChain/Services/containerd/PEContainer.h>
+#include <ksurface_config.h>
 
 kern_return_t proc_spawn(ksurface_proc_t *parent,
                          ksurface_proc_t **child,
@@ -238,6 +240,17 @@ kern_return_t proc_kill(ksurface_proc_t *child,
     
     /* getting the processes high level structure */
     kvo_rdlock(child);  /* locking so we can safely read the pid field */
+#if KSURFACE_EMIT_LAUNCHD
+    if(proc_getpid(child) == 1)
+    {
+        kvo_unlock(child);
+        if(sig == SIGKILL)
+        {
+            [[PEUserspaceManager shared] rebootUserspace];
+        }
+        return KERN_SUCCESS;
+    }
+#endif /* KSURFACE_EMIT_LAUNCHD */
     PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(child)];
     kvo_unlock(child);
     if(!process)

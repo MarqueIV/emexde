@@ -291,18 +291,20 @@ static inline void ksurface_kinit_kproc(void)
     }
     
 #if KSURFACE_EMIT_LAUNCHD
-    ksurface_proc_t *launchdproc;
-    kr = proc_spawn(kproc, &launchdproc, 1, "/sbin/launchd");
+    kr = proc_spawn(kproc, &kproc, 1, "/sbin/launchd");
     if(kr != KERN_SUCCESS)
     {
         /* shall never happen */
         environment_panic("got NULL launchd process");
     }
-    klog_log("ksurface:kinit:kproc", "allocated launchd process @ %p", launchdproc);
-    ksurface->proc_info.kern_proc = launchdproc;
-#else
-    ksurface->proc_info.kern_proc = kproc;
+    
+    /* when there is no kernel task we need to set ppid to 0 */
+#if !KSURFACE_EMIT_KERNEL_TASK
+    proc_setppid(kproc, 0);
+#endif /* !KSURFACE_EMIT_KERNEL_TASK */
+    
 #endif /* KSURFACE_EMIT_LAUNCHD */
+    ksurface->proc_info.kern_proc = kproc;
     
     /* releaing our reference to kernel proc, because we return now and kproc is now held by the radix tree */
     kvo_release(kproc);
