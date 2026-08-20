@@ -78,12 +78,16 @@ static int hook_fcntl(int fildes,
     HWHKHookThreadContext *context = [HWHKHookThreadContext context];
     [context disableHooks];
     
+    printf("[hook_fcntl:args] (fildes = %d, cmd: %d, param: %p)\n", fildes, cmd, param);
     int ret = __fcntl(fildes, cmd, param);
     char path[PATH_MAX];
     if(__fcntl(fildes, F_GETPATH, path) != -1)
     {
-        printf("[hook_fcntl:call] (fildes = %d, cmd: %d, param: %p)\n", fildes, cmd, param);
-        printf("[hook_fcntl] (ret = %d, path: %s)\n", ret, path);
+        printf("[hook_fcntl:return] (ret = %d, path: %s)\n", ret, path);
+    }
+    else
+    {
+        printf("[hook_fcntl:return] (ret = %d)\n", ret);
     }
     
     [context enableHooks];
@@ -100,12 +104,16 @@ static void *hook_mmap(void *addr,
     HWHKHookThreadContext *context = [HWHKHookThreadContext context];
     [context disableHooks];
     
+    printf("[hook_mmap:args] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
     void *ret = __mmap(addr, len, prot, flags, fd, offset);
     char path[PATH_MAX];
     if(__fcntl(fd, F_GETPATH, path) != -1)
     {
-        printf("[hook_mmap:call] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
-        printf("[hook_mmap] (ret = %p, path: %s)\n", ret, path);
+        printf("[hook_mmap:return] (ret = %p, path: %s)\n", ret, path);
+    }
+    else
+    {
+        printf("[hook_mmap:return] (ret = %p)\n", ret);
     }
     
     [context enableHooks];
