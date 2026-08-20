@@ -33,11 +33,17 @@
     os_unfair_lock _lock;
     atomic_flag _bootOnceFlag;
     atomic_bool _bootSuccessful;
+    atomic_bool _launchServiceManagerStable;
 }
+
+@dynamic isBooted;
+@dynamic isLaunchServiceManagerStable;
 
 + (void)load
 {
-    [[PEUserspaceManager shared] boot];
+    dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0), ^{
+        [[PEUserspaceManager shared] boot];
+    });
 }
 
 + (instancetype)shared
@@ -48,6 +54,16 @@
         shared = [[PEUserspaceManager alloc] init];
     });
     return shared;
+}
+
+- (BOOL)isBooted
+{
+    return atomic_load_explicit(&_bootSuccessful, memory_order_acquire);
+}
+
+- (BOOL)isLaunchServiceManagerStable
+{
+    return atomic_load_explicit(&_launchServiceManagerStable, memory_order_acquire);
 }
 
 - (instancetype)init
@@ -64,6 +80,7 @@
         _lock = OS_UNFAIR_LOCK_INIT;
         atomic_flag_clear(&_bootOnceFlag);
         atomic_store_explicit(&_bootSuccessful, false, memory_order_release);
+        atomic_store_explicit(&_launchServiceManagerStable, false, memory_order_release);
         _mode = kPEUserspaceModeDefault;
     }
     return self;
@@ -118,6 +135,7 @@
     [[PELaunchServiceManager shared] reloadAllEntries];
     
     /* mark current boot as successful */
+    atomic_store_explicit(&_launchServiceManagerStable, true, memory_order_release);
     atomic_store_explicit(&_bootSuccessful, true, memory_order_release);
     
     os_unfair_lock_unlock(&_lock);
@@ -328,6 +346,7 @@ first:
         return NO;
     }
     
+    atomic_store_explicit(&_launchServiceManagerStable, false, memory_order_release);
     [[PELaunchServiceManager shared] invalidateAllEntries];
     if(_mode == kPEUserspaceModeDefault)
     {
@@ -341,6 +360,8 @@ first:
     {
         return NO;
     }
+    atomic_store_explicit(&_launchServiceManagerStable, true, memory_order_release);
+    
     return YES;
 }
 

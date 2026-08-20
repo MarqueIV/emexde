@@ -25,7 +25,7 @@
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/ProcEnvironment/PEExtension.h>
-#import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
+#import <LindChain/ProcEnvironment/PEUserspaceManager.h>
 #import <LindChain/ProcEnvironment/PEMachPort.h>
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/Surface/proc/proctil.h>
@@ -64,13 +64,12 @@
             return nil;
         }
         
+        /* assigning potential bundle information */
         LDEApplicationObject *applicationObject = nil;
-        
-        if(PELaunchServiceManager.shared.isBooted)
+        if(PEUserspaceManager.shared.isLaunchServiceManagerStable)
         {
             applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:self.executablePath];
         }
-        
         self.bundleIdentifier = applicationObject ? applicationObject.bundleIdentifier : nil;
         self.displayName = applicationObject ? applicationObject.localizedName : [self.executablePath lastPathComponent];
         
