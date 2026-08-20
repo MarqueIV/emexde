@@ -73,7 +73,7 @@
     static atomic_flag once = ATOMIC_FLAG_INIT;
     if(atomic_flag_test_and_set(&once))
     {
-        environment_panic("PEUserspaceManager:init", "This class may only be initilized once");
+        environment_panic("This class may only be initilized once");
     }
     
     self = [super init];
@@ -95,7 +95,7 @@
     /* boot shall only happen once */
     if(atomic_flag_test_and_set(&_bootOnceFlag))
     {
-        environment_panic(domain, "boot called twice");
+        environment_panic("boot called twice");
     }
     
     os_unfair_lock_lock(&_lock);
@@ -128,7 +128,7 @@
         }
         else
         {
-            environment_panic(domain, "%@ [failed]", class);
+            environment_panic("%@ [failed]", class);
         }
     }
     klog_log(domain, "%@ [ok]", [self class]);
