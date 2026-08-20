@@ -238,17 +238,19 @@ static inline void ksurface_kinit_kproc(void)
     }
     klog_log("ksurface:kinit:kproc", "allocated kernel process @ %p", kproc);
     
+    kern_return_t kr;
 #if KSURFACE_EMIT_KERNEL_TASK
     /* setting up properties */
     proc_setpid(kproc, 0);
     proc_setppid(kproc, 0);
     proc_setsid(kproc, 0);
+    kproc->bsd.kp_proc.p_flag = P_SYSTEM | P_LP64;
     strlcpy(kproc->bsd.kp_proc.p_comm, "kernel_task", MAXCOMLEN);
 #else
     /* setting up properties */
     pid_t pid = getpid();
     proc_setpid(kproc, pid);
-    proc_setppid(kproc, PID_LAUNCHD);   /* this is done, because when debugging it has a other ppid */
+    proc_setppid(kproc, 1); /* this is done, because when debugging it has a other ppid than launchd's pid */
     proc_setsid(kproc, pid);
     
     /* writing executable path */
@@ -261,11 +263,7 @@ static inline void ksurface_kinit_kproc(void)
     const char *name = strrchr(kproc->nyx.executable_path, '/');
     name = name ? name + 1 : kproc->nyx.executable_path;
     strlcpy(kproc->bsd.kp_proc.p_comm, name, MAXCOMLEN);
-#endif /* KSURFACE_EMIT_KERNEL_TASK */
     
-    /* otherwise a child in the tree can see us as a other pid */
-    kern_return_t kr;
-#if !KSURFACE_EMIT_KERNEL_TASK && !KSURFACE_EMIT_LAUNCHD
     /* kernel shall only expose its task name */
     task_t task;
     kr = task_get_special_port(mach_task_self(), TASK_NAME_PORT, &task);
@@ -275,9 +273,8 @@ static inline void ksurface_kinit_kproc(void)
         environment_panic("failed to aquire task name of kernel it self");
     }
     kproc->task = task;
-#endif /* !KSURFACE_EMIT_KERNEL_TASK && !KSURFACE_EMIT_LAUNCHD */
+#endif /* KSURFACE_EMIT_KERNEL_TASK */
     
-    kproc->bsd.kp_proc.p_flag = P_SYSTEM | P_LP64;
     proc_setentitlements(kproc, kPEEntitlementKernel);
     proc_setmaxentitlements(kproc, kPEEntitlementKernel);
     

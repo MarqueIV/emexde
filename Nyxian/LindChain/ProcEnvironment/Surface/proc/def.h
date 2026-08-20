@@ -70,10 +70,6 @@
 #define proc_setrootcred(proc)
 #endif /* KSURFACE_SYS_UCRED_ENABLED */
 
-#define pid_is_launchd(pid) (pid == 1)
-
-#define PID_LAUNCHD 1
-
 #define kernel_proc_ ksurface->proc_info.kern_proc
 
 /// Nyxian process typedefinitions
