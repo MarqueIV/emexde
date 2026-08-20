@@ -86,15 +86,15 @@
                     goto overwrite_file_permissions;
                 }
                 
-                if(entitlement_got_entitlement(entitlement, kPEEntitlementFileBundleRW))
-                {
+                /*if(entitlement_got_entitlement(entitlement, kPEEntitlementFileBundleRW))
+                {*/
                     [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:NO]];
-                }
+                /*}
                 else
                 {
                     [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO]];
                     [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES]];
-                }
+                }*/
                 
                 if(entitlement_got_entitlement(entitlement, kPEEntitlementFileContainerRW))
                 {
