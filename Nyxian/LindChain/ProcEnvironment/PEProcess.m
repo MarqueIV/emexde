@@ -97,7 +97,7 @@
         }
         
         ksurface_proc_t *child = NULL;
-        kern_return_t kr = proc_fork_plus_exec(proc ?: kernel_proc_, &child, self.pid, [self.executablePath UTF8String]);
+        kern_return_t kr = proc_spawn(proc ?: kernel_proc_, &child, self.pid, [self.executablePath UTF8String]);
         if(kr != KERN_SUCCESS)
         {
             [self terminate];

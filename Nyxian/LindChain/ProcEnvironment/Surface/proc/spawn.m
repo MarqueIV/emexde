@@ -20,7 +20,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Surface/proc/fork.h>
+#import <LindChain/ProcEnvironment/Surface/proc/spawn.h>
 #import <LindChain/ProcEnvironment/Surface/proc/insert.h>
 #import <LindChain/ProcEnvironment/Surface/proc/def.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
@@ -28,10 +28,10 @@
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/Services/containerd/PEContainer.h>
 
-kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
-                                  ksurface_proc_t **child,
-                                  pid_t child_pid,
-                                  const char *path)
+kern_return_t proc_spawn(ksurface_proc_t *parent,
+                         ksurface_proc_t **child,
+                         pid_t child_pid,
+                         const char *path)
 {
     assert(parent != NULL && child != NULL && path != NULL);
     
@@ -219,6 +219,37 @@ kern_return_t proc_fork_plus_exec(ksurface_proc_t *parent,
     *child = child_new;
     
     /* child stays retained for the caller */
+    return KERN_SUCCESS;
+}
+
+kern_return_t proc_kill(ksurface_proc_t *child,
+                        int sig)
+{
+    if(child == NULL)
+    {
+        return KERN_INVALID_ADDRESS;
+    }
+    
+    /* only valid signals shall be played with lol */
+    if(sig <= 0 || sig >= NSIG)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    /* getting the processes high level structure */
+    kvo_rdlock(child);  /* locking so we can safely read the pid field */
+    PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(child)];
+    kvo_unlock(child);
+    if(!process)
+    {
+        /*
+         * returns the same value as normal failure to prevent deterministic exploitation,
+         * of process reference counting.
+         */
+        return KERN_NOT_FOUND;
+    }
+    
+    [process sendSignal:sig];
     return KERN_SUCCESS;
 }
 
