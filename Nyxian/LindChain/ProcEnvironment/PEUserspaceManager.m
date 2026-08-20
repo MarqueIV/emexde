@@ -31,6 +31,8 @@
 
 @implementation PEUserspaceManager {
     os_unfair_lock _lock;
+    atomic_flag _bootOnceFlag;
+    atomic_bool _bootSuccessful;
 }
 
 + (void)load
@@ -50,10 +52,18 @@
 
 - (instancetype)init
 {
+    static atomic_flag once = ATOMIC_FLAG_INIT;
+    if(atomic_flag_test_and_set(&once))
+    {
+        environment_panic("PEUserspaceManager:init", "This class may only be initilized once");
+    }
+    
     self = [super init];
     if(self)
     {
         _lock = OS_UNFAIR_LOCK_INIT;
+        atomic_flag_clear(&_bootOnceFlag);
+        atomic_store_explicit(&_bootSuccessful, false, memory_order_release);
         _mode = kPEUserspaceModeDefault;
     }
     return self;
@@ -64,8 +74,7 @@
     const char *domain = "PEUserspaceManager:boot";
     
     /* boot shall only happen once */
-    static atomic_flag flag = ATOMIC_FLAG_INIT;
-    if(atomic_flag_test_and_set(&flag))
+    if(atomic_flag_test_and_set(&_bootOnceFlag))
     {
         environment_panic(domain, "boot called twice");
     }
@@ -108,11 +117,19 @@
     klog_log(domain, "spinning up userspace launch services");
     [[PELaunchServiceManager shared] reloadAllEntries];
     
+    /* mark current boot as successful */
+    atomic_store_explicit(&_bootSuccessful, true, memory_order_release);
+    
     os_unfair_lock_unlock(&_lock);
 }
 
-- (void)rebootUserspaceWithType_nolock:(PEUserspaceRebootType)type
+- (BOOL)rebootUserspaceWithType_nolock:(PEUserspaceRebootType)type
 {
+    if(!atomic_load_explicit(&_bootSuccessful, memory_order_acquire))
+    {
+        return NO;
+    }
+    
     const char *domain = "PEUserspaceManager:reboot";
     
     /* TODO: prevent spawns from happening, deny any new spawns too */
@@ -120,7 +137,7 @@
     if(proctil(kProctilActionLock) != KERN_SUCCESS)
     {
         klog_log(domain, "userspace reboot failed, lock couldn't be claimed");
-        return;
+        return NO;
     }
     
     klog_log(domain, "invalidating all launch service entries in registry");
@@ -148,22 +165,32 @@
     [self reloadDaemons_nolock];
     
     klog_log(domain, "userspace rebooted successfully");
+    return YES;
 }
 
-- (void)rebootUserspaceWithType:(PEUserspaceRebootType)type
+- (BOOL)rebootUserspaceWithType:(PEUserspaceRebootType)type
 {
     os_unfair_lock_lock(&_lock);
-    [self rebootUserspaceWithType_nolock:type];
+    BOOL success = [self rebootUserspaceWithType_nolock:type];
     os_unfair_lock_unlock(&_lock);
+    return success;
 }
 
-- (void)rebootUserspace
+- (BOOL)rebootUserspace
 {
-    [self rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+    os_unfair_lock_lock(&_lock);
+    BOOL success = [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeDefault];
+    os_unfair_lock_unlock(&_lock);
+    return success;
 }
 
 - (BOOL)restore
 {
+    if(!atomic_load_explicit(&_bootSuccessful, memory_order_acquire))
+    {
+        return NO;
+    }
+    
     const char *domain = "PEUserspaceManager:restore";
     
     os_unfair_lock_lock(&_lock);
@@ -294,8 +321,13 @@ first:
     return YES;
 }
 
-- (void)reloadDaemons_nolock
+- (BOOL)reloadDaemons_nolock
 {
+    if(!atomic_load_explicit(&_bootSuccessful, memory_order_acquire))
+    {
+        return NO;
+    }
+    
     [[PELaunchServiceManager shared] invalidateAllEntries];
     if(_mode == kPEUserspaceModeDefault)
     {
@@ -305,17 +337,28 @@ first:
     {
         [[PELaunchServiceManager shared] loadEntryWithFileName:@"org.emexlabs.containerd.plist"];
     }
+    else
+    {
+        return NO;
+    }
+    return YES;
 }
 
-- (void)reloadDaemons
+- (BOOL)reloadDaemons
 {
     os_unfair_lock_lock(&_lock);
-    [self reloadDaemons_nolock];
+    BOOL success = [self reloadDaemons_nolock];
     os_unfair_lock_unlock(&_lock);
+    return success;
 }
 
 - (BOOL)clearApplicationCaches
 {
+    if(!atomic_load_explicit(&_bootSuccessful, memory_order_acquire))
+    {
+        return NO;
+    }
+    
     const char *domain = "PEUserspaceManager:clearApplicationCaches";
     
     os_unfair_lock_lock(&_lock);

@@ -43,11 +43,10 @@ typedef enum: UInt8 {
 
 + (instancetype)shared;
 
-- (void)boot;
-- (void)rebootUserspaceWithType:(PEUserspaceRebootType)type;
-- (void)rebootUserspace;
+- (BOOL)rebootUserspaceWithType:(PEUserspaceRebootType)type;
+- (BOOL)rebootUserspace;
 - (BOOL)restore;
-- (void)reloadDaemons;
+- (BOOL)reloadDaemons;
 - (BOOL)clearApplicationCaches;
 
 @end
