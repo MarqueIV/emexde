@@ -189,16 +189,18 @@
 - (void)processDidExit:(FBProcess *)arg1
 {
     
-    if(self.proc != NULL)
+    if(_proc != NULL)
     {
         /* yep writing official wait4 code~~ */
-        proc_state_change(self.proc, arg1.exitContext.underlyingContext.legacyCode);
-        kern_return_t error = proc_zombify(self.proc);
+        proc_state_change(_proc, arg1.exitContext.underlyingContext.legacyCode);
+        kern_return_t error = proc_zombify(_proc);
         if(error != KERN_SUCCESS)
         {
             klog_log("PEProcess:processDidExit", "failed to remove pid %d", self.pid);
         }
+        kvo_release(_proc);
     }
+    proctil(kProctilActionUncount);
     
     /* notify observers */
     [self enumerateObservers:^(id<PEProcessObserver> observer) {
@@ -252,13 +254,14 @@
     os_unfair_lock_unlock(&_lock);
 }
 
+#if DEBUG
+
 - (void)dealloc
 {
-    if(_proc != NULL)
-    {
-        kvo_release(_proc);
-    }
-    proctil(kProctilActionUncount);
+    /* bug, when killing launchd this doesnt happen */
+    NSLog(@"deallocated %@", self);
 }
+
+#endif /* DEBUG */
 
 @end
