@@ -24,6 +24,7 @@
 #import <mach-o/dyld_images.h>
 
 /* skidded from LiveContainer */
+extern void* __mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
 extern int __fcntl(int fildes, int cmd, void* param);
 
 static const char mmapSig[] = {0xB0, 0x18, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
@@ -88,6 +89,27 @@ static int hook_fcntl(int fildes,
     return ret;
 }
 
+static void *hook_mmap(void *addr,
+                       size_t len,
+                       int prot,
+                       int flags,
+                       int fd,
+                       off_t offset)
+{
+    HWHKHookThreadContext *context = [HWHKHookThreadContext context];
+    [context disableHooks];
+    
+    void *ret = __mmap(addr, len, prot, flags, fd, offset);
+    char path[PATH_MAX];
+    if(__fcntl(fd, F_GETPATH, path) != -1)
+    {
+        printf("[hook_mmap] (ret = %p, path: %s)\n", ret, path);
+    }
+    
+    [context enableHooks];
+    return ret;
+}
+
 static HWHKHookThreadContext *HWHKHookDlopenThreadContext(void)
 {
     static HWHKHookThreadContext *context = NULL;
@@ -96,8 +118,10 @@ static HWHKHookThreadContext *HWHKHookDlopenThreadContext(void)
         char *dyldBase = (char *)_alt_dyld_get_all_image_infos()->dyldImageLoadAddress;
         orig_dyld_fcntl = (void *)searchDyldFunction(dyldBase, (char*)fcntlSig, sizeof(fcntlSig));
         orig_dyld_mmap = (void *)searchDyldFunction(dyldBase, (char*)mmapSig, sizeof(mmapSig));
+        
         context = [HWHKHookThreadContext context];
         [context addHook:[HWHKHook hookWithPointerToSymbol:orig_dyld_fcntl withReplacementSymbol:hook_fcntl]];
+        [context addHook:[HWHKHook hookWithPointerToSymbol:orig_dyld_mmap withReplacementSymbol:hook_mmap]];
     });
     return context;
 }
