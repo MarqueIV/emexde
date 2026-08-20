@@ -409,7 +409,8 @@ static BOOL urlIsContainedIn(NSURL *candidate,
     return self.version == NXBOOTSTRAP_NEWEST_VERSION;
 }
 
-+ (NSData*)issueBookmarkForURL:(NSURL*)url readOnly:(BOOL)readOnly
++ (NSData*)issueSandboxFileExtension:(NSURL*)url
+                            readOnly:(BOOL)readOnly
 {
     if(!urlIsContainedIn(url, [[NXBootstrap shared] rootfsURL]))
     {

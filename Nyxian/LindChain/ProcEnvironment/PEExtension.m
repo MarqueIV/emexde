@@ -144,7 +144,7 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
     if(mutableItems[@"PEFilePermissions"] == nil)
     {
         mutableItems[@"PEFilePermissions"] = @[
-            [NXBootstrap issueBookmarkForURL:[[NXBootstrap shared] rootfsURL] readOnly:NO], /* full rootfs access */
+            [NXBootstrap issueSandboxFileExtension:[[NXBootstrap shared] rootfsURL] readOnly:NO],   /* full rootfs access */
         ];
     }
     NSMutableDictionary *env = [mutableItems[@"PEEnvironment"] mutableCopy];

@@ -138,14 +138,14 @@
         @"PEWorkingDirectory": [applicationObject.containerPath stringByAppendingPathComponent:@"/Documents"],
         @"PEFilePermissions": @[
             /* bundle */
-            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO],
-            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES],
+            [NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO],
+            [NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES],
             
             /* container */
-            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:YES],
-            [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readOnly:NO],
-            [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readOnly:NO],
-            [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readOnly:NO],
+            [NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:YES],
+            [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readOnly:NO],
+            [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readOnly:NO],
+            [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readOnly:NO],
         ]
     }];
     

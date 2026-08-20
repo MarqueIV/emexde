@@ -82,31 +82,31 @@
                 
                 if(entitlement_got_entitlement(entitlement, kPEEntitlementFileRootRW))
                 {
-                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[[NXBootstrap shared] rootfsURL] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[[NXBootstrap shared] rootfsURL] readOnly:NO]];
                     goto overwrite_file_permissions;
                 }
                 
                 if(entitlement_got_entitlement(entitlement, kPEEntitlementFileBundleRW))
                 {
-                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:NO]];
                 }
                 else
                 {
-                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO]];
-                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES]];
                 }
                 
                 if(entitlement_got_entitlement(entitlement, kPEEntitlementFileContainerRW))
                 {
-                    [filePermissions addObject:[NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:NO]];
+                    [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:NO]];
                 }
                 else
                 {
                     [filePermissions addObjectsFromArray:@[
-                        [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:YES],
-                        [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readOnly:NO],
-                        [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readOnly:NO],
-                        [NXBootstrap issueBookmarkForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readOnly:NO],
+                        [NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:YES],
+                        [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readOnly:NO],
+                        [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readOnly:NO],
+                        [NXBootstrap issueSandboxFileExtension:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readOnly:NO],
                     ]];
                 }
                 
