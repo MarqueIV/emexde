@@ -53,6 +53,7 @@ DEFINE_SYSCALL_HANDLER(kill)
     }
     
     kr = proc_kill(target, signal);
+    kvo_release(target);
     if(kr != KERN_SUCCESS)
     {
         /* shall never happen */
