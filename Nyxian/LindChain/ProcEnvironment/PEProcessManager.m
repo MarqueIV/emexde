@@ -137,8 +137,9 @@
         },
         @"PEWorkingDirectory": [applicationObject.containerPath stringByAppendingPathComponent:@"/Documents"],
         @"PEFilePermissions": @[
-            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath]],
-            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath]],
+            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readOnly:NO],
+            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO],
+            [NXBootstrap issueBookmarkForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES],
         ]
     }];
     

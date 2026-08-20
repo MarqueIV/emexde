@@ -152,19 +152,9 @@ int LiveProcessMain(int argc, char *argv[])
     NSDictionary *filePermissions = appInfo[@"PEFilePermissions"];
     for(NSData *filePermission in filePermissions)
     {
-        Boolean isStale = false;
-        CFErrorRef error = NULL;
-        CFURLRef url = CFURLCreateByResolvingBookmarkData(kCFAllocatorDefault, (__bridge CFDataRef)filePermission, (1UL << 10), NULL, NULL, &isStale, &error);
-        if(url == NULL)
-        {
-            CFRelease(error);
-            return 1;
-        }
-        
-        /* start root access */
-        Boolean success = CFURLStartAccessingSecurityScopedResource(url);
-        CFRelease(url);
-        if(!success)
+        extern int64_t sandbox_extension_consume(const char *token);
+        int64_t handle = sandbox_extension_consume((const char *)filePermission.bytes);
+        if(handle < 0)
         {
             return 1;
         }
