@@ -42,7 +42,9 @@
 + (void)load
 {
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0), ^{
-        [[PEUserspaceManager shared] boot];
+        @autoreleasepool {
+            [[PEUserspaceManager shared] boot];
+        }
     });
 }
 
