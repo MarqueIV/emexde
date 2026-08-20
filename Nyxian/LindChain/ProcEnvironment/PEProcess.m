@@ -36,8 +36,6 @@
     os_unfair_lock _lock;
 }
 
-@dynamic pid;
-
 - (instancetype)initWithItems:(NSDictionary*)items
      withKernelSurfaceProcess:(ksurface_proc_t*)proc
 {
@@ -80,6 +78,7 @@
             proctil(kProctilActionUnlock);
             return nil;
         }
+        _pid = self.process.pid;
         
         [self.process addObserver:self];
         if(!self.process.running)
@@ -200,7 +199,6 @@
         }
         kvo_release(_proc);
     }
-    proctil(kProctilActionUncount);
     
     /* notify observers */
     [self enumerateObservers:^(id<PEProcessObserver> observer) {
@@ -216,16 +214,6 @@
 - (void)process:(FBProcess *)arg1 stateDidChangeFromState:(FBProcessState *)arg2 toState:(FBProcessState *)arg3
 {
     /* stub for when ever */
-}
-
-- (id)forwardingTargetForSelector:(SEL)sel
-{
-    /* redirecting for pid */
-    if([self.process respondsToSelector:sel])
-    {
-        return self.process;
-    }
-    return [super forwardingTargetForSelector:sel];
 }
 
 - (void)enumerateObservers:(void (^)(id<PEProcessObserver> observer))block
@@ -254,14 +242,12 @@
     os_unfair_lock_unlock(&_lock);
 }
 
-#if DEBUG
-
 - (void)dealloc
 {
-    /* bug, when killing launchd this doesnt happen */
+    proctil(kProctilActionUncount);
+#if DEBUG
     NSLog(@"deallocated %@", self);
-}
-
 #endif /* DEBUG */
+}
 
 @end
