@@ -76,53 +76,69 @@
         withWorkingDirectory:(NSString *)workingDirectory
                    withReply:(void (^)(int64_t))reply
 {
-    /* sanity checking proc */
-    if(self.proc == NULL)
-    {
-        reply(-1);
-        return;
-    }
-    
-    if(path &&
-       arguments &&
-       environment &&
-       workingDirectory &&
-       (entitlement_got_entitlement(proc_getentitlements(_proc), kPEEntitlementProcessSpawn) ||
-        entitlement_got_entitlement(proc_getentitlements(_proc), kPEEntitlementProcessSpawnSignedOnly)))
-    {
-        NSMutableDictionary *mutableItems = [[NSMutableDictionary alloc] initWithDictionary:@{
-            @"PEExecutablePath": path,
-            @"PEArguments": arguments,
-            @"PEEnvironment": environment,
-            @"PEWorkingDirectory": workingDirectory,
-        }];
-        
-        if(fileTable != nil)
+    static dispatch_queue_t spawnQueue;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        spawnQueue = dispatch_queue_create("org.emexlabs.nyxian.oldserver.spawnqueue", DISPATCH_QUEUE_SERIAL);
+    });
+    NSLog(@"Received!\n");
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(spawnQueue, ^{
+        __strong typeof(self) strongSelf = weakSelf;
+        if(strongSelf == nil)
         {
-            [mutableItems setObject:fileTable forKey:@"PEFileTable"];
+            /* sead server session */
+            return;
         }
         
-        /* invoking spawn */
-        pid_t pid = [[PEProcessManager shared] spawnProcessWithItems:mutableItems withKernelSurfaceProcess:_proc];
+        /* sanity checking proc */
+        if(self.proc == NULL)
+        {
+            reply(-1);
+            return;
+        }
         
+        if(path &&
+           arguments &&
+           environment &&
+           workingDirectory &&
+           (entitlement_got_entitlement(proc_getentitlements(self->_proc), kPEEntitlementProcessSpawn) ||
+            entitlement_got_entitlement(proc_getentitlements(self->_proc), kPEEntitlementProcessSpawnSignedOnly)))
+        {
+            NSMutableDictionary *mutableItems = [[NSMutableDictionary alloc] initWithDictionary:@{
+                @"PEExecutablePath": path,
+                @"PEArguments": arguments,
+                @"PEEnvironment": environment,
+                @"PEWorkingDirectory": workingDirectory,
+            }];
+            
+            if(fileTable != nil)
+            {
+                [mutableItems setObject:fileTable forKey:@"PEFileTable"];
+            }
+            
+            /* invoking spawn */
+            pid_t pid = [[PEProcessManager shared] spawnProcessWithItems:mutableItems withKernelSurfaceProcess:self->_proc];
+            
 #if DEBUG
-        if(pid != -1)
-        {
-            klog_log("syscall:spawn", "pid %d spawned pid %d", _processIdentifier, pid);
-        }
-        else
-        {
-            klog_log("syscall:spawn", "pid %d failed to spawn process", _processIdentifier);
-        }
+            if(pid != -1)
+            {
+                klog_log("syscall:spawn", "pid %d spawned pid %d", self->_processIdentifier, pid);
+            }
+            else
+            {
+                klog_log("syscall:spawn", "pid %d failed to spawn process", self->_processIdentifier);
+            }
 #endif /* DEBUG */
+            
+            /* replying with pid of spawn */
+            reply(pid);
+            
+            return;
+        }
         
-        /* replying with pid of spawn */
-        reply(pid);
-        
-        return;
-    }
-    
-    reply(-1);
+        reply(-1);
+    });
 }
 
 #endif /* KSURFACE_SYS_PROC_ENABLED */

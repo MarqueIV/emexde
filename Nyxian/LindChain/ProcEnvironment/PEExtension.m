@@ -29,16 +29,6 @@
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 #import <objc/runtime.h>
 
-NSBundle *PEGetLiveProcessBundle(void)
-{
-    static NSBundle *liveProcessBundle = nil;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        liveProcessBundle = [NSBundle bundleWithPath:[NSBundle.mainBundle.builtInPlugInsPath stringByAppendingPathComponent:@"LiveProcess.appex"]];
-    });
-    return liveProcessBundle;
-}
-
 static const char kNSExtensionKey;
 static const char kIdentifierKey;
 
@@ -65,6 +55,16 @@ static const char kIdentifierKey;
 }
 
 @end
+
+NSBundle *PEGetLiveProcessBundle(void)
+{
+    static NSBundle *liveProcessBundle = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        liveProcessBundle = [NSBundle bundleWithPath:[NSBundle.mainBundle.builtInPlugInsPath stringByAppendingPathComponent:@"LiveProcess.appex"]];
+    });
+    return liveProcessBundle;
+}
 
 NSExtension *PEGetNSExtension(void)
 {
