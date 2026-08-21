@@ -87,10 +87,8 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     
     /*
      * only a platform process, may be able to
-     * spawn a other platform process otherwise
-     * this would be exploitable. so we strip away
-     * all entitlements the parent process doesnt
-     * have in case it is non platform.
+     * spawn a process with higher primitives
+     * than it it self.
      */
     if(!entitlement_got_entitlement(currentMaxEntitlement, kPEEntitlementPlatform))
     {
@@ -101,19 +99,9 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
         entitlement &= currentEntitlement;
     }
 
-    /* entitlement inheritance */
     if(parent == kernel_proc_)
     {
-        /*
-         * The kernel process shall never inherite entitlements,
-         * imagine a attacker could laverage a PUAF
-         * (very unlikely currently, but never say it's not possible,
-         * just look at where we are rn xD) in ksurface and then
-         * manipulate the kernel processes data structures to inherite
-         * entitlements, you would argue now that they could overwrite
-         * this code here, but iOS doesn't allow JIT so that would make
-         * Nyxian and ksurface crash immediately.
-         */
+        /* the kernel process shall never inherite entitlements */
         currentEntitlement = kPEEntitlementNone;
         proc_setmobilecred(child_new);
         proc_setsid(child_new, child_pid);
@@ -121,11 +109,9 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     else if(entitlement_got_entitlement(currentEntitlement, kPEEntitlementProcessSpawnInheriteEntitlements))
     {
         /*
-         * entitlements which shall be stripped regardless
-         * of who spawns the process as these entitlements
-         * are way too powerful.. if a process spawns and
-         * wants to debug they need to spawn the child process
-         * or debug a process in the same session.
+         * entitlements which shall be stripped from parent
+         * merging entitlements, because they are just too
+         * over powered.
          */
         entitlement_strip(currentEntitlement, kPEEntitlementPlatform | kPEEntitlementPlatformRoot | kPEEntitlementTaskForPid | kPEEntitlementProcessElevate);
     }
@@ -147,8 +133,8 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     }
     
     /*
-     * now combining the current eneitlements
-     * and the entitlements of the executable.
+     * now combining the current entitlements
+     * and the entitlements of the executable it self.
      */
     PEEntitlement combinedEntitlement = entitlement_sanitize(currentEntitlement | entitlement);
     proc_setentitlements(child_new, combinedEntitlement);
