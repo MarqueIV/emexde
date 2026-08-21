@@ -143,16 +143,17 @@ struct __attribute__((packed)) ksurface_nxt2_blob {
     const char plist_str[];
 };
 
+struct ksurface_nxt2 {
+    bool cdhash_valid;
+    bool blob_valid;
+    char cdhash[USER_FSIGNATURES_CDHASH_LEN];
+    CFDictionaryRef entitlements;
+};
+
 struct ksurface_nxtr_result {
     struct ksurface_nxtr_blob blob;
     bool cdhash_valid;
     bool blob_valid;
-};
-
-struct ksurface_nxt2_result {
-    bool cdhash_valid;
-    bool blob_valid;
-    struct ksurface_nxt2_blob blob;
 };
 
 #define entitlement_got_entitlement(present,needed) (((present) & (needed)) == (needed))
