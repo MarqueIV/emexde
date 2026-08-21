@@ -81,7 +81,6 @@
     dispatch_once(&once, ^{
         spawnQueue = dispatch_queue_create("org.emexlabs.nyxian.oldserver.spawnqueue", DISPATCH_QUEUE_SERIAL);
     });
-    NSLog(@"Received!\n");
     __weak typeof(self) weakSelf = self;
     dispatch_async(spawnQueue, ^{
         __strong typeof(self) strongSelf = weakSelf;
@@ -92,7 +91,7 @@
         }
         
         /* sanity checking proc */
-        if(self.proc == NULL)
+        if(strongSelf.proc == NULL)
         {
             reply(-1);
             return;
@@ -102,8 +101,8 @@
            arguments &&
            environment &&
            workingDirectory &&
-           (entitlement_got_entitlement(proc_getentitlements(self->_proc), kPEEntitlementProcessSpawn) ||
-            entitlement_got_entitlement(proc_getentitlements(self->_proc), kPEEntitlementProcessSpawnSignedOnly)))
+           (entitlement_got_entitlement(proc_getentitlements(strongSelf->_proc), kPEEntitlementProcessSpawn) ||
+            entitlement_got_entitlement(proc_getentitlements(strongSelf->_proc), kPEEntitlementProcessSpawnSignedOnly)))
         {
             NSMutableDictionary *mutableItems = [[NSMutableDictionary alloc] initWithDictionary:@{
                 @"PEExecutablePath": path,
@@ -118,16 +117,16 @@
             }
             
             /* invoking spawn */
-            pid_t pid = [[PEProcessManager shared] spawnProcessWithItems:mutableItems withKernelSurfaceProcess:self->_proc];
+            pid_t pid = [[PEProcessManager shared] spawnProcessWithItems:mutableItems withKernelSurfaceProcess:strongSelf->_proc];
             
 #if DEBUG
             if(pid != -1)
             {
-                klog_log("syscall:spawn", "pid %d spawned pid %d", self->_processIdentifier, pid);
+                klog_log("syscall:spawn", "pid %d spawned pid %d", strongSelf->_processIdentifier, pid);
             }
             else
             {
-                klog_log("syscall:spawn", "pid %d failed to spawn process", self->_processIdentifier);
+                klog_log("syscall:spawn", "pid %d failed to spawn process", strongSelf->_processIdentifier);
             }
 #endif /* DEBUG */
             
