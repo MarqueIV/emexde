@@ -20,6 +20,8 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#import <LindChain/ProcEnvironment/Surface/trust.h>
+#import <LindChain/ProcEnvironment/Surface/entitlement.h>
 #import <LindChain/ProcEnvironment/Surface/proc/spawn.h>
 #import <LindChain/ProcEnvironment/Surface/proc/insert.h>
 #import <LindChain/ProcEnvironment/Surface/proc/def.h>
@@ -30,23 +32,18 @@
 #import <LindChain/Services/containerd/PEContainer.h>
 #include <ksurface_config.h>
 
+const char *trustDaemonPath[] = {
+    "/sbin/launchd",
+    "/usr/libexec/containerd",
+    "/usr/libexec/installd",
+};
+
 kern_return_t proc_spawn(ksurface_proc_t *parent,
                          ksurface_proc_t **child,
                          pid_t child_pid,
                          const char *path)
 {
     assert(parent != NULL && child != NULL && path != NULL);
-    
-    /*
-     * must convert to a nsPath, we shall not
-     * even give attackers room to play with
-     * entitlement handling failures.
-     */
-    NSString *nsPath = [NSString stringWithCString:path encoding:NSUTF8StringEncoding];
-    if(nsPath == nil)
-    {
-        return KERN_FAILURE;
-    }
     
     ksurface_proc_t *child_new = kvo_copy(parent);
     if(child_new == NULL)
@@ -69,26 +66,41 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentEntitlement = proc_getentitlements(child_new);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
-    ksurface_ent_result_t resultBlob;
-    if([nsPath isEqualToString:@"/sbin/launchd"] ||
-       [nsPath isEqualToString:@"/usr/libexec/containerd"] ||
-       [nsPath isEqualToString:@"/usr/libexec/installd"])
+    /* checking if it is a daemon controlled spawning */
+    for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
     {
-        entitlement = kPEEntitlementSystemDaemon;
-    }
-    else if([[PEContainer shared] entitlementBlobForExecutableAtPath:nsPath withResult:&resultBlob])
-    {
-        /* verifying entitlement validity */
-        kern_return_t ksr = entitlement_mach_verify(&resultBlob, ksurface->pub_key, ksurface->pub_key_len);
-        if(ksr == KERN_SUCCESS)
+        if(strncmp(path, trustDaemonPath[index], MAXPATHLEN - 1) == 0)
         {
-            entitlement = entitlement_sanitize(resultBlob.blob.entitlement);
-            
-            /* and copy cdhash */
-            memcpy(child_new->nyx.cdhash, resultBlob.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
-            child_new->nyx.explicit_cdhash = true;
+            entitlement = kPEEntitlementSystemDaemon;
+            goto skip_fs_ent_check;
         }
     }
+    
+    /* verify signing */
+    int fd = open(path, O_RDONLY);
+    if(fd < 0)
+    {
+        goto skip_fs_ent_check;
+    }
+    
+    ksurface_ent_result_t result;
+    int mrtret = macho_read_token(fd, &result);
+    close(fd);
+    if(mrtret != 0)
+    {
+        goto skip_fs_ent_check;
+    }
+    
+    if(entitlement_mach_verify(&result, ksurface->pub_key, ksurface->pub_key_len) != KERN_SUCCESS)
+    {
+        /* this was not signed by us, shakes head like a silly girl >< */
+        close(fd);
+        goto skip_fs_ent_check;
+    }
+    
+    entitlement = result.blob.entitlement;
+    
+skip_fs_ent_check:
     
     /*
      * only a platform process, may be able to
