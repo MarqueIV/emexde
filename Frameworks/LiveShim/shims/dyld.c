@@ -136,9 +136,27 @@ static int hook_open(const char *path,
                      mode_t mode)
 {
     printf("[hook_open:args] (path = %s, flags = %d, mode = %d)\n", path, flags, mode);
-    int ret = orig_dyld_open(path, flags, mode);
-    printf("[hook_open:return] (ret = %d)\n", ret);
-    return ret;
+    int fd = orig_dyld_open(path, flags, mode);
+    
+    char actualPath[PATH_MAX];
+    if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
+    {
+        printf("[hook_open:path] %s\n", actualPath);
+        
+        const char prefix[] = "/private/var/mobile/Containers";
+        if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
+        {
+            /* need to get cdhash and then reset it's position */
+            
+            /* TODO: do it actually */
+            
+            /* reset position */
+            lseek(fd, 0, SEEK_SET);
+        }
+    }
+    
+    printf("[hook_open:return] (ret = %d)\n", fd);
+    return fd;
 }
 
 static HWHookThreadContextRef HWHookDlopenThreadContext(void)
