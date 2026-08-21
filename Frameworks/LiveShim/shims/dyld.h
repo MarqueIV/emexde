@@ -28,4 +28,6 @@ typedef void (*dlopen_cdhash_verifier_failed_callback_t)(int fd, bool *deny_open
 
 void *dlopen_cdhash_verified(const char *path, int flags, const char *cdhash, dlopen_cdhash_verifier_failed_callback_t callback);
 
+const char *dyld_get_mmap_sandbox_map_exec_allowed_path(void);
+
 #endif /* LIVESHIM_DYLD_H */

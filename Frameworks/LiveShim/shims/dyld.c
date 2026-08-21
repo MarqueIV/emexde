@@ -342,3 +342,8 @@ void LiveShimDlopenHookInit(void)
     
     mmap_sandbox_map_exec_allowed_path = home_copy;
 }
+
+const char *dyld_get_mmap_sandbox_map_exec_allowed_path(void)
+{
+    return mmap_sandbox_map_exec_allowed_path;
+}

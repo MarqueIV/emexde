@@ -27,6 +27,7 @@
 #import <LindChain/ProcEnvironment/PEFileTable.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspaceProtocol.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LiveShim/dyld.h>
 
 @interface LDEApplicationWorkspaceInternal ()
 
@@ -35,11 +36,43 @@
 @property (nonatomic,strong) NSURL *binaryURL;
 @property (nonatomic,strong) NSURL *homeURL;
 @property (nonatomic,strong) NSURL *tmpURL;
-@property (nonatomic, strong) dispatch_queue_t workspaceQueue;
+@property (nonatomic,strong) NSURL *bootstrapPlistURL;
+@property (nonatomic,strong) dispatch_queue_t workspaceQueue;
+@property (atomic,readwrite) UInt64 version;
+@property (atomic,readonly) BOOL isInstalled;
 
 @end
 
 @implementation LDEApplicationWorkspaceInternal
+
+- (BOOL)isInstalled
+{
+    return self.version > 0;
+}
+
+- (UInt64)version
+{
+    NSDictionary *bootstrapPlist = [NSDictionary dictionaryWithContentsOfURL:self.bootstrapPlistURL];
+    if(bootstrapPlist == nil)
+    {
+        /* plist doesn't exist or is malformed? */
+        return 0;
+    }
+    
+    NSNumber *versionNumber = bootstrapPlist[@"PEBootstrapVersion"];
+    if(![versionNumber isKindOfClass:NSNumber.class])
+    {
+        /* illegal object */
+        return 0;
+    }
+    
+    return [versionNumber unsignedLongValue];
+}
+
+- (void)setVersion:(UInt64)version
+{
+    [@{ @"PEBootstrapVersion":[NSNumber numberWithUnsignedLong:version] } writeToURL:self.bootstrapPlistURL error:nil];
+}
 
 - (instancetype)init
 {
@@ -52,9 +85,38 @@
     self.binaryURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"usr/bin"]];
     self.homeURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"var/mobile"]];
     self.tmpURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"tmp"]];
+    self.bootstrapPlistURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"kstrapped.plist"]];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    /* check if installed */
+    if(!self.isInstalled)
+    {
+        NSLog(@"kstrapped.plist missing, recovering directories from older Nyxian versions");
+        NSArray<NSString*> *containerHomeDirectories = [fileManager contentsOfDirectoryAtPath:homeDir error:nil];
+        for(NSString *dir in containerHomeDirectories)
+        {
+            [fileManager removeItemAtPath:dir error:nil];
+        }
+        
+        NSString *path = [NSString stringWithFormat:@"%s/Documents", dyld_get_mmap_sandbox_map_exec_allowed_path()];
+        NSError *error;
+        NSArray<NSString*> *pkContainerHomeDirectories = [fileManager contentsOfDirectoryAtPath:path error:&error];
+        NSLog(@"%@\n", path);
+        NSLog(@"%@\n", pkContainerHomeDirectories);
+        NSLog(@"%@\n", error);
+        for(NSString *dir in pkContainerHomeDirectories)
+        {
+            NSString *lastPathComponent = [dir lastPathComponent];
+            NSString *newPath = [homeDir stringByAppendingPathComponent:lastPathComponent];
+            [fileManager moveItemAtPath:lastPathComponent toPath:newPath error:nil];
+        }
+        
+        NSLog(@"old PKHome rootfs recovered");
+        self.version = 1;
+    }
     
     // Creating paths if they dont exist
-    NSFileManager *fileManager = [NSFileManager defaultManager];
     [fileManager createDirectoryAtURL:self.applicationsURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.containersURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.binaryURL withIntermediateDirectories:YES attributes:nil error:nil];
