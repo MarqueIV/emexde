@@ -179,7 +179,7 @@ static int hook_open(const char *path,
         {
             dyld_hook_log("[hook_open:path] %s\n", actualPath);
             
-            const char prefix[] = "/private/var/mobile/Containers";
+            const char prefix[] = "/private/var/mobile/Containers/Data";
             if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
             {
                 /* no matter what this is not reentrant */
