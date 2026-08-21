@@ -34,6 +34,7 @@
 @property (nonatomic,strong) NSURL *containersURL;
 @property (nonatomic,strong) NSURL *binaryURL;
 @property (nonatomic,strong) NSURL *homeURL;
+@property (nonatomic,strong) NSURL *tmpURL;
 @property (nonatomic, strong) dispatch_queue_t workspaceQueue;
 
 @end
@@ -45,11 +46,12 @@
     self = [super init];
     
     // Setting up paths
-    NSString *documentsDir = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
-    self.applicationsURL = [NSURL fileURLWithPath:[documentsDir stringByAppendingPathComponent:@"Bundle/Application"]];
-    self.containersURL = [NSURL fileURLWithPath:[documentsDir stringByAppendingPathComponent:@"Data/Application"]];
-    self.binaryURL = [NSURL fileURLWithPath:[documentsDir stringByAppendingPathComponent:@"usr/bin"]];
-    self.homeURL = [NSURL fileURLWithPath:[documentsDir stringByAppendingPathComponent:@"var/mobile"]];
+    NSString *homeDir = NSHomeDirectory();
+    self.applicationsURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"Bundle/Application"]];
+    self.containersURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"Data/Application"]];
+    self.binaryURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"usr/bin"]];
+    self.homeURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"var/mobile"]];
+    self.tmpURL = [NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"tmp"]];
     
     // Creating paths if they dont exist
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -57,6 +59,7 @@
     [fileManager createDirectoryAtURL:self.containersURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.binaryURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.homeURL withIntermediateDirectories:YES attributes:nil error:nil];
+    [fileManager createDirectoryAtURL:self.tmpURL withIntermediateDirectories:YES attributes:nil error:nil];
     
     // Enumerating all app bundles
     NSArray<NSURL*> *uuidURLs = [fileManager contentsOfDirectoryAtURL:self.applicationsURL includingPropertiesForKeys:nil options:0 error:nil];
