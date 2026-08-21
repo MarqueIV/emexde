@@ -56,11 +56,8 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     proc_setpid(child_new, child_pid);      /* function passed pid of child */
     
     /*
-     * getting the entitlements passed of the
-     * executables code signature blob if
-     * applicable. if signed correctly it
-     * will return the entitlements of
-     * sayed executable.
+     * temporary entitlement variables, they get merged in the end.
+     * after rules have been applied.
      */
     PEEntitlement entitlement = kPEEntitlementNone;
     PEEntitlement currentEntitlement = proc_getentitlements(child_new);
@@ -73,6 +70,8 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     {
         /* this was signed by us, nods head like a silly girl >< */
         entitlement = result.blob.entitlement;
+        memcpy(child_new->nyx.cdhash, result.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
+        child_new->nyx.explicit_cdhash = true;
     }
     else
     {
@@ -91,8 +90,7 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
      * spawn a other platform process otherwise
      * this would be exploitable. so we strip away
      * all entitlements the parent process doesnt
-     * have in case it is non platform and setting
-     * currentEntitlement to entitlement.
+     * have in case it is non platform.
      */
     if(!entitlement_got_entitlement(currentMaxEntitlement, kPEEntitlementPlatform))
     {
