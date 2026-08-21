@@ -384,7 +384,7 @@ void DyldHooksInit(void)
 {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        PEEntitlement ownEntitlements = liveshim_syscall(SYS_getent);
+        PEEntitlement ownEntitlements = liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningGetEntitlements, NULL, NULL, MACH_PORT_NULL);
         if(entitlement_got_entitlement(ownEntitlements, kPEEntitlementDyldHideLiveProcess))
         {
             int imageCount = _dyld_image_count();
