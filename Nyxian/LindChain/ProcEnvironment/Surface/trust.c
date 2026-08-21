@@ -76,7 +76,7 @@ kern_return_t nxtr_sign_fd(int fd, PEEntitlement entitlement)
     char *cdhash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
     LCUnmapMachO(machO);
     
-    ksurface_ent_blob_t token;
+    ksurface_nxtr_blob_t token;
     if(entitlement_token_mach_gen(&token, cdhash, entitlement) != KERN_SUCCESS)
     {
         free(cdhash);
@@ -87,7 +87,7 @@ kern_return_t nxtr_sign_fd(int fd, PEEntitlement entitlement)
     char tag[4];
     off_t eof = lseek(fd, 0, SEEK_END);
     
-    if(eof >= (off_t)(sizeof(ksurface_ent_blob_t) + sizeof(uint32_t) + 4))
+    if(eof >= (off_t)(sizeof(ksurface_nxtr_blob_t) + sizeof(uint32_t) + 4))
     {
         read_at(fd, eof - 4, tag, 4);
         if(memcmp(tag, APPEND_TAG_NXTR, 4) == 0)
@@ -104,12 +104,12 @@ kern_return_t nxtr_sign_fd(int fd, PEEntitlement entitlement)
         return KERN_FAILURE;
     }
 
-    if(write(fd, &token, sizeof(ksurface_ent_blob_t)) != (ssize_t)sizeof(ksurface_ent_blob_t))
+    if(write(fd, &token, sizeof(ksurface_nxtr_blob_t)) != (ssize_t)sizeof(ksurface_nxtr_blob_t))
     {
         return KERN_FAILURE;
     }
 
-    size_t data_len = sizeof(ksurface_ent_blob_t);
+    size_t data_len = sizeof(ksurface_nxtr_blob_t);
     if(write(fd, &data_len, sizeof(uint32_t)) != sizeof(uint32_t))
     {
         return KERN_FAILURE;
@@ -123,7 +123,7 @@ kern_return_t nxtr_sign_fd(int fd, PEEntitlement entitlement)
 }
 
 kern_return_t nxtr_read(const char *path,
-                        ksurface_ent_result_t *result)
+                        ksurface_nxtr_result_t *result)
 {
     int fd = open(path, O_RDONLY);
     if(fd < 0)
@@ -137,9 +137,9 @@ kern_return_t nxtr_read(const char *path,
 }
 
 kern_return_t nxtr_read_fd(int fd,
-                           ksurface_ent_result_t *result)
+                           ksurface_nxtr_result_t *result)
 {
-    bzero(result, sizeof(ksurface_ent_result_t));
+    bzero(result, sizeof(ksurface_nxtr_result_t));
     
     char tag[4];
     uint32_t len;
@@ -172,7 +172,7 @@ kern_return_t nxtr_read_fd(int fd,
         return KERN_FAILURE;
     }
     
-    if(len != sizeof(ksurface_ent_blob_t))
+    if(len != sizeof(ksurface_nxtr_blob_t))
     {
         return KERN_FAILURE;
     }

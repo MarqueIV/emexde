@@ -30,7 +30,7 @@
 #include <assert.h>
 #include <ksurface_config.h>
 
-kern_return_t entitlement_token_mach_gen(ksurface_ent_blob_t *blob,
+kern_return_t entitlement_token_mach_gen(ksurface_nxtr_blob_t *blob,
                                          const char *cdhash,
                                          PEEntitlement entitlement)
 {
@@ -74,7 +74,7 @@ kern_return_t entitlement_token_mach_gen(ksurface_ent_blob_t *blob,
     }
 
     size_t mac_len = sizeof(blob->mac);
-    if(EVP_DigestSign(mdctx, blob->mac, &mac_len, (unsigned char*)blob, offsetof(ksurface_ent_blob_t, mac)) != 1)
+    if(EVP_DigestSign(mdctx, blob->mac, &mac_len, (unsigned char*)blob, offsetof(ksurface_nxtr_blob_t, mac)) != 1)
     {
         EVP_MD_CTX_free(mdctx);
         EVP_PKEY_free(priv);
@@ -88,7 +88,7 @@ kern_return_t entitlement_token_mach_gen(ksurface_ent_blob_t *blob,
     return KERN_SUCCESS;
 }
 
-kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach,
+kern_return_t entitlement_mach_verify(ksurface_nxtr_result_t *mach,
                                       uint8_t *pub_key,
                                       size_t pub_key_len)
 {
@@ -122,7 +122,7 @@ kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach,
         return KERN_DENIED;
     }
     
-    int ret = EVP_DigestVerify(mdctx, mach->blob.mac, mach->blob.mac_len, (unsigned char *)&mach->blob, offsetof(ksurface_ent_blob_t, mac));
+    int ret = EVP_DigestVerify(mdctx, mach->blob.mac, mach->blob.mac_len, (unsigned char *)&mach->blob, offsetof(ksurface_nxtr_blob_t, mac));
     
     EVP_MD_CTX_free(mdctx);
     EVP_PKEY_free(pub);
@@ -144,7 +144,7 @@ kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach,
 PEEntitlement entitlement_get_path(const char *path,
                                    bool *wasLocallySigned)
 {
-    ksurface_ent_result_t mach;
+    ksurface_nxtr_result_t mach;
     if(nxtr_read(path, &mach) != KERN_SUCCESS)
     {
         *wasLocallySigned = false;

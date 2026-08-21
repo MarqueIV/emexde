@@ -633,7 +633,7 @@
 }
 
 - (BOOL)entitlementBlobForExecutableAtPath:(NSString*)path
-                                withResult:(ksurface_ent_result_t*)result
+                                withResult:(ksurface_nxtr_result_t*)result
 {
     /*
      * get the file descriptor objet so we can get the
@@ -699,7 +699,7 @@
     }
     
     /* extracting entitlements */
-    ksurface_ent_result_t mach;
+    ksurface_nxtr_result_t mach;
     nxtr_read_fd(fd, &mach);
     close(fd);
     

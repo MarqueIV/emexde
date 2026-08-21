@@ -64,7 +64,7 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
     /* verify nxtr signature blob if present */
-    ksurface_ent_result_t result = { 0 };
+    ksurface_nxtr_result_t result = { 0 };
     if(nxtr_read(path, &result) == KERN_SUCCESS &&
        entitlement_mach_verify(&result, ksurface->pub_key, ksurface->pub_key_len) == KERN_SUCCESS)
     {
