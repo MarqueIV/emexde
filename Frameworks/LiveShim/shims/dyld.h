@@ -24,6 +24,6 @@
 
 #include <dlfcn.h>
 
-void *dlopen_cdhash_verified(const char *path, int flags, const char *cdhash);
+void *dlopen_cdhash_verified(const char *path, int flags, const char *cdhash, bool *verified);
 
 #endif /* LIVESHIM_DYLD_H */

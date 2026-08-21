@@ -169,6 +169,10 @@ static int hook_open(const char *path,
             const char prefix[] = "/private/var/mobile/Containers";
             if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
             {
+                /* no matter what this is not reentrant */
+                cdhash_must_valid = false;
+                cdhash_verified = false;
+                
                 lseek(fd, 0, SEEK_SET);
                 /* need to get cdhash and then reset it's position */
                 
@@ -182,6 +186,8 @@ static int hook_open(const char *path,
                 {
                     dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] cdhash does not match, falling back permissions\n");
                     
+                    cdhash_verified = false;
+                    
                     /* rolling back */
                     if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements, NULL, NULL, MACH_PORT_NULL) != 0 ||
                        liveshim_syscall(SYS_setgid, 501) != 0 ||
@@ -189,13 +195,15 @@ static int hook_open(const char *path,
                     {
                         /* didn't succeed in rolling back primitives, trying to make dlopen fail */
                         dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] roleback failed, deny loading of this executable\n");
-                        cdhash_verified = false;
                         errno = EACCES;
                         close(fd);
                         return -1;
                     }
                 }
-                cdhash_verified = true;
+                else
+                {
+                    cdhash_verified = true;
+                }
                 
                 /* reset position */
                 lseek(fd, 0, SEEK_SET);
@@ -285,13 +293,19 @@ void *hook_dlopen(const char *path, int mode)
 
 void *dlopen_cdhash_verified(const char *path,
                              int flags,
-                             const char *cdhash)
+                             const char *cdhash,
+                             bool *verified)
 {
+    cdhash_verified = false;
     cdhash_must_valid = true;
     cdhash_data_container_match = cdhash;
     void *ret = hook_dlopen(path, flags);
     cdhash_data_container_match = NULL;
     cdhash_must_valid = false;
+    if(verified != NULL)
+    {
+        *verified = cdhash_verified;
+    }
     return ret;
 }
 
