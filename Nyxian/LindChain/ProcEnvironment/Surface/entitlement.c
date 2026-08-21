@@ -176,9 +176,9 @@ bool entitlement_set_path(const char *path,
     return (retval == 0);
 }
 
+#if KSURFACE_SEC_SANITIZE_ENTITLEMENTS
 PEEntitlement entitlement_sanitize(PEEntitlement base)
 {
-#if KSURFACE_SEC_SANITIZE_ENTITLEMENTS
     base &= kPEEntitlementAll;  /* making sure no unused bit fields are enabled */
     
     /* can it see a other process ever? */
@@ -204,6 +204,6 @@ PEEntitlement entitlement_sanitize(PEEntitlement base)
         /* you cannot be platformized as root user if you're not platform */
         entitlement_strip(base, kPEEntitlementPlatformRoot);
     }
-#endif /* KSURFACE_SEC_SANITIZE_ENTITLEMENTS */
     return base;
 }
+#endif /* KSURFACE_SEC_SANITIZE_ENTITLEMENTS */

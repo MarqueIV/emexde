@@ -19,12 +19,12 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PROCENVIRONMENT_PERMIT_H
-#define PROCENVIRONMENT_PERMIT_H
+#ifndef PROC_PERMIT_H
+#define PROC_PERMIT_H
 
-#import <LindChain/ProcEnvironment/Surface/surface.h>
-#import <LindChain/ProcEnvironment/Surface/proc/proc.h>
+#include <LindChain/ProcEnvironment/Surface/surface.h>
+#include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 
 bool proc_snapshot_primitive_over_pid_allowed(ksurface_proc_snapshot_t *proc, pid_t targetPid, PEEntitlement entitlementsNeeded, PEEntitlement targetEntitlementsNeeded);
 
-#endif /* PROCENVIRONMENT_PERMIT_H */
+#endif /* PROC_PERMIT_H */
