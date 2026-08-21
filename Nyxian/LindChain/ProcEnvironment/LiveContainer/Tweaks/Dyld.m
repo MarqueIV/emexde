@@ -418,9 +418,20 @@ void DyldHooksInit(void)
 }
 
 #pragma mark - Fix black screen
+
+void dyld_verifier_failed_callback(bool *open_hardlock)
+{
+    /* rolling back */
+    if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements, NULL, NULL, MACH_PORT_NULL) != 0 ||
+       liveshim_syscall(SYS_setgid, 501) != 0 ||
+       liveshim_syscall(SYS_setuid, 501) != 0)
+    {
+        /* didn't succeed in rolling back primitives, trying to make dlopen fail */
+        *open_hardlock = true;
+    }
+}
+
 static void *lockPtrToIgnore;
-static uint32_t seenCount;
-static os_unfair_lock cdlock = OS_UNFAIR_LOCK_INIT;
 void hook_libdyld_os_unfair_recursive_lock_lock_with_options(void *ptr, void* lock, uint32_t options)
 {
     if(!lockPtrToIgnore)
@@ -464,7 +475,7 @@ void *dlopenBypassingLockWithTrust(const char *path,
     void *origLockPtr = lockUnlockPtr[0], *origUnlockPtr = lockUnlockPtr[1];
     lockUnlockPtr[0] = hook_libdyld_os_unfair_recursive_lock_lock_with_options;
     lockUnlockPtr[1] = hook_libdyld_os_unfair_recursive_lock_unlock;
-    void *result = expectedCdhash == NULL ? dlopen(path, mode) : dlopen_cdhash_verified(path, mode, expectedCdhash, NULL);
+    void *result = expectedCdhash == NULL ? dlopen(path, mode) : dlopen_cdhash_verified(path, mode, expectedCdhash, dyld_verifier_failed_callback);
     ret = builtin_vm_protect(mach_task_self(), (mach_vm_address_t)lockUnlockPtr, sizeof(uintptr_t[2]), false, PROT_READ | PROT_WRITE);
     assert(ret == KERN_SUCCESS);
     lockUnlockPtr[0] = origLockPtr;

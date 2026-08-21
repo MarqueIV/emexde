@@ -153,6 +153,7 @@ static _Thread_local bool cdhash_verified = false;
 static _Thread_local bool cdhash_must_valid;
 static _Thread_local bool open_hardlock;
 static _Thread_local const char *cdhash_data_container_match;
+static _Thread_local dlopen_cdhash_verifier_failed_callback_t cdhash_verifier_failed_callback;
 static int hook_open(const char *path,
                      int flags,
                      mode_t mode)
@@ -196,21 +197,21 @@ static int hook_open(const char *path,
                    cdhash_data_container_match == NULL ||
                    memcmp(cdhash_data_container_match, cdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
                 {
-                    dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] cdhash does not match, falling back permissions\n");
+                    dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] cdhash does not match, calling callback if givven\n");
                     
                     cdhash_verified = false;
-                    
-                    /* rolling back */
-                    if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements, NULL, NULL, MACH_PORT_NULL) != 0 ||
-                       liveshim_syscall(SYS_setgid, 501) != 0 ||
-                       liveshim_syscall(SYS_setuid, 501) != 0)
+                    if(cdhash_verifier_failed_callback != NULL)
                     {
-                        /* didn't succeed in rolling back primitives, trying to make dlopen fail */
-                        dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] roleback failed, deny loading of this executable\n");
+                        cdhash_verifier_failed_callback(&open_hardlock);
+                    }
+                    
+                    /* callback can set open hardlock */
+                    if(open_hardlock)
+                    {
+                        dyld_hook_log("[hook_open:args] [error: hard locked]\n");
                         errno = EACCES;
                         close(fd);
                         fd = -1;
-                        open_hardlock = true;   /* dyld cannot be trusted for the span of this dlopen */
                     }
                 }
                 else
@@ -311,18 +312,16 @@ void *hook_dlopen(const char *path, int mode)
 void *dlopen_cdhash_verified(const char *path,
                              int flags,
                              const char *cdhash,
-                             bool *verified)
+                             dlopen_cdhash_verifier_failed_callback_t callback)
 {
     cdhash_verified = false;
     cdhash_must_valid = true;
     cdhash_data_container_match = cdhash;
+    cdhash_verifier_failed_callback = callback;
     void *ret = hook_dlopen(path, flags);
+    cdhash_verifier_failed_callback = NULL;
     cdhash_data_container_match = NULL;
     cdhash_must_valid = false;
-    if(verified != NULL)
-    {
-        *verified = cdhash_verified;
-    }
     return ret;
 }
 
