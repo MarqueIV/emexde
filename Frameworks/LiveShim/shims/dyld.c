@@ -190,6 +190,7 @@ static int hook_open(const char *path,
                         /* didn't succeed in rolling back primitives, trying to make dlopen fail */
                         dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] roleback failed, deny loading of this executable\n");
                         cdhash_verified = false;
+                        errno = EACCES;
                         close(fd);
                         return -1;
                     }
