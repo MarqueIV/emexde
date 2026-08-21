@@ -149,17 +149,29 @@ log_return:
     return ret;
 }
 
-static bool cdhash_verified = false;
-static bool cdhash_must_valid;
-const char *cdhash_data_container_match;
+static _Thread_local bool cdhash_verified = false;
+static _Thread_local bool cdhash_must_valid;
+static _Thread_local bool open_hardlock;
+static _Thread_local const char *cdhash_data_container_match;
 static int hook_open(const char *path,
                      int flags,
                      mode_t mode)
 {
     dyld_hook_log("[hook_open:args] (path = %s, flags = %d, mode = %d)\n", path, flags, mode);
-    int fd = orig_dyld_open(path, flags, mode);
+    if(open_hardlock)
+    {
+        dyld_hook_log("[hook_open:args] [error: hard locked]\n");
+        errno = EACCES;
+        return -1;
+    }
     
-    if(cdhash_must_valid)
+    int fd = orig_dyld_open(path, flags, mode);
+    if(fd < 0)
+    {
+        goto just_return;
+    }
+    
+    if(cdhash_must_valid && !cdhash_verified)
     {
         char actualPath[PATH_MAX];
         if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
@@ -197,20 +209,24 @@ static int hook_open(const char *path,
                         dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] roleback failed, deny loading of this executable\n");
                         errno = EACCES;
                         close(fd);
-                        return -1;
+                        fd = -1;
+                        open_hardlock = true;   /* dyld cannot be trusted for the span of this dlopen */
                     }
                 }
                 else
                 {
+                    dyld_hook_log("[hook_open:cdhash] [nyxian cdhash verifier] cdhash valid!\n");
                     cdhash_verified = true;
+                    lseek(fd, 0, SEEK_SET);
                 }
                 
                 /* reset position */
-                lseek(fd, 0, SEEK_SET);
+                free(cdhash);   /* free on macOS/iOS is NULL safe */
             }
         }
     }
     
+just_return:
     dyld_hook_log("[hook_open:return] (fd = %d)\n", fd);
     return fd;
 }
@@ -284,6 +300,7 @@ void *hook_dlopen(const char *path, int mode)
     void *(*darwin_dlopen)(const char *path, int mode) = _interpose_dlopen.replacee;
     dyld_hook_log("[hook_dlopen] %s\n", path);
     
+    open_hardlock = false;
     HWHookThreadContextRef context = HWHookDlopenThreadContext();
     HWHookThreadContextEnter(context);  /* is nil safe, so it shall work anyways */
     void *ret = darwin_dlopen(path, mode);
