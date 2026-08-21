@@ -92,7 +92,7 @@
     /* check if installed */
     if(!self.isInstalled)
     {
-        NSLog(@"kstrapped.plist missing, recovering directories from older Nyxian versions");
+        NSLog(@"[kupdate:1] kstrapped.plist missing, recovering directories from older Nyxian versions");
         NSArray<NSString*> *containerHomeDirectories = [fileManager contentsOfDirectoryAtPath:homeDir error:nil];
         for(NSString *dir in containerHomeDirectories)
         {
@@ -102,9 +102,6 @@
         NSString *path = [NSString stringWithFormat:@"%s/Documents", dyld_get_mmap_sandbox_map_exec_allowed_path()];
         NSError *error;
         NSArray<NSString*> *pkContainerHomeDirectories = [fileManager contentsOfDirectoryAtPath:path error:&error];
-        NSLog(@"%@\n", path);
-        NSLog(@"%@\n", pkContainerHomeDirectories);
-        NSLog(@"%@\n", error);
         for(NSString *dir in pkContainerHomeDirectories)
         {
             NSString *lastPathComponent = [dir lastPathComponent];
@@ -112,8 +109,8 @@
             [fileManager moveItemAtPath:lastPathComponent toPath:newPath error:nil];
         }
         
-        NSLog(@"old PKHome rootfs recovered");
-        self.version = 1;
+        NSLog(@"[kupdate:1] old PKHome rootfs recovered");
+        self.version = 2;
     }
     
     // Creating paths if they dont exist
@@ -121,6 +118,7 @@
     [fileManager createDirectoryAtURL:self.containersURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.binaryURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.homeURL withIntermediateDirectories:YES attributes:nil error:nil];
+    [fileManager createDirectoryAtURL:[NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"var/root"]] withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.tmpURL withIntermediateDirectories:YES attributes:nil error:nil];
     
     // Enumerating all app bundles
