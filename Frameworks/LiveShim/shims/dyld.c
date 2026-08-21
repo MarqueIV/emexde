@@ -202,7 +202,7 @@ static int hook_open(const char *path,
                     cdhash_verified = false;
                     if(cdhash_verifier_failed_callback != NULL)
                     {
-                        cdhash_verifier_failed_callback(&open_hardlock);
+                        cdhash_verifier_failed_callback(fd, &open_hardlock);
                     }
                     
                     /* callback can set open hardlock */

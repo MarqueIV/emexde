@@ -419,7 +419,8 @@ void DyldHooksInit(void)
 
 #pragma mark - Fix black screen
 
-void dyld_verifier_failed_callback(bool *open_hardlock)
+void dyld_verifier_failed_callback(int fd,
+                                   bool *deny_open)
 {
     /* rolling back */
     if(liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningDropAllEntitlements, NULL, NULL, MACH_PORT_NULL) != 0 ||
@@ -427,7 +428,7 @@ void dyld_verifier_failed_callback(bool *open_hardlock)
        liveshim_syscall(SYS_setuid, 501) != 0)
     {
         /* didn't succeed in rolling back primitives, trying to make dlopen fail */
-        *open_hardlock = true;
+        *deny_open = true;
     }
 }
 

@@ -24,7 +24,7 @@
 
 #include <dlfcn.h>
 
-typedef void (*dlopen_cdhash_verifier_failed_callback_t)(bool *open_hardlock);
+typedef void (*dlopen_cdhash_verifier_failed_callback_t)(int fd, bool *deny_open);
 
 void *dlopen_cdhash_verified(const char *path, int flags, const char *cdhash, dlopen_cdhash_verifier_failed_callback_t callback);
 
