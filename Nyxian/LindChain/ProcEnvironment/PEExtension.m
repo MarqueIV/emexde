@@ -189,7 +189,7 @@ FBProcess *PESpawnFBProcess(NSDictionary *items)
      * we need its BSD process identifier.
      */
     pid_t pid = [extension pidForRequestIdentifier:identifier];
-    if(pid < 0)
+    if(pid <= 0)
     {
         [extension _kill:SIGKILL];
         return nil;
