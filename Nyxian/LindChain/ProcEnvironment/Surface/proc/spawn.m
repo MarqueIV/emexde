@@ -66,28 +66,25 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentEntitlement = proc_getentitlements(child_new);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
-    /* checking if it is a daemon controlled spawning */
-    for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
+    /* verify nxtr signature blob if present */
+    ksurface_ent_result_t result = { 0 };
+    if(nxtr_read(path, &result) == KERN_SUCCESS &&
+       entitlement_mach_verify(&result, ksurface->pub_key, ksurface->pub_key_len) == KERN_SUCCESS)
     {
-        if(strncmp(path, trustDaemonPath[index], MAXPATHLEN - 1) == 0)
+        /* this was signed by us, nods head like a silly girl >< */
+        entitlement = result.blob.entitlement;
+    }
+    else
+    {
+        /* checking if it is a daemon controlled spawning */
+        for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
         {
-            entitlement = kPEEntitlementSystemDaemon;
-            goto skip_fs_ent_check;
+            if(strncmp(path, trustDaemonPath[index], MAXPATHLEN - 1) == 0)
+            {
+                entitlement = kPEEntitlementSystemDaemon;
+            }
         }
     }
-    
-    /* verify signing */
-    ksurface_ent_result_t result = { 0 };
-    if(nxtr_read(path, &result) != KERN_SUCCESS ||
-       entitlement_mach_verify(&result, ksurface->pub_key, ksurface->pub_key_len) != KERN_SUCCESS)
-    {
-        /* this was not signed by us, shakes head like a silly girl >< */
-        goto skip_fs_ent_check;
-    }
-    
-    entitlement = result.blob.entitlement;
-    
-skip_fs_ent_check:
     
     /*
      * only a platform process, may be able to
