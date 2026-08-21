@@ -195,7 +195,7 @@ final class NXBuilder: NSObject {
                     throw nsError
                 }
             } else if self.project.projectConfig.schemeKind == .utility {
-                MachOObject.signBinary(atPath: self.project.machoURL.path)
+                LCUtils.signMachO(at: self.project.machoURL)
                 if self.project.projectConfig.signMachOWithNyxianEntitlements {
                     macho_after_sign(self.project.machoURL.path, self.project.entitlementsConfig.entitlement)
                 }
