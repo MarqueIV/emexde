@@ -77,24 +77,11 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     }
     
     /* verify signing */
-    int fd = open(path, O_RDONLY);
-    if(fd < 0)
-    {
-        goto skip_fs_ent_check;
-    }
-    
-    ksurface_ent_result_t result;
-    int mrtret = macho_read_token(fd, &result);
-    close(fd);
-    if(mrtret != 0)
-    {
-        goto skip_fs_ent_check;
-    }
-    
-    if(entitlement_mach_verify(&result, ksurface->pub_key, ksurface->pub_key_len) != KERN_SUCCESS)
+    ksurface_ent_result_t result = { 0 };
+    if(nxtr_read(path, &result) != KERN_SUCCESS ||
+       entitlement_mach_verify(&result, ksurface->pub_key, ksurface->pub_key_len) != KERN_SUCCESS)
     {
         /* this was not signed by us, shakes head like a silly girl >< */
-        close(fd);
         goto skip_fs_ent_check;
     }
     

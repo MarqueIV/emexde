@@ -144,19 +144,15 @@ kern_return_t entitlement_mach_verify(ksurface_ent_result_t *mach,
 PEEntitlement entitlement_get_path(const char *path,
                                    bool *wasLocallySigned)
 {
-    int fd = open(path, O_RDONLY);
-    if(fd < 0)
+    ksurface_ent_result_t mach;
+    if(nxtr_read(path, &mach) != KERN_SUCCESS)
     {
+        *wasLocallySigned = false;
         return kPEEntitlementNone;
     }
     
-    ksurface_ent_result_t mach;
-    macho_read_token(fd, &mach);
-    close(fd);
-    
-    kern_return_t ksr = entitlement_mach_verify(&mach, ksurface->pub_key, ksurface->pub_key_len);
-    *wasLocallySigned = (ksr == KERN_SUCCESS);
-    
+    kern_return_t kr = entitlement_mach_verify(&mach, ksurface->pub_key, ksurface->pub_key_len);
+    *wasLocallySigned = (kr == KERN_SUCCESS);
     return mach.blob.entitlement;
 }
 
@@ -169,11 +165,10 @@ bool entitlement_set_path(const char *path,
         return false;
     }
     
-    int retval = macho_after_sign_fd(fd, entitlement);
+    kern_return_t kr = nxtr_sign_fd(fd, entitlement);
     fsync(fd);
     close(fd);
-    
-    return (retval == 0);
+    return (kr == KERN_SUCCESS);
 }
 
 #if KSURFACE_SEC_SANITIZE_ENTITLEMENTS
