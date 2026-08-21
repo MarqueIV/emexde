@@ -19,15 +19,11 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LIVESHIM_H
-#define LIVESHIM_H
+#ifndef LIVESHIM_DYLD_H
+#define LIVESHIM_DYLD_H
 
-#include <CoreFoundation/CoreFoundation.h>
+#include <dlfcn.h>
 
-CF_EXPORT double LiveShimVersionNumber;
-CF_EXPORT const unsigned char LiveShimVersionString[];
+void *dlopen_cdhash_verified(const char *path, int flags, const char *cdhash);
 
-#include <LiveShim/LiveShimSyscall.h>
-#include <LiveShim/dyld.h>
-
-#endif /* LIVESHIM_H */
+#endif /* LIVESHIM_DYLD_H */
