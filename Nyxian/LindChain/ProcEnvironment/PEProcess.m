@@ -32,6 +32,28 @@
 #import <MobileDevelopmentKit/MDKThreadPool.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 
+static NSString *PEResolveEntitlementPath(NSString *template,
+                                          NSDictionary<NSString *, NSString *> *vars)
+{
+    NSMutableString *result = [template mutableCopy];
+    for(NSString *key in vars)
+    {
+        NSString *token = [NSString stringWithFormat:@"$(%@)", key];
+        [result replaceOccurrencesOfString:token withString:vars[key] options:0 range:NSMakeRange(0, result.length)];
+    }
+    return result;
+}
+
+static NSString *PECanonicalizePath(NSString *path)
+{
+    char resolved[PATH_MAX];
+    if(realpath(path.fileSystemRepresentation, resolved) == NULL)
+    {
+        return nil;
+    }
+    return [NSString stringWithUTF8String:resolved];
+}
+
 @implementation PEProcess {
     NSHashTable<id<PEProcessObserver>> *_observers;
     os_unfair_lock _lock;
@@ -67,62 +89,75 @@
         return nil;
     }
     
+    ksurface_trust_identity_t *identity = trust_identity_create_from_path([self.executablePath UTF8String]);
+    if(identity == NULL)
+    {
+        [self terminate];
+        proctil(kProctilActionUnlock);
+        return nil;
+    }
+    
+    if(identity->type == kPETrustTypeTrusted)
+    {
+        NSMutableDictionary *mutableItems = [items mutableCopy];
+        [mutableItems setObject:@[
+            [NXBootstrap issueSandboxFileExtensionForURL:[[NXBootstrap shared] rootfsURL] readWrite:YES],
+        ] forKey:@"PEFilePermissions"];
+        items = mutableItems;
+    }
+    else
+    {
+        NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
+        NSDictionary *vars = @{
+            @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
+            @"EXECUTABLE": self.executablePath,
+        };
+        NSDictionary *entitlements = (__bridge NSDictionary*)identity->entitlements;
+        NSArray<NSString*> *readFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
+        NSArray<NSString*> *readWriteFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
+        if(readFilePermissions != nil)
+        {
+            for(NSString *readFilePermission in readFilePermissions)
+            {
+                NSString *path = PEResolveEntitlementPath(readFilePermission, vars);
+                NSString *actualPath = PECanonicalizePath(path);
+                if(actualPath)
+                {
+                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
+                    if(sandboxExtension != nil)
+                    {
+                        [filePermissions addObject:sandboxExtension];
+                    }
+                }
+            }
+        }
+        if(readWriteFilePermissions != nil)
+        {
+            for(NSString *readWriteFilePermission in readWriteFilePermissions)
+            {
+                NSString *path = PEResolveEntitlementPath(readWriteFilePermission, vars);
+                NSString *actualPath = PECanonicalizePath(path);
+                if(actualPath)
+                {
+                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
+                    if(sandboxExtension != nil)
+                    {
+                        [filePermissions addObject:sandboxExtension];
+                    }
+                }
+            }
+        }
+        NSMutableDictionary *mutableItems = [items mutableCopy];
+        [mutableItems setObject:filePermissions forKey:@"PEFilePermissions"];
+        items = mutableItems;
+    }
+    
     /* assigning potential bundle information */
     LDEApplicationObject *applicationObject = nil;
     if(PEUserspaceManager.shared.isLaunchServiceManagerStable)
     {
         applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:self.executablePath];
-        if(applicationObject && applicationObject.bundlePath && applicationObject.containerPath)
-        {
-            bool wasLocallySigned;
-            PEEntitlement entitlement = entitlement_get_path([applicationObject.executablePath UTF8String], &wasLocallySigned);
-            if(!wasLocallySigned)
-            {
-                goto continue_assigning;
-            }
-            
-            /* this will override the existing permissions */
-            NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
-            
-            if(entitlement_got_entitlement(entitlement, kPEEntitlementFileRootRW))
-            {
-                [filePermissions addObject:[NXBootstrap issueSandboxFileExtensionForURL:[[NXBootstrap shared] rootfsURL] readWrite:YES]];
-                goto overwrite_file_permissions;
-            }
-            
-            /*if(entitlement_got_entitlement(entitlement, kPEEntitlementFileBundleRW))
-             {*/
-            [filePermissions addObject:[NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:applicationObject.bundlePath] readWrite:YES]];
-            /*}
-             else
-             {
-             [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.executablePath] readOnly:NO]];
-             [filePermissions addObject:[NXBootstrap issueSandboxFileExtension:[NSURL fileURLWithPath:applicationObject.bundlePath] readOnly:YES]];
-             }*/
-            
-            if(entitlement_got_entitlement(entitlement, kPEEntitlementFileContainerRW))
-            {
-                [filePermissions addObject:[NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readWrite:YES]];
-            }
-            else
-            {
-                [filePermissions addObjectsFromArray:@[
-                    [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:applicationObject.containerPath] readWrite:NO],
-                    [NXBootstrap issueSandboxFileExtensionForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Documents"] readWrite:YES],
-                    [NXBootstrap issueSandboxFileExtensionForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Library"] readWrite:YES],
-                    [NXBootstrap issueSandboxFileExtensionForURL:[[NSURL fileURLWithPath:applicationObject.containerPath] URLByAppendingPathComponent:@"Tmp"] readWrite:YES],
-                ]];
-            }
-            
-        overwrite_file_permissions:
-            {
-                NSMutableDictionary *mutableItems = [items mutableCopy];
-                [mutableItems setObject:filePermissions forKey:@"PEFilePermissions"];
-                items = mutableItems;
-            }
-        }
     }
-continue_assigning:
     self.bundleIdentifier = applicationObject ? applicationObject.bundleIdentifier : nil;
     self.displayName = applicationObject ? applicationObject.localizedName : [self.executablePath lastPathComponent];
     
@@ -149,7 +184,7 @@ continue_assigning:
     }
     
     ksurface_proc_t *child = NULL;
-    kern_return_t kr = proc_spawn(proc ?: kernel_proc_, &child, self.pid, [self.executablePath UTF8String]);
+    kern_return_t kr = proc_spawn(proc ?: kernel_proc_, &child, self.pid, identity);
     if(kr != KERN_SUCCESS)
     {
         [self terminate];

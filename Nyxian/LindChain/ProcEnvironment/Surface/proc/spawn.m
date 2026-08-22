@@ -20,7 +20,6 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Surface/trust.h>
 #import <LindChain/ProcEnvironment/Surface/entitlement.h>
 #import <LindChain/ProcEnvironment/Surface/proc/spawn.h>
 #import <LindChain/ProcEnvironment/Surface/proc/insert.h>
@@ -35,9 +34,9 @@
 kern_return_t proc_spawn(ksurface_proc_t *parent,
                          ksurface_proc_t **child,
                          pid_t child_pid,
-                         const char *path)
+                         ksurface_trust_identity_t *identity)
 {
-    assert(parent != NULL && child != NULL && path != NULL);
+    assert(parent != NULL && child != NULL && identity != NULL);
     
     ksurface_proc_t *child_new = kvo_copy(parent);
     if(child_new == NULL)
@@ -57,7 +56,6 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
     /* verify trust */
-    ksurface_trust_identity_t *identity = trust_identity_create_from_path(path);
     if(identity == NULL)
     {
         kvo_release(child_new);
@@ -133,8 +131,8 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     proc_setmaxentitlements(child_new, combinedEntitlement);
         
     /* FIXME: argv[0] shall be used for p_comm and not the last path component */
-    const char *name = strrchr(path, '/');
-    name = name ? name + 1 : path;
+    const char *name = strrchr(identity->path, '/');
+    name = name ? name + 1 : identity->path;
     strlcpy(child_new->bsd.kp_proc.p_comm, name, MAXCOMLEN + 1);
     
     /* insert will retain the child process */

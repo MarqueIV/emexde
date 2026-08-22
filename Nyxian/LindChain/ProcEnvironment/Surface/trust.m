@@ -928,7 +928,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         strlcpy(identity->path, path, MAXPATHLEN);
         
         memcpy(identity->cdhash, result_nxtr.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
-        identity->entitlements = trust_identity_entitlements_from_legacy_entitlements(result_nxtr.blob.entitlement);
+        identity->entitlements = trust_identity_validate_entitlements(executableString, trust_identity_entitlements_from_legacy_entitlements(result_nxtr.blob.entitlement));
         if(identity->entitlements == NULL)
         {
             CFRelease(executableString);
