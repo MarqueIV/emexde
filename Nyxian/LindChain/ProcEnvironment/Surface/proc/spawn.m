@@ -111,16 +111,39 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
         currentEntitlement = kPEEntitlementNone;
     }
     
-    /* checking for special platform root credentials */
-    if(entitlement_got_entitlement(entitlement, kPEEntitlementPlatformRoot) &&
-       entitlement_got_entitlement(entitlement, kPEEntitlementPlatform))
+#if KSURFACE_SYS_UCRED_ENABLED
+    
+    /* only platform processes can use those */
+    if(entitlement_got_entitlement(entitlement, kPEEntitlementPlatform))
     {
         /*
          * child process exeuctable is platform binary and has
          * the special platform root entitlement.
          */
-        proc_setrootcred(child_new);
+        if(entitlement_got_entitlement(entitlement, kPEEntitlementPlatformRoot))
+        {
+            proc_setrootcred(child_new);
+        }
+        
+        /* special user and group entitlement */
+        CFNumberRef entitlementUserIdentifier = CFDictionaryGetValue(identity->entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_USER);
+        CFNumberRef entitlementGroupIdentifier = CFDictionaryGetValue(identity->entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_GROUP);
+        int32_t identifier;
+        if(entitlementUserIdentifier != NULL && CFNumberGetValue(entitlementUserIdentifier, kCFNumberSInt32Type, &identifier))
+        {
+            proc_setruid(child_new, identifier);
+            proc_seteuid(child_new, identifier);
+            proc_setsvuid(child_new, identifier);
+        }
+        if(entitlementGroupIdentifier != NULL && CFNumberGetValue(entitlementGroupIdentifier, kCFNumberSInt32Type, &identifier))
+        {
+            proc_setrgid(child_new, identifier);
+            proc_setegid(child_new, identifier);
+            proc_setsvgid(child_new, identifier);
+        }
     }
+    
+#endif /* KSURFACE_SYS_UCRED_ENABLED */
     
     /*
      * now combining the current entitlements

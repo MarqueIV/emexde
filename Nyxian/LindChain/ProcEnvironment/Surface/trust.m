@@ -685,13 +685,14 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         { KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN,          CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN_SIGNED,   CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_PROC_INHERITE_ENT,   CFBooleanGetTypeID() },
+        { KSURFACE_NXT2_ENTITLEMENT_ID_USER,                CFNumberGetTypeID() },
+        { KSURFACE_NXT2_ENTITLEMENT_ID_GROUP,               CFNumberGetTypeID() },
         
         /* management */
         { KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_HOST,           CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_CREDENTIALS,    CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_LAUNCHSERVICE,  CFBooleanGetTypeID() },
-        { KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_LAUNCHSERVICE,  CFBooleanGetTypeID() },
-        { KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_LAUNCHSERVICE,  CFBooleanGetTypeID() },
+
         
         /* launch services */
         { KSURFACE_NXT2_ENTITLEMENT_ID_LS_START,            CFBooleanGetTypeID() },
