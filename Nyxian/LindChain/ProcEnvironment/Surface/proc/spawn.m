@@ -32,12 +32,6 @@
 #import <LindChain/Services/containerd/PEContainer.h>
 #include <ksurface_config.h>
 
-const char *trustDaemonPath[] = {
-    "/sbin/launchd",
-    "/usr/libexec/containerd",
-    "/usr/libexec/installd",
-};
-
 kern_return_t proc_spawn(ksurface_proc_t *parent,
                          ksurface_proc_t **child,
                          pid_t child_pid,
@@ -50,7 +44,6 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     {
         return KERN_FAILURE;
     }
-    child_new->nyx.explicit_cdhash = false;
 
     proc_setppid(child_new, proc_getpid(child_new));    /* as the child is the copy of the parent the current pid is the ppid */
     proc_setpid(child_new, child_pid);      /* function passed pid of child */
@@ -64,29 +57,25 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
     /* verify nxtr signature blob if present */
-    ksurface_trust_identity_t *identity = trust_identity_create(path);
-    if(identity != NULL)
+    ksurface_trust_identity_t *identity = trust_identity_create_from_path(path);
+    if(identity == NULL)
     {
-        if(identity->isSigned)
-        {
-            /* this was signed by us, nods head like a silly girl >< */
+        kvo_release(child_new);
+        return KERN_FAILURE;
+    }
+    
+    /* TODO: this is very early */
+    switch(identity->type)
+    {
+        case kPETrustTypeFallback:
+        case kPETrustTypeSignature:
+        case kPETrustTypeTrusted:
+        default:
             entitlement = identity->legacyEntitlements;
-            memcpy(child_new->nyx.cdhash, identity->cdhash, USER_FSIGNATURES_CDHASH_LEN);
-            child_new->nyx.explicit_cdhash = true;
-        }
-        trust_identity_destroy(identity);
+            break;
     }
-    else
-    {
-        /* checking if it is a daemon controlled spawning */
-        for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
-        {
-            if(strncmp(path, trustDaemonPath[index], MAXPATHLEN - 1) == 0)
-            {
-                entitlement = kPEEntitlementSystemDaemon;
-            }
-        }
-    }
+    
+    child_new->nyx.identity = identity;
     
     /*
      * only a platform process, may be able to
@@ -142,8 +131,6 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement combinedEntitlement = entitlement_sanitize(currentEntitlement | entitlement);
     proc_setentitlements(child_new, combinedEntitlement);
     proc_setmaxentitlements(child_new, combinedEntitlement);
-    
-    strlcpy(child_new->nyx.executable_path, path, PATH_MAX);
         
     /* FIXME: argv[0] shall be used for p_comm and not the last path component */
     const char *name = strrchr(path, '/');

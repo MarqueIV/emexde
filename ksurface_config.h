@@ -27,8 +27,8 @@
  * -------------------------------------------------------------------- */
 
 /* kernel process configuration */
-#define KSURFACE_EMIT_KERNEL_TASK   0   /* adds kernel task entry, instead of Nyxian entry */
-#define KSURFACE_EMIT_LAUNCHD       0   /* adds a launchd entry */
+#define KSURFACE_EMIT_KERNEL_TASK   0   /* adds kernel task entry, instead of Nyxian entry MARK: unsupported currently */
+#define KSURFACE_EMIT_LAUNCHD       0   /* adds a launchd entry MARK: unsupported currently */
 
 /* syscalling coverage configuration */
 #define KSURFACE_SYS_IO_ENABLED     0   /* very early in development */
