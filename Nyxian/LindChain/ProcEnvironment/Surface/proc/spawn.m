@@ -126,8 +126,8 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
         }
         
         /* special user and group entitlement */
-        CFNumberRef entitlementUserIdentifier = CFDictionaryGetValue(identity->entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_USER);
-        CFNumberRef entitlementGroupIdentifier = CFDictionaryGetValue(identity->entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_GROUP);
+        CFNumberRef entitlementUserIdentifier = CFDictionaryGetValue(identity->entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_USER);
+        CFNumberRef entitlementGroupIdentifier = CFDictionaryGetValue(identity->entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_GROUP);
         int32_t identifier;
         if(entitlementUserIdentifier != NULL && CFNumberGetValue(entitlementUserIdentifier, kCFNumberSInt32Type, &identifier))
         {

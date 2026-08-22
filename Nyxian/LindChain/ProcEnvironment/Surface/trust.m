@@ -672,6 +672,8 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         /* foundational */
         { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM,            CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_ROOT,       CFBooleanGetTypeID() },
+        { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_USER,       CFNumberGetTypeID()  },
+        { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_GROUP,      CFNumberGetTypeID()  },
         { KSURFACE_NXT2_ENTITLEMENT_ID_GET_TASK_ALLOW,      CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_TASK_FOR_PID,        CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_SUGID,               CFBooleanGetTypeID() },
@@ -685,8 +687,6 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         { KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN,          CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN_SIGNED,   CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_PROC_INHERITE_ENT,   CFBooleanGetTypeID() },
-        { KSURFACE_NXT2_ENTITLEMENT_ID_USER,                CFNumberGetTypeID() },
-        { KSURFACE_NXT2_ENTITLEMENT_ID_GROUP,               CFNumberGetTypeID() },
         
         /* management */
         { KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_HOST,           CFBooleanGetTypeID() },
