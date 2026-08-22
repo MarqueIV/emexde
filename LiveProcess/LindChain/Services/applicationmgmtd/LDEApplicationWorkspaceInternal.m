@@ -120,6 +120,7 @@
     [fileManager createDirectoryAtURL:self.binaryURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.homeURL withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:[NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"var/root"]] withIntermediateDirectories:YES attributes:nil error:nil];
+    [fileManager createDirectoryAtURL:[NSURL fileURLWithPath:[homeDir stringByAppendingPathComponent:@"var/blastbox"]] withIntermediateDirectories:YES attributes:nil error:nil];
     [fileManager createDirectoryAtURL:self.tmpURL withIntermediateDirectories:YES attributes:nil error:nil];
     
     // Enumerating all app bundles

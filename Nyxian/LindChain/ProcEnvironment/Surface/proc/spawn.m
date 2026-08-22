@@ -56,7 +56,7 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentEntitlement = proc_getentitlements(child_new);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
-    /* verify nxtr signature blob if present */
+    /* verify trust */
     ksurface_trust_identity_t *identity = trust_identity_create_from_path(path);
     if(identity == NULL)
     {
