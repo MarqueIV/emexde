@@ -32,16 +32,41 @@
 #import <MobileDevelopmentKit/MDKThreadPool.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 
-static NSString *PEResolveEntitlementPath(NSString *template,
-                                          NSDictionary<NSString *, NSString *> *vars)
+static NSArray<NSString *> *PEResolveEntitlementPaths(NSString *pathTemplate,
+                                                      NSDictionary<NSString *, NSString *> *vars)
 {
-    NSMutableString *result = [template mutableCopy];
+    NSMutableString *resolved = [pathTemplate mutableCopy];
     for(NSString *key in vars)
     {
         NSString *token = [NSString stringWithFormat:@"$(%@)", key];
-        [result replaceOccurrencesOfString:token withString:vars[key] options:0 range:NSMakeRange(0, result.length)];
+        [resolved replaceOccurrencesOfString:token withString:vars[key] options:0 range:NSMakeRange(0, resolved.length)];
     }
-    return result;
+    
+    if(![resolved hasSuffix:@"/*"])
+    {
+        return @[[resolved copy]];
+    }
+    
+    NSString *dir = [resolved substringToIndex:resolved.length - 2];
+    while(dir.length > 1 && [dir hasSuffix:@"/"])
+    {
+        dir = [dir substringToIndex:dir.length - 1];
+    }
+    
+    NSError *err = nil;
+    NSArray<NSString *> *entries = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dir error:&err];
+    if(!entries)
+    {
+        return @[];
+    }
+    
+    NSMutableArray<NSString *> *paths = [NSMutableArray arrayWithCapacity:entries.count];
+    for(NSString *name in entries)
+    {
+        [paths addObject:[dir stringByAppendingPathComponent:name]];
+    }
+    [paths sortUsingSelector:@selector(compare:)];
+    return [paths copy];
 }
 
 static NSString *PECanonicalizePath(NSString *path)
@@ -117,15 +142,15 @@ static NSString *PECanonicalizePath(NSString *path)
         NSDictionary *entitlements = (__bridge NSDictionary*)sb_identity->entitlements;
         NSArray<NSString*> *readFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
         NSArray<NSString*> *readWriteFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
-        if(readFilePermissions != nil)
+        for(NSString *readWriteFilePermission in readWriteFilePermissions)
         {
-            for(NSString *readFilePermission in readFilePermissions)
+            NSArray<NSString*> *paths = PEResolveEntitlementPaths(readWriteFilePermission, vars);
+            for(NSString *path in paths)
             {
-                NSString *path = PEResolveEntitlementPath(readFilePermission, vars);
                 NSString *actualPath = PECanonicalizePath(path);
                 if(actualPath)
                 {
-                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
+                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
                     if(sandboxExtension != nil)
                     {
                         [filePermissions addObject:sandboxExtension];
@@ -133,15 +158,15 @@ static NSString *PECanonicalizePath(NSString *path)
                 }
             }
         }
-        if(readWriteFilePermissions != nil)
+        for(NSString *readFilePermission in readFilePermissions)
         {
-            for(NSString *readWriteFilePermission in readWriteFilePermissions)
+            NSArray<NSString*> *paths = PEResolveEntitlementPaths(readFilePermission, vars);
+            for(NSString *path in paths)
             {
-                NSString *path = PEResolveEntitlementPath(readWriteFilePermission, vars);
                 NSString *actualPath = PECanonicalizePath(path);
                 if(actualPath)
                 {
-                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
+                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
                     if(sandboxExtension != nil)
                     {
                         [filePermissions addObject:sandboxExtension];
