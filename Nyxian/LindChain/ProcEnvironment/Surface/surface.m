@@ -242,7 +242,6 @@ static inline void ksurface_kinit_kproc(void)
     proc_setpid(kproc, 0);
     proc_setppid(kproc, 0);
     proc_setsid(kproc, 0);
-    kproc->bsd.kp_proc.p_flag = P_SYSTEM | P_LP64;
     strlcpy(kproc->bsd.kp_proc.p_comm, "kernel_task", MAXCOMLEN);
 #else
     /* setting up properties */
@@ -273,6 +272,7 @@ static inline void ksurface_kinit_kproc(void)
     kproc->task = task;
 #endif /* KSURFACE_EMIT_KERNEL_TASK */
     
+    kproc->bsd.kp_proc.p_flag = P_SYSTEM | P_LP64;
     proc_setentitlements(kproc, kPEEntitlementKernel);
     proc_setmaxentitlements(kproc, kPEEntitlementKernel);
     

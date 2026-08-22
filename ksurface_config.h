@@ -33,8 +33,8 @@
  * -------------------------------------------------------------------- */
 
 /* kernel process properties */
-#define KSURFACE_EMIT_KERNEL_TASK   1   /* adds kernel task entry, instead of Nyxian entry */
-#define KSURFACE_EMIT_LAUNCHD       1   /* adds a launchd entry */
+#define KSURFACE_EMIT_KERNEL_TASK   0   /* adds kernel task entry, instead of Nyxian entry */
+#define KSURFACE_EMIT_LAUNCHD       0   /* adds a launchd entry */
 
 /* syscalling coverage */
 #define KSURFACE_SYS_IO_ENABLED     0   /* very early in development */
@@ -45,7 +45,8 @@
 #define KSURFACE_SYS_PROC_ENABLED   1
 
 /* security features */
-#define KSURFACE_SEC_SANITIZE_ENTITLEMENTS  1   /* strips unecessary entitlements at launch time */
+#define KSURFACE_SEC_SANITIZE_ENTITLEMENTS      1   /* strips unecessary entitlements at launch time */
+#define KSURFACE_SEC_CODESIGNATURE_ACCEPT_NXTR  1
 
 /* dyld debugging features */
 #define KSURFACE_DYLD_HOOK_LOGGING_ENABLED  0   /* enables logging from the hooks */
