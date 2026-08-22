@@ -126,8 +126,13 @@ static void *hook_mmap(void *addr,
         goto log_return;
     }
     char newTmpPath[PATH_MAX];
-    /* very smart duy, ima be fair using ASLR as a UUID generator is finally something good you've done */
-    sprintf(newTmpPath, "%s/tmp/%p.dylib", mmap_sandbox_map_exec_allowed_path, addr);   /* use tmp so iOS clears it automatically in LP home */
+    /*
+     * very dumb duy, ima be fair using ASLR as a UUID generator is something you've gone too far with
+     * that is a text book way to defeat  ASLR, i'd better use arc4random_buf.
+     */
+    void *random;
+    arc4random_buf(&random, sizeof(void*));
+    snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
     /* TODO: copy it instead of rename, meaning we need to do more with fcntl and fstat and what not */
     if(rename(filePath, newTmpPath) != 0)
     {
