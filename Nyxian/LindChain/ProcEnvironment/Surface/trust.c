@@ -598,3 +598,76 @@ signature_invalid:
     result->entitlements = entitlements;
     return KERN_SUCCESS;
 }
+
+ksurface_trust_identity_t *trust_identity_create(const char *path)
+{
+    if(path == NULL)
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+    
+    /* modern */
+    ksurface_nxt2_t result_nxt2;
+    if(nxt2_read(path, &result_nxt2) == KERN_SUCCESS)
+    {
+        ksurface_trust_identity_t *identity = malloc(sizeof(ksurface_trust_identity_t));
+        if(identity == NULL)
+        {
+            errno = ENOMEM;
+            return NULL;
+        }
+        
+        memcpy(identity->cdhash, result_nxt2.cdhash, USER_FSIGNATURES_CDHASH_LEN);
+        identity->entitlements = result_nxt2.entitlements;
+        identity->isValid = result_nxt2.isValid;
+        identity->isSigned = result_nxt2.isSigned;
+        identity->isCdHashValid = result_nxt2.isCdHashValid;
+        //identity->legacyEntitlements  TODO: need to convert them
+        //identity->filePermission      TODO: need to assign them
+        return identity;
+    }
+    
+    /* legacy */
+    ksurface_nxtr_result_t result_nxtr;
+    if(nxtr_read(path, &result_nxtr) == KERN_SUCCESS)
+    {
+        ksurface_trust_identity_t *identity = malloc(sizeof(ksurface_trust_identity_t));
+        if(identity == NULL)
+        {
+            errno = ENOMEM;
+            return NULL;
+        }
+        
+        memcpy(identity->cdhash, result_nxtr.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
+        //identity->entitlements    TODO: need to convert them
+        identity->isValid = result_nxtr.blob_valid;
+        identity->isSigned = result_nxtr.blob_valid;    /* the same thing on nxtr */
+        identity->isCdHashValid = result_nxtr.cdhash_valid;
+        identity->legacyEntitlements = result_nxtr.blob.entitlement;
+        //identity->filePermission  TODO: need to convert them
+        return identity;
+    }
+    
+    /* unknown or unsigned? */
+    errno = ENOTSUP;
+    return NULL;
+}
+
+void trust_identity_destroy(ksurface_trust_identity_t *identity)
+{
+    if(identity == NULL)
+    {
+        return;
+    }
+    
+    if(identity->entitlements != NULL)
+    {
+        CFRelease(identity->entitlements);
+    }
+    if(identity->filePermission != NULL)
+    {
+        CFRelease(identity->filePermission);
+    }
+    free(identity);
+}
