@@ -52,6 +52,7 @@ typedef struct {
     bool isCdHashValid;
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     CFDictionaryRef entitlements;
+    CFArrayRef filePermissions;
     PEEntitlement legacyEntitlements;
     PEEntitlement maxLegacyEntitlements;
     PETrustType type;

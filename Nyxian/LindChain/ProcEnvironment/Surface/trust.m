@@ -21,6 +21,7 @@
 */
 
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 #include <LindChain/ProcEnvironment/Surface/trust.h>
 #include <LindChain/ProcEnvironment/Surface/entitlement.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
@@ -765,6 +766,99 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
     return clean;
 }
 
+static NSArray<NSString *> *PEResolveEntitlementPaths(NSString *pathTemplate,
+                                                      NSDictionary<NSString *, NSString *> *vars)
+{
+    NSMutableString *resolved = [pathTemplate mutableCopy];
+    for(NSString *key in vars)
+    {
+        NSString *token = [NSString stringWithFormat:@"$(%@)", key];
+        [resolved replaceOccurrencesOfString:token withString:vars[key] options:0 range:NSMakeRange(0, resolved.length)];
+    }
+    
+    if(![resolved hasSuffix:@"/*"])
+    {
+        return @[[resolved copy]];
+    }
+    
+    NSString *dir = [resolved substringToIndex:resolved.length - 2];
+    while(dir.length > 1 && [dir hasSuffix:@"/"])
+    {
+        dir = [dir substringToIndex:dir.length - 1];
+    }
+    
+    NSError *err = nil;
+    NSArray<NSString *> *entries = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dir error:&err];
+    if(!entries)
+    {
+        return @[];
+    }
+    
+    NSMutableArray<NSString *> *paths = [NSMutableArray arrayWithCapacity:entries.count];
+    for(NSString *name in entries)
+    {
+        [paths addObject:[dir stringByAppendingPathComponent:name]];
+    }
+    [paths sortUsingSelector:@selector(compare:)];
+    return [paths copy];
+}
+
+static NSString *PECanonicalizePath(NSString *path)
+{
+    char resolved[PATH_MAX];
+    if(realpath(path.fileSystemRepresentation, resolved) == NULL)
+    {
+        return nil;
+    }
+    return [NSString stringWithUTF8String:resolved];
+}
+
+static CFArrayRef trust_identity_gib_file_permissions(CFStringRef executableString,
+                                                      CFDictionaryRef entitlements)
+{
+    NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
+    NSDictionary *vars = @{
+        @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
+        @"EXECUTABLE": (__bridge NSString*)executableString,
+    };
+    NSDictionary *nsEntitlements = (__bridge NSDictionary*)entitlements;
+    NSArray<NSString*> *readFilePermissions = nsEntitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
+    NSArray<NSString*> *readWriteFilePermissions = nsEntitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
+    for(NSString *readWriteFilePermission in readWriteFilePermissions)
+    {
+        NSArray<NSString*> *paths = PEResolveEntitlementPaths(readWriteFilePermission, vars);
+        for(NSString *path in paths)
+        {
+            NSString *actualPath = PECanonicalizePath(path);
+            if(actualPath)
+            {
+                NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
+                if(sandboxExtension != nil)
+                {
+                    [filePermissions addObject:sandboxExtension];
+                }
+            }
+        }
+    }
+    for(NSString *readFilePermission in readFilePermissions)
+    {
+        NSArray<NSString*> *paths = PEResolveEntitlementPaths(readFilePermission, vars);
+        for(NSString *path in paths)
+        {
+            NSString *actualPath = PECanonicalizePath(path);
+            if(actualPath)
+            {
+                NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
+                if(sandboxExtension != nil)
+                {
+                    [filePermissions addObject:sandboxExtension];
+                }
+            }
+        }
+    }
+    return (__bridge_retained CFArrayRef)filePermissions;
+}
+
 static PEEntitlement trust_identity_legacy_entitlements_from_entitlements(CFDictionaryRef entitlements)
 {
     PEEntitlement legacyEntitlements = kPEEntitlementNone;
@@ -909,6 +1003,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         identity->isCdHashValid = result_nxt2.isCdHashValid;
         identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
         identity->maxLegacyEntitlements = identity->legacyEntitlements;
+        identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         return identity;
     }
     
@@ -947,6 +1042,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         identity->isCdHashValid = result_nxtr.cdhash_valid;
         identity->legacyEntitlements = result_nxtr.blob.entitlement;
         identity->maxLegacyEntitlements = identity->legacyEntitlements;
+        identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         return identity;
     }
 #endif /* KSURFACE_SEC_CODESIGNATURE_ACCEPT_NXTR */
@@ -985,6 +1081,7 @@ fallback:
         identity->isSigned = true;
         identity->isValid = true;
         identity->isCdHashValid = false;
+        identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         
         CFRelease(executableString);
         return identity;
@@ -1001,6 +1098,10 @@ void trust_identity_destroy(ksurface_trust_identity_t *identity)
     if(identity->entitlements != NULL)
     {
         CFRelease(identity->entitlements);
+    }
+    if(identity->filePermissions != NULL)
+    {
+        CFRelease(identity->filePermissions);
     }
     free(identity);
 }

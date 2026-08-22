@@ -32,53 +32,6 @@
 #import <MobileDevelopmentKit/MDKThreadPool.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 
-static NSArray<NSString *> *PEResolveEntitlementPaths(NSString *pathTemplate,
-                                                      NSDictionary<NSString *, NSString *> *vars)
-{
-    NSMutableString *resolved = [pathTemplate mutableCopy];
-    for(NSString *key in vars)
-    {
-        NSString *token = [NSString stringWithFormat:@"$(%@)", key];
-        [resolved replaceOccurrencesOfString:token withString:vars[key] options:0 range:NSMakeRange(0, resolved.length)];
-    }
-    
-    if(![resolved hasSuffix:@"/*"])
-    {
-        return @[[resolved copy]];
-    }
-    
-    NSString *dir = [resolved substringToIndex:resolved.length - 2];
-    while(dir.length > 1 && [dir hasSuffix:@"/"])
-    {
-        dir = [dir substringToIndex:dir.length - 1];
-    }
-    
-    NSError *err = nil;
-    NSArray<NSString *> *entries = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dir error:&err];
-    if(!entries)
-    {
-        return @[];
-    }
-    
-    NSMutableArray<NSString *> *paths = [NSMutableArray arrayWithCapacity:entries.count];
-    for(NSString *name in entries)
-    {
-        [paths addObject:[dir stringByAppendingPathComponent:name]];
-    }
-    [paths sortUsingSelector:@selector(compare:)];
-    return [paths copy];
-}
-
-static NSString *PECanonicalizePath(NSString *path)
-{
-    char resolved[PATH_MAX];
-    if(realpath(path.fileSystemRepresentation, resolved) == NULL)
-    {
-        return nil;
-    }
-    return [NSString stringWithUTF8String:resolved];
-}
-
 @implementation PEProcess {
     NSHashTable<id<PEProcessObserver>> *_observers;
     os_unfair_lock _lock;
@@ -134,49 +87,12 @@ static NSString *PECanonicalizePath(NSString *path)
     {
         /* TODO: later on we need to drop allow it to become tighter by using the still not existing trust_identity_create_from_path_with_parent_identity */
         ksurface_trust_identity_t *sb_identity = (proc == kernel_proc_) ? identity : proc->nyx.identity;    /* dont allow sandbox escape by spawning children */
-        NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
-        NSDictionary *vars = @{
-            @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
-            @"EXECUTABLE": self.executablePath,
-        };
-        NSDictionary *entitlements = (__bridge NSDictionary*)sb_identity->entitlements;
-        NSArray<NSString*> *readFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
-        NSArray<NSString*> *readWriteFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
-        for(NSString *readWriteFilePermission in readWriteFilePermissions)
+        if(sb_identity->filePermissions != NULL)
         {
-            NSArray<NSString*> *paths = PEResolveEntitlementPaths(readWriteFilePermission, vars);
-            for(NSString *path in paths)
-            {
-                NSString *actualPath = PECanonicalizePath(path);
-                if(actualPath)
-                {
-                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
-                    if(sandboxExtension != nil)
-                    {
-                        [filePermissions addObject:sandboxExtension];
-                    }
-                }
-            }
+            NSMutableDictionary *mutableItems = [items mutableCopy];
+            [mutableItems setObject:(__bridge NSArray*)sb_identity->filePermissions forKey:@"PEFilePermissions"];
+            items = mutableItems;
         }
-        for(NSString *readFilePermission in readFilePermissions)
-        {
-            NSArray<NSString*> *paths = PEResolveEntitlementPaths(readFilePermission, vars);
-            for(NSString *path in paths)
-            {
-                NSString *actualPath = PECanonicalizePath(path);
-                if(actualPath)
-                {
-                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
-                    if(sandboxExtension != nil)
-                    {
-                        [filePermissions addObject:sandboxExtension];
-                    }
-                }
-            }
-        }
-        NSMutableDictionary *mutableItems = [items mutableCopy];
-        [mutableItems setObject:filePermissions forKey:@"PEFilePermissions"];
-        items = mutableItems;
     }
     
     /* assigning potential bundle information */
