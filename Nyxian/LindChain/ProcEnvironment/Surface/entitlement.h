@@ -166,14 +166,18 @@ struct __attribute__((packed)) ksurface_nxtr_blob {
     size_t mac_len;
 };
 
-/* new better plist base entitlement format */
-struct __attribute__((packed)) ksurface_nxt2_blob {
+/* header contains everything signed  */
+struct __attribute__((packed)) ksurface_nxt2_blob_header {
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     uint64_t nonce;
-    uint8_t mac[72];
-    size_t mac_len;
     size_t plist_len;
     const char plist_str[];
+};
+
+/* footer remains unsigned, it contains the signing identity */
+struct __attribute__((packed))ksurface_nxt2_blob_footer {
+    size_t mac_len;
+    uint8_t mac[];
 };
 
 struct ksurface_nxt2 {
