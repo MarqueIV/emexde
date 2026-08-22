@@ -751,7 +751,7 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         
         @autoreleasepool {
             LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:(__bridge NSString*)executablePath];
-            if(applicationObject != NULL)
+            if(applicationObject != NULL && applicationObject.bundlePath != NULL && applicationObject.containerPath != NULL)
             {
                 CFArrayAppendValue(rwPaths, (__bridge CFStringRef)applicationObject.bundlePath);
                 CFArrayAppendValue(rwPaths, (__bridge CFStringRef)applicationObject.containerPath);
