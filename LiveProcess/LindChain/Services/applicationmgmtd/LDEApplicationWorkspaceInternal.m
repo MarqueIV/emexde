@@ -468,7 +468,7 @@ create_container:
 
 - (void)utilityHomePathWithReply:(void (^)(NSString*))reply
 {
-    NSString *homePath = [NSHomeDirectory() stringByAppendingPathComponent:@"/Documents/var/mobile"];
+    NSString *homePath = [NSHomeDirectory() stringByAppendingPathComponent:@"/var/mobile"];
     
     NSURL *homeURL = [NSURL fileURLWithPath:homePath];
     
