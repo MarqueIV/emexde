@@ -530,7 +530,7 @@ kern_return_t nxt2_read_fd(int fd,
     result->isValid = true; /* everything parsed successfully */
     
     memcpy(result->cdhash, blob_header->cdhash, USER_FSIGNATURES_CDHASH_LEN);
-    LCMachO *machO = LCMapMachOFromFDRO(fd);
+    LCMachO *machO = LCMapMachOFromFDRO(dup(fd));
     if(machO != NULL)
     {
         char *cdhash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
