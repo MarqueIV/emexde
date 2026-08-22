@@ -107,12 +107,14 @@ static NSString *PECanonicalizePath(NSString *path)
     }
     else
     {
+        /* TODO: later on we need to drop allow it to become tighter by using the still not existing trust_identity_create_from_path_with_parent_identity */
+        ksurface_trust_identity_t *sb_identity = (proc == kernel_proc_) ? identity : proc->nyx.identity;    /* dont allow sandbox escape by spawning children */
         NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
         NSDictionary *vars = @{
             @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
             @"EXECUTABLE": self.executablePath,
         };
-        NSDictionary *entitlements = (__bridge NSDictionary*)identity->entitlements;
+        NSDictionary *entitlements = (__bridge NSDictionary*)sb_identity->entitlements;
         NSArray<NSString*> *readFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
         NSArray<NSString*> *readWriteFilePermissions = entitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
         if(readFilePermissions != nil)
