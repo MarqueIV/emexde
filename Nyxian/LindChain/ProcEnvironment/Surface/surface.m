@@ -28,6 +28,7 @@
 #import <LindChain/ProcEnvironment/LiveContainer/utils.h>
 #import <LindChain/ProcEnvironment/Surface/sys/host/sysctl.h>
 #import <ksurface_config.h>
+#import <ksurface_abi.h>
 
 syscall_list_item_t sys_list[] = {
     /* necessary for basic function */
