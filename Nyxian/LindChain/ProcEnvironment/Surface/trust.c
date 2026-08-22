@@ -809,9 +809,9 @@ ksurface_trust_identity_t *trust_identity_create(const char *path)
         
         memcpy(identity->cdhash, result_nxt2.cdhash, USER_FSIGNATURES_CDHASH_LEN);
         identity->entitlements = trust_identity_validate_entitlements(result_nxt2.entitlements);
+        CFRelease(result_nxt2.entitlements);
         if(identity->entitlements == NULL)
         {
-            CFRelease(result_nxt2.entitlements);
             errno = ENOMEM;
             return NULL;
         }
