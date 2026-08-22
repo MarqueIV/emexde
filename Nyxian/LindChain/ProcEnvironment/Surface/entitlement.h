@@ -184,8 +184,9 @@ struct __attribute__((packed))ksurface_nxt2_blob_footer {
 };
 
 struct ksurface_nxt2 {
-    bool cdhash_valid;
-    bool blob_valid;
+    bool isValid;       /* unlike in nxtr a valid blob in nxt2 means it passes sanity checks! */
+    bool isSigned;      /* means the blob is signed */
+    bool isCdHashValid;
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     CFDictionaryRef entitlements;
 };

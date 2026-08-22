@@ -447,6 +447,10 @@ kern_return_t nxt2_read_fd(int fd,
         return KERN_INVALID_ADDRESS;
     }
     
+    result->isValid = false;
+    result->isCdHashValid = false;
+    result->isSigned = false;
+    
     /* read nxt2 tag */
     char tag[4];
     uint32_t len = 0;
@@ -539,12 +543,58 @@ kern_return_t nxt2_read_fd(int fd,
         free(blob_buf);
         return KERN_NO_SPACE;
     }
+    
+    result->isValid = true; /* everything parsed successfully */
+    
+    memcpy(result->cdhash, blob_header->cdhash, USER_FSIGNATURES_CDHASH_LEN);
+    LCMachO *machO = LCMapMachOFromFDRO(fd);
+    if(machO != NULL)
+    {
+        char *cdhash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
+        if(cdhash != NULL && memcmp(cdhash, result->cdhash, USER_FSIGNATURES_CDHASH_LEN) == 0)
+        {
+            result->isCdHashValid = true;
+        }
+        LCUnmapMachO(machO);
+    }
+    
+    if(result->isCdHashValid && result->isValid)
+    {
+        /* cdhash and blob must be valid for signature check, some checks are not performed twice */
+        const uint8_t *p = ksurface->pub_key;
+        EVP_PKEY *pub = d2i_PUBKEY(NULL, &p, ksurface->pub_key_len);
+        if(!pub)
+        {
+            goto signature_invalid;
+        }
+        
+        EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+        if(!mdctx)
+        {
+            EVP_PKEY_free(pub);
+            goto signature_invalid;
+        }
+        
+        if(EVP_DigestVerifyInit(mdctx, NULL, EVP_sha256(), NULL, pub) != 1)
+        {
+            EVP_MD_CTX_free(mdctx);
+            EVP_PKEY_free(pub);
+            goto signature_invalid;
+        }
+        
+        if(EVP_DigestVerify(mdctx, blob_footer->mac, blob_footer->mac_len, (unsigned char *)blob_header, offsetof(ksurface_nxt2_blob_header_t, plist_data) + blob_header->plist_len) == 1)
+        {
+            result->isSigned = true;
+        }
+        
+        EVP_MD_CTX_free(mdctx);
+        EVP_PKEY_free(pub);
+    }
+    
+signature_invalid:
+    
     free(blob_buf);
     
-    bzero(result->cdhash, USER_FSIGNATURES_CDHASH_LEN);
-    result->blob_valid = false;     /* TODO: validate signature */
-    result->cdhash_valid = false;   /* TODO: validate cdhash */
     result->entitlements = entitlements;
-    
     return KERN_SUCCESS;
 }
