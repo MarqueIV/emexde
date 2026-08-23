@@ -45,11 +45,13 @@ static const char openSig[] = {0xB0, 0x00, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fcntlSig[] = {0x90, 0x0B, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fstat64Sig[] = {0x70, 0x2A, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char stat64Sig[] = {0x50, 0x2A, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
+static const char openatSig[] = {0xF0, 0x39, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 
 static int (*orig_dyld_open)(const char *path, int flags, mode_t mode);
 static int (*orig_dyld_fcntl)(int fildes, int cmd, void *param);
 static int (*orig_dyld_fstat64)(int fildes, struct stat *buf);
 static int (*orig_dyld_stat64)(const char *path, struct stat *buf);
+static int (*orig_dyld_openat)(int fd, const char *path, int flags, mode_t mode);
 
 static struct dyld_all_image_infos *_alt_dyld_get_all_image_infos(void)
 {
@@ -241,6 +243,123 @@ just_return:
     return fd;
 }
 
+static int hook_openat(int dirfd,
+                       const char *path,
+                       int flags,
+                       mode_t mode)
+{
+    dyld_hook_log("[hook_openat:args] (fd = %s, path = %s, flags = %d, mode = %d)\n", dirfd, path, flags, mode);
+    if(open_hardlock)
+    {
+        dyld_hook_log("[hook_openat:args] [error: hard locked]\n");
+        errno = EACCES;
+        return -1;
+    }
+    
+    int fd = orig_dyld_openat(dirfd, path, flags, mode);
+    if(fd < 0 || flags & O_DIRECTORY)
+    {
+        goto just_return;
+    }
+    
+    char actualPath[PATH_MAX];
+    if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
+    {
+        dyld_hook_log("[hook_openat:path] %s\n", actualPath);
+        
+        const char prefix[] = "/private/var/mobile/Containers/Data";
+        if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
+        {
+            /* need a new path */
+            char newTmpPath[PATH_MAX];
+            void *random;
+            arc4random_buf(&random, sizeof(void*));
+            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
+            
+            int copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+            if(copyfd < 0)
+            {
+                goto skip_inode_setup;
+            }
+            
+            if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) < 0)
+            {
+                close(copyfd);
+                unlink(newTmpPath);
+            }
+            
+            close(copyfd);
+            copyfd = open(newTmpPath, flags);
+            if(copyfd < 0)
+            {
+                goto skip_inode_setup;
+            }
+            
+            /* this to orient or selfs */
+            ino_t inode = inode_for_fd(copyfd);
+            inode_bank_put(inode, newTmpPath);
+            inode_bank_set_redirect(inode, actualPath);
+            
+            close(fd);
+            dup2(copyfd, fd);
+            
+        skip_inode_setup:
+            
+            if(cdhash_must_valid && !cdhash_verified)
+            {
+                /* no matter what this is not reentrant */
+                cdhash_must_valid = false;
+                cdhash_verified = false;
+                
+                lseek(fd, 0, SEEK_SET);
+                /* need to get cdhash and then reset it's position */
+                
+                char *cdhash = cdhash_of_fd(fd);
+                dyld_hook_log("[hook_openat:cdhash] [nyxian cdhash verifier] (foundCdhash = %p, cdhash = %p)\n", cdhash, cdhash_data_container_match);
+                
+                /* match */
+                if(cdhash == NULL ||
+                   cdhash_data_container_match == NULL ||
+                   memcmp(cdhash_data_container_match, cdhash, USER_FSIGNATURES_CDHASH_LEN) != 0)
+                {
+                    cdhash_verified = false;
+                    dyld_hook_log("[hook_openat:cdhash] [nyxian cdhash verifier] cdhash does not match, calling callback if givven\n");
+                    
+#if KSURFACE_DYLD_HARDENED_CDHASH_VERIFIER
+                    open_hardlock = true;
+#else
+                    if(cdhash_verifier_failed_callback != NULL)
+                    {
+                        cdhash_verifier_failed_callback(fd, &open_hardlock);
+                    }
+#endif /* !KSURFACE_DYLD_HARDENED_CDHASH_VERIFIER */
+                    
+                    /* callback can set open hardlock */
+                    if(open_hardlock)
+                    {
+                        dyld_hook_log("[hook_openat:args] [error: hard locked]\n");
+                        errno = EACCES;
+                        close(fd);
+                        fd = -1;
+                    }
+                }
+                else
+                {
+                    dyld_hook_log("[hook_openat:cdhash] [nyxian cdhash verifier] cdhash valid!\n");
+                    cdhash_verified = true;
+                    lseek(fd, 0, SEEK_SET);
+                }
+                
+                /* reset position */
+                free(cdhash);   /* free on macOS/iOS is NULL safe */
+            }
+        }
+    }
+    
+just_return:
+    dyld_hook_log("[hook_openat:return] (fd = %d)\n", fd);
+    return fd;
+}
 
 static const uint64_t fake_ino = 0x30a43;   /* some random inode i picked from a valid systems library */
 static const time_t fake_time = 1700000000;
@@ -299,7 +418,8 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         orig_dyld_open = (void *)searchDyldFunction(dyldBase, (char*)openSig, sizeof(openSig));
         orig_dyld_fstat64 = (void *)searchDyldFunction(dyldBase, (char*)fstat64Sig, sizeof(fstat64Sig));
         orig_dyld_stat64 = (void *)searchDyldFunction(dyldBase, (char*)stat64Sig, sizeof(stat64Sig));
-        if(orig_dyld_fcntl == NULL || orig_dyld_open == NULL || orig_dyld_fstat64 == NULL || orig_dyld_stat64 == NULL)
+        orig_dyld_openat = (void *)searchDyldFunction(dyldBase, (char*)openatSig, sizeof(openatSig));
+        if(orig_dyld_fcntl == NULL || orig_dyld_open == NULL || orig_dyld_fstat64 == NULL || orig_dyld_stat64 == NULL || orig_dyld_openat == NULL)
         {
             return;
         }
@@ -334,10 +454,21 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
             return;
         }
         
+        HWHookRef openatHook = HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, orig_dyld_openat, hook_openat);
+        if(openatHook == NULL)
+        {
+            CFRelease(fcntlHook);
+            CFRelease(openHook);
+            CFRelease(fstat64Hook);
+            CFRelease(stat64Hook);
+            return;
+        }
+        
         HWHookSetDisableContextHooksInFrame(fcntlHook, true);
         HWHookSetDisableContextHooksInFrame(openHook, true);
         HWHookSetDisableContextHooksInFrame(fstat64Hook, true);
         HWHookSetDisableContextHooksInFrame(stat64Hook, true);
+        HWHookSetDisableContextHooksInFrame(openatHook, true);
         
         context = HWHookThreadContextCreate(kCFAllocatorDefault);
         if(context == NULL)
@@ -348,7 +479,8 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         if(!HWHookThreadContextAppendHook(context, fcntlHook) ||
            !HWHookThreadContextAppendHook(context, openHook) ||
            !HWHookThreadContextAppendHook(context, fstat64Hook) ||
-           !HWHookThreadContextAppendHook(context, stat64Hook))
+           !HWHookThreadContextAppendHook(context, stat64Hook) ||
+           !HWHookThreadContextAppendHook(context, openatHook))
         {
             CFRelease(context);
         release_hooks:
@@ -356,6 +488,7 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
             CFRelease(openHook);
             CFRelease(fstat64Hook);
             CFRelease(stat64Hook);
+            CFRelease(openatHook);
             return;
         }
     });
@@ -379,8 +512,7 @@ void *hook_dlopen(const char *path, int mode)
     void *ret = darwin_dlopen(path, mode);
     HWHookThreadContextExit(context);
     
-    
-    
+    /* TODO: delete all inode bank files */
     return ret;
 }
 
