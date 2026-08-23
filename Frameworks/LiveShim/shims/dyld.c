@@ -21,10 +21,12 @@
 
 #include <LiveShim/shim.h>
 #include <LiveShim/dyld.h>
+#include <LiveShim/dyld_node_remap.h>
 #include <LiveShim/cdhash.h>
 #include <Frameworks/HWHook/HWHookThreadContext.h>
 #include <mach-o/dyld_images.h>
 #include <sys/mman.h>
+#include <copyfile.h>
 
 #if __has_include(<ksurface_config.h>)
 #include <ksurface_config.h>
@@ -40,14 +42,12 @@
 #endif /* KSURFACE_DYLD_HOOK_LOGGING_ENABLED */
 
 static const char openSig[] = {0xB0, 0x00, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
-static const char mmapSig[] = {0xB0, 0x18, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fcntlSig[] = {0x90, 0x0B, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fstat64Sig[] = {0x70, 0x2A, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char stat64Sig[] = {0x50, 0x2A, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 
 static int (*orig_dyld_open)(const char *path, int flags, mode_t mode);
 static int (*orig_dyld_fcntl)(int fildes, int cmd, void *param);
-static void *(*orig_dyld_mmap)(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
 static int (*orig_dyld_fstat64)(int fildes, struct stat *buf);
 static int (*orig_dyld_stat64)(const char *path, struct stat *buf);
 
@@ -106,65 +106,18 @@ static int hook_fcntl(int fildes,
     }
 #endif /* KSURFACE_DYLD_HOOK_LOGGING_ENABLED */
     
+    if(cmd == F_GETPATH)
+    {
+        if(inode_bank_get_path(inode_for_fd(fildes), param, MAXPATHLEN))
+        {
+            dyld_hook_log("[hook_fcntl:fool] fooling da cutie dyld >:3\n");
+        }
+    }
+    
     return ret;
 }
 
 static const char *mmap_sandbox_map_exec_allowed_path = NULL;
-static void *hook_mmap(void *addr,
-                       size_t len,
-                       int prot,
-                       int flags,
-                       int fd,
-                       off_t offset)
-{
-    dyld_hook_log("[hook_mmap:args] (addr = %p, len = %zu, prot = %d, flags = %d, fd = %d, offset = %lld)\n", addr, len, prot, flags, fd, offset);
-    void *ret = orig_dyld_mmap(addr, len, prot, flags, fd, offset);
-    if(ret != MAP_FAILED || !(prot & PROT_EXEC) || fd < 0 || mmap_sandbox_map_exec_allowed_path == NULL)
-    {
-        goto log_return;
-    }
-    
-    char filePath[PATH_MAX];
-    if(fcntl(fd, F_GETPATH, filePath) != 0)
-    {
-        goto log_return;
-    }
-    char newTmpPath[PATH_MAX];
-    /*
-     * very dumb duy, ima be fair using ASLR as a UUID generator is something you've gone too far with
-     * that is a text book way to defeat  ASLR, i'd better use arc4random_buf.
-     */
-    void *random;
-    arc4random_buf(&random, sizeof(void*));
-    snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
-    /* TODO: copy it instead of rename, meaning we need to do more with fcntl and fstat and what not */
-    if(rename(filePath, newTmpPath) != 0)
-    {
-        goto log_return;
-    }
-    ret = orig_dyld_mmap(addr, len, prot, flags, fd, offset);
-    if(rename(newTmpPath, filePath) != 0)
-    {
-        unlink(newTmpPath);
-    }
-    
-    /* return logging */
-log_return:
-#if KSURFACE_DYLD_HOOK_LOGGING_ENABLED
-    {
-        char path[PATH_MAX];
-        if(orig_dyld_fcntl(fd, F_GETPATH, path) != -1)
-        {
-            dyld_hook_log("[hook_mmap:return] (ret = %p, path: %s)\n", ret, path);
-        }
-        else
-        {
-            dyld_hook_log("[hook_mmap:return] (ret = %p)\n", ret);
-        }
-    }
-#endif /* KSURFACE_DYLD_HOOK_LOGGING_ENABLED */
-    return ret;
-}
 
 static _Thread_local bool cdhash_verified = false;
 static _Thread_local bool cdhash_must_valid;
@@ -199,6 +152,43 @@ static int hook_open(const char *path,
             const char prefix[] = "/private/var/mobile/Containers/Data";
             if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
             {
+                char newTmpPath[PATH_MAX];
+                
+                /*
+                 * very dumb duy, ima be fair using ASLR as a UUID generator is something you've gone too far with
+                 * that is a text book way to defeat  ASLR, i'd better use arc4random_buf.
+                 */
+                void *random;
+                arc4random_buf(&random, sizeof(void*));
+                snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
+                
+                int copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+                if(copyfd < 0)
+                {
+                    goto skip_inode_setup;
+                }
+                
+                if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) < 0)
+                {
+                    close(copyfd);
+                    unlink(newTmpPath);
+                }
+                
+                close(copyfd);
+                copyfd = open(newTmpPath, flags);
+                if(copyfd < 0)
+                {
+                    goto skip_inode_setup;
+                }
+                
+                ino_t inode = inode_for_fd(copyfd);
+                inode_bank_put(inode, newTmpPath);
+                inode_bank_set_redirect(inode, actualPath);
+                
+                close(fd);
+                dup2(copyfd, fd);
+                
+            skip_inode_setup:
                 /* no matter what this is not reentrant */
                 cdhash_must_valid = false;
                 cdhash_verified = false;
@@ -255,6 +245,7 @@ just_return:
 
 
 static const uint64_t fake_ino = 0x30a43;   /* some random inode i picked from a valid systems library */
+static const time_t fake_time = 1700000000;
 
 static int hook_fstat64(int fd,
                         struct stat *buf)
@@ -265,6 +256,14 @@ static int hook_fstat64(int fd,
     {
         dyld_hook_log("[hook_fstat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
         buf->st_ino = 0x30a43;  /* some inode */
+        
+        dyld_hook_log("[hook_fstat64] playing a bit with the clock =3\n");
+        buf->st_mtimespec.tv_sec = fake_time;
+        buf->st_mtimespec.tv_nsec = 0;
+        buf->st_ctimespec.tv_sec = fake_time;
+        buf->st_ctimespec.tv_nsec = 0;
+        buf->st_birthtimespec.tv_sec = fake_time;
+        buf->st_birthtimespec.tv_nsec = 0;
     }
     dyld_hook_log("[hook_fstat64:return] (ret = %d)\n", ret);
     return ret;
@@ -279,6 +278,14 @@ static int hook_stat64(const char *path,
     {
         dyld_hook_log("[hook_stat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
         buf->st_ino = 0x30a43;  /* some inode */
+        
+        dyld_hook_log("[hook_stat64] playing a bit with the clock so DYLD thinks the file never changed =3 (1700000000)\n");
+        buf->st_mtimespec.tv_sec = fake_time;
+        buf->st_mtimespec.tv_nsec = 0;
+        buf->st_ctimespec.tv_sec = fake_time;
+        buf->st_ctimespec.tv_nsec = 0;
+        buf->st_birthtimespec.tv_sec = fake_time;
+        buf->st_birthtimespec.tv_nsec = 0;
     }
     dyld_hook_log("[hook_stat64:return] (ret = %d)\n", ret);
     return ret;
@@ -291,11 +298,10 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
     dispatch_once(&onceToken, ^{
         char *dyldBase = (char *)_alt_dyld_get_all_image_infos()->dyldImageLoadAddress;
         orig_dyld_fcntl = (void *)searchDyldFunction(dyldBase, (char*)fcntlSig, sizeof(fcntlSig));
-        orig_dyld_mmap = (void *)searchDyldFunction(dyldBase, (char*)mmapSig, sizeof(mmapSig));
         orig_dyld_open = (void *)searchDyldFunction(dyldBase, (char*)openSig, sizeof(openSig));
         orig_dyld_fstat64 = (void *)searchDyldFunction(dyldBase, (char*)fstat64Sig, sizeof(fstat64Sig));
         orig_dyld_stat64 = (void *)searchDyldFunction(dyldBase, (char*)stat64Sig, sizeof(stat64Sig));
-        if(orig_dyld_mmap == NULL || orig_dyld_fcntl == NULL || orig_dyld_open == NULL || orig_dyld_fstat64 == NULL || orig_dyld_stat64 == NULL)
+        if(orig_dyld_fcntl == NULL || orig_dyld_open == NULL || orig_dyld_fstat64 == NULL || orig_dyld_stat64 == NULL)
         {
             return;
         }
@@ -306,18 +312,10 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
             return;
         }
         
-        HWHookRef mmapHook = HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, orig_dyld_mmap, hook_mmap);
-        if(mmapHook == NULL)
-        {
-            CFRelease(fcntlHook);
-            return;
-        }
-        
         HWHookRef openHook = HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, orig_dyld_open, hook_open);
         if(openHook == NULL)
         {
             CFRelease(fcntlHook);
-            CFRelease(mmapHook);
             return;
         }
         
@@ -325,7 +323,6 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         if(fstat64Hook == NULL)
         {
             CFRelease(fcntlHook);
-            CFRelease(mmapHook);
             CFRelease(openHook);
             return;
         }
@@ -334,14 +331,12 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         if(fstat64Hook == NULL)
         {
             CFRelease(fcntlHook);
-            CFRelease(mmapHook);
             CFRelease(openHook);
             CFRelease(fstat64Hook);
             return;
         }
         
         HWHookSetDisableContextHooksInFrame(fcntlHook, true);
-        HWHookSetDisableContextHooksInFrame(mmapHook, true);
         HWHookSetDisableContextHooksInFrame(openHook, true);
         HWHookSetDisableContextHooksInFrame(fstat64Hook, true);
         HWHookSetDisableContextHooksInFrame(stat64Hook, true);
@@ -353,7 +348,6 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         }
         
         if(!HWHookThreadContextAppendHook(context, fcntlHook) ||
-           !HWHookThreadContextAppendHook(context, mmapHook) ||
            !HWHookThreadContextAppendHook(context, openHook) ||
            !HWHookThreadContextAppendHook(context, fstat64Hook) ||
            !HWHookThreadContextAppendHook(context, stat64Hook))
@@ -361,7 +355,6 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
             CFRelease(context);
         release_hooks:
             CFRelease(fcntlHook);
-            CFRelease(mmapHook);
             CFRelease(openHook);
             CFRelease(fstat64Hook);
             CFRelease(stat64Hook);
@@ -377,6 +370,8 @@ INTERPOSE(hook_dlopen, dlopen);
 
 void *hook_dlopen(const char *path, int mode)
 {
+    inode_bank_init();
+    
     void *(*darwin_dlopen)(const char *path, int mode) = _interpose_dlopen.replacee;
     dyld_hook_log("[hook_dlopen] %s\n", path);
     
@@ -385,6 +380,9 @@ void *hook_dlopen(const char *path, int mode)
     HWHookThreadContextEnter(context);  /* is nil safe, so it shall work anyways */
     void *ret = darwin_dlopen(path, mode);
     HWHookThreadContextExit(context);
+    
+    
+    
     return ret;
 }
 

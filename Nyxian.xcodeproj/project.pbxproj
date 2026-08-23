@@ -348,6 +348,8 @@
 				LiveShim/mach/fileport.m,
 				LiveShim/private/cdhash.h,
 				LiveShim/private/cdhash.m,
+				LiveShim/private/dyld_node_remap.c,
+				LiveShim/private/dyld_node_remap.h,
 				LiveShim/shims/dyld.c,
 				LiveShim/shims/dyld.h,
 				LiveShim/shims/io.c,
@@ -360,6 +362,7 @@
 			privateHeaders = (
 				LiveShim/mach/fileport.h,
 				LiveShim/private/cdhash.h,
+				LiveShim/private/dyld_node_remap.h,
 				LiveShim/shims/shim.h,
 			);
 			publicHeaders = (

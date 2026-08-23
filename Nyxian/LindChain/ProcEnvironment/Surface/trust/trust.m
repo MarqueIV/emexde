@@ -203,35 +203,29 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         rwPaths = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
     }
     
-    if(rwPaths)
+    CFMutableArrayRef roPaths;
+    CFArrayRef roExisting = CFDictionaryGetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ);
+    if(roExisting)
+    {
+        roPaths = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, roExisting);
+    }
+    else
+    {
+        roPaths = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+    }
+    
+    if(rwPaths && roPaths)
     {
         /* the dyld patches currently need the node to be writable */
-        CFArrayAppendValue(rwPaths, CFSTR("$(EXECUTABLE)"));
+        CFArrayAppendValue(roPaths, CFSTR("$(EXECUTABLE)"));
         
         @autoreleasepool {
             LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:(__bridge NSString*)executablePath];
             if(applicationObject != NULL && applicationObject.bundlePath != NULL && applicationObject.containerPath != NULL)
             {
-                CFArrayAppendValue(rwPaths, (__bridge CFStringRef)applicationObject.bundlePath);
+                CFArrayAppendValue(roPaths, (__bridge CFStringRef)applicationObject.bundlePath);
+                CFArrayAppendValue(roPaths, (__bridge CFStringRef)applicationObject.containerPath);
                 CFArrayAppendValue(rwPaths, (__bridge CFStringRef)[applicationObject.containerPath stringByAppendingString:@"/*"]);
-                
-                CFMutableArrayRef roPaths;
-                CFArrayRef roExisting = CFDictionaryGetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ);
-                if(roExisting)
-                {
-                    roPaths = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, roExisting);
-                }
-                else
-                {
-                    roPaths = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-                }
-                
-                if(roPaths)
-                {
-                    CFArrayAppendValue(roPaths, (__bridge CFStringRef)applicationObject.containerPath);
-                    CFDictionarySetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ, roPaths);
-                    CFRelease(roPaths);
-                }
             }
             else
             {
@@ -239,8 +233,10 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
             }
         }
         
+        CFDictionarySetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ, roPaths);
         CFDictionarySetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE, rwPaths);
         CFRelease(rwPaths);
+        CFRelease(roPaths);
     }
     
     return clean;
