@@ -47,9 +47,6 @@ typedef enum: UInt8 {
 
 typedef struct {
     char path[MAXPATHLEN];
-    bool isValid;           /* unlike in nxtr a valid blob in nxt2 means it passes sanity checks! */
-    bool isSigned;          /* means the blob is signed */
-    bool isCdHashValid;
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     CFDictionaryRef entitlements;
     CFArrayRef filePermissions;

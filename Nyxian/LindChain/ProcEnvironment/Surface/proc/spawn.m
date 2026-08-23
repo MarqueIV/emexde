@@ -38,12 +38,6 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
 {
     assert(parent != NULL && child != NULL && identity != NULL);
     
-    if(!identity->isSigned)
-    {
-        /* unsigned identities are not allowed */
-        return KERN_DENIED;
-    }
-    
     ksurface_proc_t *child_new = kvo_copy(parent);
     if(child_new == NULL)
     {

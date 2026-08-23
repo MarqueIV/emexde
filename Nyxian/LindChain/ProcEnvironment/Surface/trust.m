@@ -952,9 +952,6 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             }
             strlcpy(identity->path, path, MAXPATHLEN);
             identity->type = kPETrustTypeTrusted;
-            identity->isSigned = true;
-            identity->isValid = true;
-            identity->isCdHashValid = false;
             identity->legacyEntitlements = kPEEntitlementSystemDaemon;
             identity->maxLegacyEntitlements = kPEEntitlementSystemDaemon;
             identity->entitlements = trust_identity_entitlements_from_legacy_entitlements(kPEEntitlementSystemDaemon);
@@ -969,86 +966,86 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     
     /* signature */
     
-#if KSURFACE_CS_ACCEPT_NXT2
+#if KSURFACE_CS_ALLOW_NXT2
     /* modern */
     ksurface_nxt2_t result_nxt2;
     if(nxt2_read(path, &result_nxt2) == KERN_SUCCESS)
     {
+        /* check if blob was signed */
+        if(!result_nxt2.isSigned || !result_nxt2.isValid || !result_nxt2.isCdHashValid)
+        {
+            CFRelease(result_nxt2.entitlements);
+            goto fallback;
+        }
+        
         ksurface_trust_identity_t *identity = calloc(1, sizeof(ksurface_trust_identity_t));
         if(identity == NULL)
         {
             CFRelease(result_nxt2.entitlements);
-            CFRelease(executableString);
             goto fallback;
         }
-        identity->type = kPETrustTypeSignature;
-        strlcpy(identity->path, path, MAXPATHLEN);
         
+        strlcpy(identity->path, path, MAXPATHLEN);
         memcpy(identity->cdhash, result_nxt2.cdhash, USER_FSIGNATURES_CDHASH_LEN);
+        
+        identity->type = kPETrustTypeSignature;
         identity->entitlements = trust_identity_validate_entitlements(executableString, result_nxt2.entitlements);
         CFRelease(result_nxt2.entitlements);
         if(identity->entitlements == NULL)
         {
-            CFRelease(executableString);
             free(identity);
             goto fallback;
         }
-        identity->isValid = result_nxt2.isValid;
-        identity->isSigned = result_nxt2.isSigned;
-        if(!identity->isSigned)
-        {
-            CFRelease(identity->entitlements);
-            CFRelease(executableString);
-            free(identity);
-            goto fallback;
-        }
-        identity->isCdHashValid = result_nxt2.isCdHashValid;
         identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
         identity->maxLegacyEntitlements = identity->legacyEntitlements;
         identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         return identity;
     }
-#endif /* KSURFACE_CS_ACCEPT_NXT2 */
+#endif /* KSURFACE_CS_ALLOW_NXT2 */
     
-#if KSURFACE_CS_ACCEPT_NXTR
+#if KSURFACE_CS_ALLOW_NXTR
     /* legacy */
     ksurface_nxtr_result_t result_nxtr;
     if(nxtr_read(path, &result_nxtr) == KERN_SUCCESS &&
        entitlement_mach_verify(&result_nxtr, ksurface->pub_key, ksurface->pub_key_len) == KERN_SUCCESS)
     {
+        /* check if blob was signed */
+        if(!result_nxtr.blob_valid || !result_nxtr.cdhash_valid)
+        {
+            goto fallback;
+        }
+        
         ksurface_trust_identity_t *identity = calloc(1, sizeof(ksurface_trust_identity_t));
         if(identity == NULL)
         {
-            CFRelease(executableString);
             goto fallback;
         }
-        identity->type = kPETrustTypeSignature;
-        strlcpy(identity->path, path, MAXPATHLEN);
         
+        strlcpy(identity->path, path, MAXPATHLEN);
         memcpy(identity->cdhash, result_nxtr.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
-        identity->entitlements = trust_identity_validate_entitlements(executableString, trust_identity_entitlements_from_legacy_entitlements(result_nxtr.blob.entitlement));
+        
+        identity->type = kPETrustTypeSignature;
+        
+        CFDictionaryRef convertedEntitlements = trust_identity_entitlements_from_legacy_entitlements(result_nxtr.blob.entitlement);
+        if(convertedEntitlements == NULL)
+        {
+            free(identity);
+            goto fallback;
+        }
+        
+        identity->entitlements = trust_identity_validate_entitlements(executableString, convertedEntitlements);
+        CFRelease(convertedEntitlements);
         if(identity->entitlements == NULL)
         {
-            CFRelease(executableString);
             free(identity);
             goto fallback;
         }
-        identity->isValid = result_nxtr.blob_valid;
-        identity->isSigned = result_nxtr.blob_valid;    /* the same thing on nxtr */
-        if(!identity->isSigned)
-        {
-            CFRelease(identity->entitlements);
-            CFRelease(executableString);
-            free(identity);
-            goto fallback;
-        }
-        identity->isCdHashValid = result_nxtr.cdhash_valid;
         identity->legacyEntitlements = result_nxtr.blob.entitlement;
         identity->maxLegacyEntitlements = identity->legacyEntitlements;
         identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         return identity;
     }
-#endif /* KSURFACE_CS_ACCEPT_NXTR */
+#endif /* KSURFACE_CS_ALLOW_NXTR */
     
     /* fallback */
 fallback:
@@ -1081,9 +1078,6 @@ fallback:
         identity->entitlements = newEntitlements;
         identity->legacyEntitlements = kPEEntitlementNone;
         identity->maxLegacyEntitlements = kPEEntitlementNone;
-        identity->isSigned = true;
-        identity->isValid = true;
-        identity->isCdHashValid = false;
         identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         
         CFRelease(executableString);
