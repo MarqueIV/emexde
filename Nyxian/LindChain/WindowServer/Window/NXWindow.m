@@ -229,8 +229,10 @@
         return;
     }
     self.session.isFocused = focused;
-    
-    [self.view.superview bringSubviewToFront:self.view];
+    if(focused)
+    {
+        [self.view.superview bringSubviewToFront:self.view];
+    }
     
     [_windowBar changeFocus:focused];
     
