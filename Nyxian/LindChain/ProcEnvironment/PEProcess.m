@@ -35,6 +35,7 @@
 @implementation PEProcess {
     NSHashTable<id<PEProcessObserver>> *_observers;
     os_unfair_lock _lock;
+    _Atomic(int) _termState;
 }
 
 - (instancetype)initWithItems:(NSDictionary*)items
@@ -199,18 +200,29 @@
     }
 }
 
+- (void)forceTerminate
+{
+    if(atomic_exchange(&_termState, 2) == 2)
+    {
+        return;
+    }
+    [self sendSignal:SIGKILL];
+}
+
 - (void)terminate
 {
-    [self sendSignal:SIGTERM];
-    __weak typeof(self) weakSelf = self;
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        __strong typeof(self) strongSelf = weakSelf;
-        if(strongSelf != NULL)
-        {
-            /* process still alive? */
-            [strongSelf sendSignal:SIGKILL];
-        }
-    });
+    int expected = 0;
+    if(atomic_compare_exchange_strong(&_termState, &expected, 1))
+    {
+        [self sendSignal:SIGTERM];
+        
+        __weak typeof(self) weakSelf = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            [weakSelf forceTerminate];
+        });
+        return;
+    }
+    [self forceTerminate];
 }
 
 - (void)suspend
