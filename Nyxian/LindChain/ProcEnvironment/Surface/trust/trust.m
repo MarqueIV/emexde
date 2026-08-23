@@ -205,8 +205,8 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
     
     if(rwPaths)
     {
+        /* the dyld patches currently need the node to be writable */
         CFArrayAppendValue(rwPaths, CFSTR("$(EXECUTABLE)"));
-        CFArrayAppendValue(rwPaths, CFSTR("$(ROOTFS)/var/blastbox"));
         
         @autoreleasepool {
             LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:(__bridge NSString*)executablePath];
@@ -232,6 +232,10 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
                     CFDictionarySetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ, roPaths);
                     CFRelease(roPaths);
                 }
+            }
+            else
+            {
+                CFArrayAppendValue(rwPaths, CFSTR("$(ROOTFS)/var/blastbox"));
             }
         }
         
