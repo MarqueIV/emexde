@@ -22,6 +22,7 @@
 #include <LiveShim/dyld_node_remap.h>
 #include <pthread.h>
 #include <string.h>
+#include <unistd.h>
 
 static DyldInodeEntry g_bank[INODE_BANK_CAPACITY];
 static pthread_rwlock_t g_bank_lock = PTHREAD_RWLOCK_INITIALIZER;
@@ -188,4 +189,144 @@ bool inode_bank_get_ino_by_path(const char *path,
     
     pthread_rwlock_unlock(&g_bank_lock);
     return false;
+}
+
+void inode_bank_unlink_all(const char *tmp_root)
+{
+    if(!tmp_root)
+    {
+        return;
+    }
+    size_t rl = strlen(tmp_root);
+    pthread_rwlock_wrlock(&g_bank_lock);
+    for(int i = 0; i < INODE_BANK_CAPACITY; i++)
+    {
+        if(g_bank[i].in_use && strncmp(g_bank[i].real_path, tmp_root, rl) == 0)
+        {
+            unlink(g_bank[i].real_path);
+        }
+    }
+    pthread_rwlock_unlock(&g_bank_lock);
+}
+
+static void np_lexical_resolve(const char *in, char *out, size_t outsz)
+{
+    size_t seg_start[PATH_MAX / 2];
+    int    top = 0;
+    size_t w = 0;
+    
+    if(outsz < 2)
+    {
+        if(outsz)
+        {
+            out[0] = '\0';
+        }
+        return;
+    }
+    
+    const char *p = in;
+    while(*p == '/')
+    {
+        p++;
+    }
+    
+    while(*p)
+    {
+        const char *q = p;
+        while(*q && *q != '/') q++;
+        size_t len = (size_t)(q - p);
+        if(len == 1 && p[0] == '.')
+        {
+            
+        }
+        else if(len == 2 && p[0] == '.' && p[1] == '.')
+        {
+            if(top > 0)
+            {
+                top--;
+                w = seg_start[top];
+            }
+        }
+        else if(len > 0)
+        {
+            if(top < (int)(PATH_MAX / 2))
+            {
+                seg_start[top++] = w;
+            }
+            if(w + 1 < outsz)
+            {
+                out[w++] = '/';
+            }
+            for(size_t i = 0; i < len && w + 1 < outsz; i++)
+            {
+                out[w++] = p[i];
+            }
+        }
+        
+        p = q;
+        while(*p == '/') p++;
+    }
+    
+    if(w == 0) out[w++] = '/';
+    out[w] = '\0';
+}
+
+static void np_canonicalize(const char *in, char *out, size_t outsz)
+{
+    char tmp[PATH_MAX];
+    
+    static const char cryptex[] = "/private/preboot/Cryptexes/OS";
+    if(strncmp(in, cryptex, sizeof(cryptex) - 1) == 0)
+    {
+        in += sizeof(cryptex) - 1;
+        if(*in != '/')
+        {
+            in = "/";
+        }
+    }
+    
+    static const struct { const char *from; const char *to; } firmlinks[] = {
+        { "/var", "/private/var" },
+        { "/tmp", "/private/tmp" },
+        { "/etc", "/private/etc" },
+    };
+    for(size_t i = 0; i < sizeof(firmlinks) / sizeof(firmlinks[0]); i++)
+    {
+        size_t flen = strlen(firmlinks[i].from);
+        if(strncmp(in, firmlinks[i].from, flen) == 0 && (in[flen] == '/' || in[flen] == '\0'))
+        {
+            size_t tlen = strlen(firmlinks[i].to);
+            size_t rest = strlen(in + flen);
+            if(tlen + rest + 1 <= sizeof(tmp))
+            {
+                memcpy(tmp, firmlinks[i].to, tlen);
+                memcpy(tmp + tlen, in + flen, rest + 1);
+                in = tmp;
+            }
+            break;
+        }
+    }
+    
+    np_lexical_resolve(in, out, outsz);
+}
+
+ino_t fake_inode_for_path(const char *path)
+{
+    if(!path || !*path)
+    {
+        return 0x0;
+    }
+    char canon[PATH_MAX];
+    np_canonicalize(path, canon, sizeof(canon));
+    uint64_t h = 1469598103934665603ULL;
+    for(const unsigned char *p = (const unsigned char *)canon; *p; p++)
+    {
+        h ^= *p;
+        h *= 1099511628211ULL;
+    }
+    if(h == 0)
+    {
+        h = 0x30a43;
+    }
+    return (ino_t)h;
 }

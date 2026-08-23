@@ -45,5 +45,8 @@ void inode_bank_set_redirect(ino_t ino, const char *redirect_path);
 bool inode_bank_get_path(ino_t ino, char *out_path, size_t max_len);
 bool inode_bank_get_real_path(ino_t ino, char *out_path, size_t max_len);
 bool inode_bank_get_ino_by_path(const char *path, ino_t *out_ino);
+void inode_bank_unlink_all(const char *tmp_root);
+
+ino_t fake_inode_for_path(const char *path);
 
 #endif /* LIVESHIM_DYLD_NODE_REMAP_H */

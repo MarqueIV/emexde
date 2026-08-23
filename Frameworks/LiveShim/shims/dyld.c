@@ -27,6 +27,7 @@
 #include <mach-o/dyld_images.h>
 #include <sys/mman.h>
 #include <copyfile.h>
+#include <sys/clonefile.h>
 
 #if __has_include(<ksurface_config.h>)
 #include <ksurface_config.h>
@@ -154,31 +155,26 @@ static int hook_open(const char *path,
         {
             /* need a new path */
             char newTmpPath[PATH_MAX];
-            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/0x%llx.dylib", mmap_sandbox_map_exec_allowed_path, inode_for_fd(fd)); /* use tmp so iOS clears it automatically in LP home */
+            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%d/0x%llx.dylib", mmap_sandbox_map_exec_allowed_path, getpid(), inode_for_fd(fd));    /* use tmp so iOS clears it automatically in LP home */
             
             int copyfd = open(newTmpPath, flags);
             if(copyfd >= 0)
             {
                 close(fd);
                 dup2(copyfd, fd);
-                goto skip_inode_setup;
-            }
-            
-            copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
-            if(copyfd < 0)
-            {
-                goto skip_inode_setup;
-            }
-            
-            if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) < 0)
-            {
                 close(copyfd);
-                unlink(newTmpPath);
+                goto skip_inode_setup;
             }
             
-            close(copyfd);
-            copyfd = open(newTmpPath, flags);
-            if(copyfd < 0)
+            if(fclonefileat(fd, AT_FDCWD, newTmpPath, 0) == 0)   /* APFS CoW */
+            {
+                copyfd = open(newTmpPath, flags);
+                if(copyfd < 0)
+                {
+                    goto skip_inode_setup;
+                }
+            }
+            else
             {
                 goto skip_inode_setup;
             }
@@ -190,6 +186,7 @@ static int hook_open(const char *path,
             
             close(fd);
             dup2(copyfd, fd);
+            close(copyfd);
             
         skip_inode_setup:
             
@@ -254,7 +251,7 @@ static int hook_openat(int dirfd,
                        int flags,
                        mode_t mode)
 {
-    dyld_hook_log("[hook_openat:args] (fd = %s, path = %s, flags = %d, mode = %d)\n", dirfd, path, flags, mode);
+    dyld_hook_log("[hook_openat:args] (dirfd = %d, path = %s, flags = %d, mode = %d)\n", dirfd, path, flags, mode);
     if(open_hardlock)
     {
         dyld_hook_log("[hook_openat:args] [error: hard locked]\n");
@@ -278,31 +275,26 @@ static int hook_openat(int dirfd,
         {
             /* need a new path */
             char newTmpPath[PATH_MAX];
-            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/0x%llx.dylib", mmap_sandbox_map_exec_allowed_path, inode_for_fd(fd)); /* use tmp so iOS clears it automatically in LP home */
+            snprintf(newTmpPath, sizeof(newTmpPath), "%s/tmp/%d/0x%llx.dylib", mmap_sandbox_map_exec_allowed_path, getpid(), inode_for_fd(fd));    /* use tmp so iOS clears it automatically in LP home */
             
             int copyfd = open(newTmpPath, flags);
             if(copyfd >= 0)
             {
                 close(fd);
                 dup2(copyfd, fd);
-                goto skip_inode_setup;
-            }
-            
-            copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
-            if(copyfd < 0)
-            {
-                goto skip_inode_setup;
-            }
-            
-            if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) < 0)
-            {
                 close(copyfd);
-                unlink(newTmpPath);
+                goto skip_inode_setup;
             }
             
-            close(copyfd);
-            copyfd = open(newTmpPath, flags);
-            if(copyfd < 0)
+            if(fclonefileat(fd, AT_FDCWD, newTmpPath, 0) == 0)  /* APFS CoW */
+            {
+                copyfd = open(newTmpPath, flags);
+                if(copyfd < 0)
+                {
+                    goto skip_inode_setup;
+                }
+            }
+            else
             {
                 goto skip_inode_setup;
             }
@@ -314,6 +306,7 @@ static int hook_openat(int dirfd,
             
             close(fd);
             dup2(copyfd, fd);
+            close(copyfd);
             
         skip_inode_setup:
             
@@ -373,7 +366,6 @@ just_return:
     return fd;
 }
 
-static const uint64_t fake_ino = 0x30a43;   /* some random inode i picked from a valid systems library */
 static const time_t fake_time = 1700000000;
 
 static int hook_fstat64(int fd,
@@ -383,8 +375,13 @@ static int hook_fstat64(int fd,
     int ret = orig_dyld_fstat64(fd, buf);
     if(ret == 0)
     {
-        dyld_hook_log("[hook_fstat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
-        buf->st_ino = fake_ino;  /* some inode */
+        char canon[PATH_MAX];
+        if(inode_bank_get_path(buf->st_ino, canon, sizeof(canon)) || orig_dyld_fcntl(fd, F_GETPATH, canon) != -1)
+        {
+            ino_t fake_ino = fake_inode_for_path(canon);
+            dyld_hook_log("[hook_fstat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
+            buf->st_ino = fake_ino;
+        }
         
         dyld_hook_log("[hook_stat64] playing a bit with the clock so DYLD thinks the file never changed =3 (1700000000)\n");
         buf->st_mtimespec.tv_sec = fake_time;
@@ -405,16 +402,15 @@ static int hook_stat64(const char *path,
     int ret = orig_dyld_stat64(path, buf);
     if(ret == 0)
     {
+        ino_t fake_ino = fake_inode_for_path(path);
         dyld_hook_log("[hook_stat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
-        buf->st_ino = 0x30a43;  /* some inode */
+        buf->st_ino = fake_ino;   /* canonicalizes internally */
         
         dyld_hook_log("[hook_stat64] playing a bit with the clock so DYLD thinks the file never changed =3 (1700000000)\n");
         buf->st_mtimespec.tv_sec = fake_time;
         buf->st_mtimespec.tv_nsec = 0;
-        buf->st_ctimespec.tv_sec = fake_time;
-        buf->st_ctimespec.tv_nsec = 0;
-        buf->st_birthtimespec.tv_sec = fake_time;
-        buf->st_birthtimespec.tv_nsec = 0;
+        buf->st_ctimespec.tv_sec = fake_time; buf->st_ctimespec.tv_nsec = 0;
+        buf->st_birthtimespec.tv_sec = fake_time; buf->st_birthtimespec.tv_nsec = 0;
     }
     dyld_hook_log("[hook_stat64:return] (ret = %d)\n", ret);
     return ret;
@@ -515,6 +511,12 @@ void *hook_dlopen(const char *path, int mode)
 {
     inode_bank_init();
     
+    char newTmpPath[PATH_MAX];
+    snprintf(newTmpPath, sizeof(newTmpPath), "%s/tmp", mmap_sandbox_map_exec_allowed_path);
+    mkdir(newTmpPath, 0777);
+    snprintf(newTmpPath, sizeof(newTmpPath), "%s/tmp/%d", mmap_sandbox_map_exec_allowed_path, getpid());
+    mkdir(newTmpPath, 0777);
+    
     void *(*darwin_dlopen)(const char *path, int mode) = _interpose_dlopen.replacee;
     dyld_hook_log("[hook_dlopen] %s\n", path);
     
@@ -524,7 +526,8 @@ void *hook_dlopen(const char *path, int mode)
     void *ret = darwin_dlopen(path, mode);
     HWHookThreadContextExit(context);
     
-    /* TODO: delete all inode bank files */
+    inode_bank_unlink_all(newTmpPath);
+    rmdir(newTmpPath);
     return ret;
 }
 
