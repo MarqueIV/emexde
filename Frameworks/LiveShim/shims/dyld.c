@@ -137,7 +137,7 @@ static int hook_open(const char *path,
     }
     
     int fd = orig_dyld_open(path, flags, mode);
-    if(fd < 0)
+    if(fd < 0 || flags & O_DIRECTORY)
     {
         goto just_return;
     }
