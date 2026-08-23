@@ -154,11 +154,17 @@ static int hook_open(const char *path,
         {
             /* need a new path */
             char newTmpPath[PATH_MAX];
-            void *random;
-            arc4random_buf(&random, sizeof(void*));
-            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
+            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/0x%llx.dylib", mmap_sandbox_map_exec_allowed_path, inode_for_fd(fd)); /* use tmp so iOS clears it automatically in LP home */
             
-            int copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+            int copyfd = open(newTmpPath, flags);
+            if(copyfd >= 0)
+            {
+                close(fd);
+                dup2(copyfd, fd);
+                goto skip_inode_setup;
+            }
+            
+            copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
             if(copyfd < 0)
             {
                 goto skip_inode_setup;
@@ -272,11 +278,17 @@ static int hook_openat(int dirfd,
         {
             /* need a new path */
             char newTmpPath[PATH_MAX];
-            void *random;
-            arc4random_buf(&random, sizeof(void*));
-            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
+            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/0x%llx.dylib", mmap_sandbox_map_exec_allowed_path, inode_for_fd(fd)); /* use tmp so iOS clears it automatically in LP home */
             
-            int copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+            int copyfd = open(newTmpPath, flags);
+            if(copyfd >= 0)
+            {
+                close(fd);
+                dup2(copyfd, fd);
+                goto skip_inode_setup;
+            }
+            
+            copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
             if(copyfd < 0)
             {
                 goto skip_inode_setup;
