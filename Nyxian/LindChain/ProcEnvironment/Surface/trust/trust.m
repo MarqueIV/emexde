@@ -559,6 +559,89 @@ fallback:
     }
 }
 
+ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(const char *path,
+                                                                                ksurface_trust_identity_t *parentIdentity)
+{
+    /* first we create the child's identity */
+    ksurface_trust_identity_t *childIdentity = trust_identity_create_from_path(path);
+    if(childIdentity == NULL)
+    {
+        return NULL;
+    }
+    
+    /* entitlement inheritance */
+    CFMutableDictionaryRef parentMergingEntitlements = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, parentIdentity->entitlements);
+    if(parentMergingEntitlements == NULL)
+    {
+        return NULL;
+    }
+    
+    CFMutableDictionaryRef childNewEntitlements = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, childIdentity->entitlements);
+    if(childNewEntitlements == NULL)
+    {
+        CFRelease(parentMergingEntitlements);
+        return NULL;
+    }
+    
+    /*
+     * only a platform identity may be able to
+     * cause a process with higher identity
+     * than it it self.
+     */
+    if(CFDictionaryGetValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM) != kCFBooleanTrue)
+    {
+        /*
+         * child gets nothing extra, removing
+         * what parent doesnt have.
+         */
+        CFIndex childCount = CFDictionaryGetCount(childNewEntitlements);
+        if(childCount > 0)
+        {
+            const void **childKeys = malloc((size_t)childCount * sizeof(*childKeys));
+            if(childKeys == NULL)
+            {
+                return false;
+            }
+            CFDictionaryGetKeysAndValues(parentMergingEntitlements, childKeys, NULL);
+            for(CFIndex index = 0; index < childCount; index++)
+            {
+                if(!CFDictionaryContainsKey(parentMergingEntitlements, childKeys[index]))
+                {
+                    CFDictionaryRemoveValue(childNewEntitlements, childKeys[index]);
+                }
+            }
+            free(childKeys);
+        }
+    }
+    
+    if(parentIdentity != trust_identity_get_kernel() && /* the kernel cannot inherite entitlements */
+       CFDictionaryGetValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_INHERITE_ENT) == kCFBooleanTrue)
+    {
+        /*
+         * entitlements which shall be stripped from parent
+         * merging entitlements, because they are just too
+         * over powered.
+         */
+        CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM);
+        CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_ROOT);
+        CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_TASK_FOR_PID);
+        CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_SUGID);
+    }
+    else
+    {
+        /* not inheriting anything */
+        CFDictionaryRemoveAllValues(parentMergingEntitlements);
+    }
+    
+    /* refreshing childIdentity */
+    CFRelease(childIdentity->entitlements);
+    childIdentity->entitlements = childNewEntitlements;
+    childIdentity->maxLegacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(childNewEntitlements);
+    childIdentity->legacyEntitlements = childIdentity->maxLegacyEntitlements;
+    
+    return childIdentity;
+}
+
 void trust_identity_destroy(ksurface_trust_identity_t *identity)
 {
     if(identity == NULL)

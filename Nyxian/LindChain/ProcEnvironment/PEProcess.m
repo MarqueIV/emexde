@@ -40,7 +40,8 @@
 - (instancetype)initWithItems:(NSDictionary*)items
      withKernelSurfaceProcess:(ksurface_proc_t*)proc
 {
-    if(proctil(kProctilActionCount) != KERN_SUCCESS)
+    if(proc == NULL ||
+       proctil(kProctilActionCount) != KERN_SUCCESS)
     {
         return nil;
     }
@@ -67,7 +68,7 @@
         return nil;
     }
     
-    ksurface_trust_identity_t *identity = trust_identity_create_from_path([self.executablePath UTF8String]);
+    ksurface_trust_identity_t *identity = trust_identity_create_from_path_with_parent_identity([self.executablePath UTF8String], proc->nyx.identity);
     if(identity == NULL)
     {
         proctil(kProctilActionUnlock);

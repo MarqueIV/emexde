@@ -61,7 +61,8 @@ ksurface_trust_identity_t *trust_identity_get_kernel(void);
 
 /* they are immutable, except for maxLegacyEntitlements! */
 ksurface_trust_identity_t *trust_identity_create_from_path(const char *path);
-/* ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(const char *path, ksurface_trust_identity_t *parentIdentity); */
+ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(const char *path, ksurface_trust_identity_t *parentIdentity);
+
 void trust_identity_destroy(ksurface_trust_identity_t *identity);
 
 #endif /* TRUST_TRUST_H */
