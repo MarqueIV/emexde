@@ -42,10 +42,14 @@
 static const char openSig[] = {0xB0, 0x00, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char mmapSig[] = {0xB0, 0x18, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 static const char fcntlSig[] = {0x90, 0x0B, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
+static const char fstat64Sig[] = {0x70, 0x2A, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
+static const char stat64Sig[] = {0x50, 0x2A, 0x80, 0xD2, 0x01, 0x10, 0x00, 0xD4};
 
 static int (*orig_dyld_open)(const char *path, int flags, mode_t mode);
 static int (*orig_dyld_fcntl)(int fildes, int cmd, void *param);
 static void *(*orig_dyld_mmap)(void *addr, size_t len, int prot, int flags, int fd, off_t offset);
+static int (*orig_dyld_fstat64)(int fildes, struct stat *buf);
+static int (*orig_dyld_stat64)(const char *path, struct stat *buf);
 
 static struct dyld_all_image_infos *_alt_dyld_get_all_image_infos(void)
 {
@@ -249,6 +253,37 @@ just_return:
     return fd;
 }
 
+
+static const uint64_t fake_ino = 0x30a43;   /* some random inode i picked from a valid systems library */
+
+static int hook_fstat64(int fd,
+                        struct stat *buf)
+{
+    dyld_hook_log("[hook_fstat64:args] (fd = %d, buf = %p)\n", fd, buf);
+    int ret = orig_dyld_fstat64(fd, buf);
+    if(ret == 0)
+    {
+        dyld_hook_log("[hook_fstat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
+        buf->st_ino = 0x30a43;  /* some inode */
+    }
+    dyld_hook_log("[hook_fstat64:return] (ret = %d)\n", ret);
+    return ret;
+}
+
+static int hook_stat64(const char *path,
+                       struct stat *buf)
+{
+    dyld_hook_log("[hook_stat64:args] (path = %s, buf = %p)\n", path, buf);
+    int ret = orig_dyld_stat64(path, buf);
+    if(ret == 0)
+    {
+        dyld_hook_log("[hook_stat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
+        buf->st_ino = 0x30a43;  /* some inode */
+    }
+    dyld_hook_log("[hook_stat64:return] (ret = %d)\n", ret);
+    return ret;
+}
+
 static HWHookThreadContextRef HWHookDlopenThreadContext(void)
 {
     static HWHookThreadContextRef context = nil;
@@ -258,7 +293,9 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         orig_dyld_fcntl = (void *)searchDyldFunction(dyldBase, (char*)fcntlSig, sizeof(fcntlSig));
         orig_dyld_mmap = (void *)searchDyldFunction(dyldBase, (char*)mmapSig, sizeof(mmapSig));
         orig_dyld_open = (void *)searchDyldFunction(dyldBase, (char*)openSig, sizeof(openSig));
-        if(orig_dyld_mmap == NULL || orig_dyld_fcntl == NULL || orig_dyld_open == NULL)
+        orig_dyld_fstat64 = (void *)searchDyldFunction(dyldBase, (char*)fstat64Sig, sizeof(fstat64Sig));
+        orig_dyld_stat64 = (void *)searchDyldFunction(dyldBase, (char*)stat64Sig, sizeof(stat64Sig));
+        if(orig_dyld_mmap == NULL || orig_dyld_fcntl == NULL || orig_dyld_open == NULL || orig_dyld_fstat64 == NULL || orig_dyld_stat64 == NULL)
         {
             return;
         }
@@ -284,9 +321,30 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
             return;
         }
         
+        HWHookRef fstat64Hook = HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, orig_dyld_fstat64, hook_fstat64);
+        if(fstat64Hook == NULL)
+        {
+            CFRelease(fcntlHook);
+            CFRelease(mmapHook);
+            CFRelease(openHook);
+            return;
+        }
+        
+        HWHookRef stat64Hook = HWHookCreateWithPointerToSymbol(kCFAllocatorDefault, orig_dyld_stat64, hook_stat64);
+        if(fstat64Hook == NULL)
+        {
+            CFRelease(fcntlHook);
+            CFRelease(mmapHook);
+            CFRelease(openHook);
+            CFRelease(fstat64Hook);
+            return;
+        }
+        
         HWHookSetDisableContextHooksInFrame(fcntlHook, true);
         HWHookSetDisableContextHooksInFrame(mmapHook, true);
         HWHookSetDisableContextHooksInFrame(openHook, true);
+        HWHookSetDisableContextHooksInFrame(fstat64Hook, true);
+        HWHookSetDisableContextHooksInFrame(stat64Hook, true);
         
         context = HWHookThreadContextCreate(kCFAllocatorDefault);
         if(context == NULL)
@@ -296,13 +354,17 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
         
         if(!HWHookThreadContextAppendHook(context, fcntlHook) ||
            !HWHookThreadContextAppendHook(context, mmapHook) ||
-           !HWHookThreadContextAppendHook(context, openHook))
+           !HWHookThreadContextAppendHook(context, openHook) ||
+           !HWHookThreadContextAppendHook(context, fstat64Hook) ||
+           !HWHookThreadContextAppendHook(context, stat64Hook))
         {
             CFRelease(context);
         release_hooks:
             CFRelease(fcntlHook);
             CFRelease(mmapHook);
             CFRelease(openHook);
+            CFRelease(fstat64Hook);
+            CFRelease(stat64Hook);
             return;
         }
     });
