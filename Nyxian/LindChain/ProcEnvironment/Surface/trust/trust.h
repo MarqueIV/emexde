@@ -19,26 +19,25 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SIGNING_TRUST_H
-#define SIGNING_TRUST_H
+#ifndef TRUST_TRUST_H
+#define TRUST_TRUST_H
 
 /* ----------------------------------------------------------------------
- *  Surface API Headers
+ *  System Headers
  * -------------------------------------------------------------------- */
-#include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <sys/param.h>
-#include <stdbool.h>
 
-kern_return_t trust_nxtr_sign(const char *path, PEEntitlement entitlement);
-kern_return_t trust_nxtr_sign_fd(int fd, PEEntitlement entitlement);
-kern_return_t trust_nxtr_read(const char *path, ksurface_nxtr_result_t *result);
-kern_return_t trust_nxtr_read_fd(int fd, ksurface_nxtr_result_t *result);
+/* ----------------------------------------------------------------------
+ *  Project Headers
+ * -------------------------------------------------------------------- */
+#include <LindChain/ProcEnvironment/Surface/trust/cdhash.h>
+#include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
+#include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 
-kern_return_t trust_nxt2_sign(const char *path, CFDictionaryRef entitlements, bool signBlob);
-kern_return_t trust_nxt2_sign_fd(int fd, CFDictionaryRef entitlements, bool signBlob);
-kern_return_t trust_nxt2_read(const char *path, ksurface_nxt2_t *result);
-kern_return_t trust_nxt2_read_fd(int fd, ksurface_nxt2_t *result);
-
+/* ----------------------------------------------------------------------
+ *  Types
+ * -------------------------------------------------------------------- */
 typedef enum: UInt8 {
     kPETrustLevelFallback = 0,  /* no trust */
     kPETrustLevelSignature = 1, /* signature trust */
@@ -55,6 +54,9 @@ typedef struct {
     PETrustLevel trustLevel;
 } ksurface_trust_identity_t;
 
+/* ----------------------------------------------------------------------
+ *  Function Prototype
+ * -------------------------------------------------------------------- */
 ksurface_trust_identity_t *trust_identity_get_kernel(void);
 
 /* they are immutable, except for maxLegacyEntitlements! */
@@ -62,4 +64,4 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path);
 /* ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(const char *path, ksurface_trust_identity_t *parentIdentity); */
 void trust_identity_destroy(ksurface_trust_identity_t *identity);
 
-#endif /* SIGNING_TRUST_H */
+#endif /* TRUST_TRUST_H */

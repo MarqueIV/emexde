@@ -19,15 +19,22 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+/* ----------------------------------------------------------------------
+ *  System Headers
+ * -------------------------------------------------------------------- */
+#include <assert.h>
+
+/* ----------------------------------------------------------------------
+ *  Project Headers
+ * -------------------------------------------------------------------- */
 #include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
-#import <LindChain/ProcEnvironment/Surface/key.h>
+#include <LindChain/ProcEnvironment/Surface/key.h>
 #include <LindChain/ProcEnvironment/Surface/trust/trust.h>
 #include <OpenSSL/evp.h>
 #include <OpenSSL/err.h>
 #include <OpenSSL/ec.h>
 #include <OpenSSL/pem.h>
-#include <assert.h>
 #include <ksurface_config.h>
 
 kern_return_t entitlement_token_mach_gen(ksurface_nxtr_blob_t *blob,

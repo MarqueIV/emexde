@@ -19,18 +19,31 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef TRUST_CDHASH_H
-#define TRUST_CDHASH_H
+#ifndef TRUST_SIGNING_H
+#define TRUST_SIGNING_H
 
 /* ----------------------------------------------------------------------
  *  System Headers
  * -------------------------------------------------------------------- */
-#include <mach-o/loader.h>
+#include <CoreFoundation/CoreFoundation.h>
+#include <mach/kern_return.h>
+
+/* ----------------------------------------------------------------------
+ *  Project Headers
+ * -------------------------------------------------------------------- */
+#include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
 
 /* ----------------------------------------------------------------------
  *  Function Prototypes
  * -------------------------------------------------------------------- */
-char *cdhash_of_hdr(const uint8_t *mach_header, size_t size);
-char *cdhash_of_fd(int fd);
+kern_return_t trust_nxtr_sign(const char *path, PEEntitlement entitlement);
+kern_return_t trust_nxtr_sign_fd(int fd, PEEntitlement entitlement);
+kern_return_t trust_nxtr_read(const char *path, ksurface_nxtr_result_t *result);
+kern_return_t trust_nxtr_read_fd(int fd, ksurface_nxtr_result_t *result);
 
-#endif /* TRUST_CDHASH_H */
+kern_return_t trust_nxt2_sign(const char *path, CFDictionaryRef entitlements, bool signBlob);
+kern_return_t trust_nxt2_sign_fd(int fd, CFDictionaryRef entitlements, bool signBlob);
+kern_return_t trust_nxt2_read(const char *path, ksurface_nxt2_t *result);
+kern_return_t trust_nxt2_read_fd(int fd, ksurface_nxt2_t *result);
+
+#endif /* TRUST_SIGNING_H */
