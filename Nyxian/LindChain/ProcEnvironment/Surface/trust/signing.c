@@ -50,6 +50,68 @@ ssize_t read_at(int fd, off_t offset, void *buf, size_t len)
     return read(fd, buf, len);
 }
 
+kern_return_t trust_remove_blob(const char *path)
+{
+    int fd = open(path, O_RDWR);
+    if(fd < 0)
+    {
+        return KERN_FAILURE;
+    }
+    
+    kern_return_t kr = trust_remove_blob_fd(fd);
+    fsync(fd);
+    close(fd);
+    return kr;
+}
+
+kern_return_t trust_remove_blob_fd(int fd)
+{
+    char tag[4];
+    uint32_t len;
+    
+    off_t size = lseek(fd, 0, SEEK_END);
+    if(size < 0)
+    {
+        return KERN_FAILURE;
+    }
+    if(size < 8)
+    {
+        return KERN_SUCCESS;
+    }
+    if(lseek(fd, -4, SEEK_END) < 0)
+    {
+        return KERN_FAILURE;
+    }
+    if(read(fd, tag, 4) != 4)
+    {
+        return KERN_FAILURE;
+    }
+    
+    if(memcmp(tag, APPEND_TAG_NXTR, 4) != 0 &&
+       memcmp(tag, APPEND_TAG_NXT2, 4) != 0)
+    {
+        /* no blob present */
+        return KERN_SUCCESS;
+    }
+    
+    if(lseek(fd, -8, SEEK_END) < 0)
+    {
+        return KERN_FAILURE;
+    }
+    if(read(fd, &len, sizeof(uint32_t)) != sizeof(uint32_t))
+    {
+        return KERN_FAILURE;
+    }
+    
+    uint64_t total = (uint64_t)len + 8;
+    if(total > (uint64_t)size)
+    {
+        return KERN_FAILURE;
+    }
+    
+    return ftruncate(fd, (off_t)(size - total)) == 0 ? KERN_SUCCESS : KERN_FAILURE;
+}
+
 kern_return_t trust_nxtr_sign(const char *path,
                               PEEntitlement entitlement)
 {
@@ -83,27 +145,12 @@ kern_return_t trust_nxtr_sign_fd(int fd,
         return KERN_FAILURE;
     }
     free(cdhash);
-
-    char tag[4];
-    off_t eof = lseek(fd, 0, SEEK_END);
     
-    if(eof >= (off_t)(sizeof(ksurface_nxtr_blob_t) + sizeof(uint32_t) + 4))
-    {
-        read_at(fd, eof - 4, tag, 4);
-        if(memcmp(tag, APPEND_TAG_NXTR, 4) == 0)
-        {
-            uint32_t data_len;
-            read_at(fd, eof - 4 - sizeof(uint32_t), &data_len, sizeof(uint32_t));
-            eof -= (off_t)(data_len + sizeof(uint32_t) + 4);
-            ftruncate(fd, eof);
-        }
-    }
-
-    if(lseek(fd, eof, SEEK_SET) < 0)
-    {
-        return KERN_FAILURE;
-    }
-
+    /* cut down to eof */
+    trust_remove_blob_fd(fd);
+    
+    lseek(fd, 0, SEEK_END);
+    
     if(write(fd, &token, sizeof(ksurface_nxtr_blob_t)) != (ssize_t)sizeof(ksurface_nxtr_blob_t))
     {
         return KERN_FAILURE;
@@ -228,33 +275,10 @@ kern_return_t trust_nxt2_sign_fd(int fd,
     char *cdhash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
     LCUnmapMachO(machO);
     
-    /* find eof */
-    char tag[4];
-    off_t eof = lseek(fd, 0, SEEK_END);
+    /* cut down to eof */
+    trust_remove_blob_fd(fd);
     
-    if(eof >= (off_t)(sizeof(ksurface_nxtr_blob_t) + sizeof(uint32_t) + 4))
-    {
-        read_at(fd, eof - 4, tag, 4);
-        if(memcmp(tag, APPEND_TAG_NXT2, 4) == 0)
-        {
-            uint32_t data_len;
-            read_at(fd, eof - 4 - sizeof(uint32_t), &data_len, sizeof(uint32_t));
-            eof -= (off_t)(data_len + sizeof(uint32_t) + 4);
-            ftruncate(fd, eof);
-        }
-    }
-    
-    if(lseek(fd, eof, SEEK_SET) < 0)
-    {
-        free(cdhash);
-        return KERN_FAILURE;
-    }
-    
-    if(ftruncate(fd, eof) < 0)
-    {
-        free(cdhash);
-        return KERN_FAILURE;
-    }
+    lseek(fd, 0, SEEK_END);
     
     /* generate nxt2 blob (nxt2 unlike nxtr requires us to do it our selves and not entitlements api) */
     CFDataRef entitlementsData = entitlement_dict_to_plist(entitlements);
