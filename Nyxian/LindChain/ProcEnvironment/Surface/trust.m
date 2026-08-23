@@ -202,21 +202,14 @@ kern_return_t trust_nxtr_read_fd(int fd,
     char *hash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
     LCUnmapMachO(machO);
     
-    if(hash == NULL)
+    result->cdhash_valid = false;
+    if(hash != NULL && strncmp(hash, result->blob.cdhash, USER_FSIGNATURES_CDHASH_LEN) == 0)
     {
-        result->cdhash_valid = false;
-        goto out_no_cdhas;
-    }
-    else if(strncmp(hash, result->blob.cdhash, USER_FSIGNATURES_CDHASH_LEN) == 0)
-    {
-        free(hash);
         result->cdhash_valid = true;
-    out_no_cdhas:
-        return KERN_SUCCESS;
     }
     
     free(hash);
-    return KERN_FAILURE;
+    return KERN_SUCCESS;
 }
 
 kern_return_t trust_nxt2_sign(const char *path,
