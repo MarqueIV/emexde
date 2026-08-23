@@ -253,9 +253,9 @@ static int hook_fstat64(int fd,
     if(ret == 0)
     {
         dyld_hook_log("[hook_fstat64] changing inode: 0x%llx -> 0x%llx\n", buf->st_ino, fake_ino);
-        buf->st_ino = 0x30a43;  /* some inode */
+        buf->st_ino = fake_ino;  /* some inode */
         
-        dyld_hook_log("[hook_fstat64] playing a bit with the clock =3\n");
+        dyld_hook_log("[hook_stat64] playing a bit with the clock so DYLD thinks the file never changed =3 (1700000000)\n");
         buf->st_mtimespec.tv_sec = fake_time;
         buf->st_mtimespec.tv_nsec = 0;
         buf->st_ctimespec.tv_sec = fake_time;
