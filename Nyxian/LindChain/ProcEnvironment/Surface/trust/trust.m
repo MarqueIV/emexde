@@ -660,6 +660,8 @@ ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(
          */
         CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM);
         CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_ROOT);
+        CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_USER);
+        CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_GROUP);
         CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_TASK_FOR_PID);
         CFDictionaryRemoveValue(parentMergingEntitlements, KSURFACE_NXT2_ENTITLEMENT_ID_SUGID);
     }
