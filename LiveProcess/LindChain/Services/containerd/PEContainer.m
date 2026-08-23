@@ -658,7 +658,7 @@
     }
     
     /* extracting entitlements */
-    BOOL success = nxtr_read_fd(fd, result) == 0;
+    BOOL success = trust_nxtr_read_fd(fd, result) == 0;
     close(fd);
     return success;
 }
@@ -700,7 +700,7 @@
     
     /* extracting entitlements */
     ksurface_nxtr_result_t mach;
-    nxtr_read_fd(fd, &mach);
+    trust_nxtr_read_fd(fd, &mach);
     close(fd);
     
     /* verifying entitlement validity */
@@ -729,7 +729,7 @@
         return false;
     }
     
-    kern_return_t kr = nxtr_sign_fd(fd, entitlement);
+    kern_return_t kr = trust_nxtr_sign_fd(fd, entitlement);
     fsync(fd);
     close(fd);
     return (kr == KERN_SUCCESS);

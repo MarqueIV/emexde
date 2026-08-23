@@ -145,7 +145,7 @@ PEEntitlement entitlement_get_path(const char *path,
                                    bool *wasLocallySigned)
 {
     ksurface_nxtr_result_t mach;
-    if(nxtr_read(path, &mach) != KERN_SUCCESS)
+    if(trust_nxtr_read(path, &mach) != KERN_SUCCESS)
     {
         *wasLocallySigned = false;
         return kPEEntitlementNone;
@@ -165,7 +165,7 @@ bool entitlement_set_path(const char *path,
         return false;
     }
     
-    kern_return_t kr = nxtr_sign_fd(fd, entitlement);
+    kern_return_t kr = trust_nxtr_sign_fd(fd, entitlement);
     fsync(fd);
     close(fd);
     return (kr == KERN_SUCCESS);

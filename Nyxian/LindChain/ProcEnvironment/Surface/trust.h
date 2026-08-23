@@ -29,15 +29,15 @@
 #include <sys/param.h>
 #include <stdbool.h>
 
-kern_return_t nxtr_sign(const char *path, PEEntitlement entitlement);
-kern_return_t nxtr_sign_fd(int fd, PEEntitlement entitlement);
-kern_return_t nxtr_read(const char *path, ksurface_nxtr_result_t *result);
-kern_return_t nxtr_read_fd(int fd, ksurface_nxtr_result_t *result);
+kern_return_t trust_nxtr_sign(const char *path, PEEntitlement entitlement);
+kern_return_t trust_nxtr_sign_fd(int fd, PEEntitlement entitlement);
+kern_return_t trust_nxtr_read(const char *path, ksurface_nxtr_result_t *result);
+kern_return_t trust_nxtr_read_fd(int fd, ksurface_nxtr_result_t *result);
 
-kern_return_t nxt2_sign(const char *path, CFDictionaryRef entitlements, bool signBlob);
-kern_return_t nxt2_sign_fd(int fd, CFDictionaryRef entitlements, bool signBlob);
-kern_return_t nxt2_read(const char *path, ksurface_nxt2_t *result);
-kern_return_t nxt2_read_fd(int fd, ksurface_nxt2_t *result);
+kern_return_t trust_nxt2_sign(const char *path, CFDictionaryRef entitlements, bool signBlob);
+kern_return_t trust_nxt2_sign_fd(int fd, CFDictionaryRef entitlements, bool signBlob);
+kern_return_t trust_nxt2_read(const char *path, ksurface_nxt2_t *result);
+kern_return_t trust_nxt2_read_fd(int fd, ksurface_nxt2_t *result);
 
 typedef enum: UInt8 {
     kPETrustTypeFallback = 0,
