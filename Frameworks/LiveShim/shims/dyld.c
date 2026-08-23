@@ -146,7 +146,7 @@ static int hook_open(const char *path,
     }
     
     char actualPath[PATH_MAX];
-    if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
+    if(fcntl(fd, F_GETPATH, actualPath) != -1)
     {
         dyld_hook_log("[hook_open:path] %s\n", actualPath);
         
@@ -266,7 +266,7 @@ static int hook_openat(int dirfd,
     }
     
     char actualPath[PATH_MAX];
-    if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
+    if(fcntl(fd, F_GETPATH, actualPath) != -1)
     {
         dyld_hook_log("[hook_openat:path] %s\n", actualPath);
         
