@@ -62,7 +62,7 @@
     }
     
     self.executablePath = items[@"PEExecutablePath"];
-    if(![[PEContainer shared] isReadableFileAtPath:self.executablePath])
+    if(self.executablePath == nil)
     {
         proctil(kProctilActionUnlock);
         return nil;

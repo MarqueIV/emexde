@@ -396,12 +396,6 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         return NULL;
     }
     
-    CFStringRef executableString = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingUTF8);
-    if(executableString == NULL)
-    {
-        return NULL;
-    }
-    
     /* daemon trustpath validation */
     for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
     {
@@ -410,7 +404,15 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             ksurface_trust_identity_t *identity = calloc(1, sizeof(ksurface_trust_identity_t));
             if(identity == NULL)
             {
-                goto fallback;
+                /*
+                 * returning cause this could become useful in a attack chain.
+                 *
+                 * 1. exhausting Nyxian's memory.
+                 * 2. crash a daemon.
+                 * 3. now it runs with fallback entitlements.
+                 */
+                errno = ENOMEM;
+                return NULL;
             }
             strlcpy(identity->path, path, MAXPATHLEN);
             identity->trustLevel = kPETrustLevelTrusted;
@@ -420,10 +422,23 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             if(identity->entitlements == NULL)
             {
                 free(identity);
-                goto fallback;
+                errno = ENOMEM;
+                return NULL;
             }
             return identity;
         }
+    }
+    
+    /* check if path is readable and signed (required for trust levels lower than kPETrustLevelTrusted, because paths are attacker controlled) */
+    if(access(path, R_OK) != 0)
+    {
+        return NULL;
+    }
+    
+    CFStringRef executableString = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingUTF8);
+    if(executableString == NULL)
+    {
+        return NULL;
     }
     
     /* signature validation */
