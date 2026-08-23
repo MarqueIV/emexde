@@ -142,53 +142,51 @@ static int hook_open(const char *path,
         goto just_return;
     }
     
-    if(cdhash_must_valid && !cdhash_verified)
+    char actualPath[PATH_MAX];
+    if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
     {
-        char actualPath[PATH_MAX];
-        if(orig_dyld_fcntl(fd, F_GETPATH, actualPath) != -1)
+        dyld_hook_log("[hook_open:path] %s\n", actualPath);
+        
+        const char prefix[] = "/private/var/mobile/Containers/Data";
+        if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
         {
-            dyld_hook_log("[hook_open:path] %s\n", actualPath);
+            /* need a new path */
+            char newTmpPath[PATH_MAX];
+            void *random;
+            arc4random_buf(&random, sizeof(void*));
+            snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
             
-            const char prefix[] = "/private/var/mobile/Containers/Data";
-            if(strncmp(actualPath, prefix, sizeof(prefix) - 1) == 0)
+            int copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
+            if(copyfd < 0)
             {
-                char newTmpPath[PATH_MAX];
-                
-                /*
-                 * very dumb duy, ima be fair using ASLR as a UUID generator is something you've gone too far with
-                 * that is a text book way to defeat  ASLR, i'd better use arc4random_buf.
-                 */
-                void *random;
-                arc4random_buf(&random, sizeof(void*));
-                snprintf(newTmpPath, sizeof(newTmpPath),  "%s/tmp/%016llx.dylib", mmap_sandbox_map_exec_allowed_path, (unsigned long long)random);  /* use tmp so iOS clears it automatically in LP home */
-                
-                int copyfd = open(newTmpPath, O_RDWR | O_CREAT | O_TRUNC, 0777);
-                if(copyfd < 0)
-                {
-                    goto skip_inode_setup;
-                }
-                
-                if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) < 0)
-                {
-                    close(copyfd);
-                    unlink(newTmpPath);
-                }
-                
+                goto skip_inode_setup;
+            }
+            
+            if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) < 0)
+            {
                 close(copyfd);
-                copyfd = open(newTmpPath, flags);
-                if(copyfd < 0)
-                {
-                    goto skip_inode_setup;
-                }
-                
-                ino_t inode = inode_for_fd(copyfd);
-                inode_bank_put(inode, newTmpPath);
-                inode_bank_set_redirect(inode, actualPath);
-                
-                close(fd);
-                dup2(copyfd, fd);
-                
-            skip_inode_setup:
+                unlink(newTmpPath);
+            }
+            
+            close(copyfd);
+            copyfd = open(newTmpPath, flags);
+            if(copyfd < 0)
+            {
+                goto skip_inode_setup;
+            }
+            
+            /* this to orient or selfs */
+            ino_t inode = inode_for_fd(copyfd);
+            inode_bank_put(inode, newTmpPath);
+            inode_bank_set_redirect(inode, actualPath);
+            
+            close(fd);
+            dup2(copyfd, fd);
+            
+        skip_inode_setup:
+            
+            if(cdhash_must_valid && !cdhash_verified)
+            {
                 /* no matter what this is not reentrant */
                 cdhash_must_valid = false;
                 cdhash_verified = false;
