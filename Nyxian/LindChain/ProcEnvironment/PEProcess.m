@@ -225,16 +225,18 @@
         
 - (void)processDidExit:(FBProcess *)arg1
 {
-    if(_proc != NULL)
+    ksurface_proc_t *proc = self->_proc;
+    self->_proc = nil;
+    if(proc != NULL)
     {
         /* yep writing official wait4 code~~ */
-        proc_state_change(_proc, arg1.exitContext.underlyingContext.legacyCode);
-        kern_return_t error = proc_zombify(_proc);
+        proc_state_change(proc, arg1.exitContext.underlyingContext.legacyCode);
+        kern_return_t error = proc_zombify(proc);
         if(error != KERN_SUCCESS)
         {
             klog_log("PEProcess:processDidExit", "failed to remove pid %d", _pid);
         }
-        kvo_release(_proc);
+        kvo_release(proc);
     }
     
     /* notify observers */
