@@ -207,11 +207,11 @@ kern_return_t entitlement_mach_verify(ksurface_nxtr_result_t *mach, uint8_t *pub
 PEEntitlement entitlement_get_path(const char *path, bool *wasLocallySigned);
 bool entitlement_set_path(const char *path, PEEntitlement entitlement);
 
-#if KSURFACE_SEC_SANITIZE_ENTITLEMENTS
+#if KSURFACE_CS_SANITIZE_ENTITLEMENTS
 PEEntitlement entitlement_sanitize(PEEntitlement base);
 #else
 #define entitlement_sanitize(base) (base)
-#endif /* KSURFACE_SEC_SANITIZE_ENTITLEMENTS */
+#endif /* KSURFACE_CS_SANITIZE_ENTITLEMENTS */
 
 CFDataRef entitlement_dict_to_plist(CFDictionaryRef dict);
 CFDictionaryRef entitlement_plist_to_dict(CFDataRef data);

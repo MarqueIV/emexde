@@ -171,7 +171,7 @@ bool entitlement_set_path(const char *path,
     return (kr == KERN_SUCCESS);
 }
 
-#if KSURFACE_SEC_SANITIZE_ENTITLEMENTS
+#if KSURFACE_CS_SANITIZE_ENTITLEMENTS
 PEEntitlement entitlement_sanitize(PEEntitlement base)
 {
     base &= kPEEntitlementAll;  /* making sure no unused bit fields are enabled */
@@ -201,7 +201,7 @@ PEEntitlement entitlement_sanitize(PEEntitlement base)
     }
     return base;
 }
-#endif /* KSURFACE_SEC_SANITIZE_ENTITLEMENTS */
+#endif /* KSURFACE_CS_SANITIZE_ENTITLEMENTS */
 
 CFDataRef entitlement_dict_to_plist(CFDictionaryRef dict)
 {

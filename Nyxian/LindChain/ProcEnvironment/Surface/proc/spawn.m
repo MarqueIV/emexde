@@ -38,6 +38,12 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
 {
     assert(parent != NULL && child != NULL && identity != NULL);
     
+    if(!identity->isSigned)
+    {
+        /* unsigned identities are not allowed */
+        return KERN_DENIED;
+    }
+    
     ksurface_proc_t *child_new = kvo_copy(parent);
     if(child_new == NULL)
     {
@@ -54,13 +60,6 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement entitlement = kPEEntitlementNone;
     PEEntitlement currentEntitlement = proc_getentitlements(child_new);
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
-    
-    /* verify trust */
-    if(identity == NULL)
-    {
-        kvo_release(child_new);
-        return KERN_FAILURE;
-    }
     
     /* TODO: this is very early */
     switch(identity->type)

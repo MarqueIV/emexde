@@ -969,6 +969,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     
     /* signature */
     
+#if KSURFACE_CS_ACCEPT_NXT2
     /* modern */
     ksurface_nxt2_t result_nxt2;
     if(nxt2_read(path, &result_nxt2) == KERN_SUCCESS)
@@ -1007,8 +1008,9 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         return identity;
     }
+#endif /* KSURFACE_CS_ACCEPT_NXT2 */
     
-#if KSURFACE_SEC_CODESIGNATURE_ACCEPT_NXTR
+#if KSURFACE_CS_ACCEPT_NXTR
     /* legacy */
     ksurface_nxtr_result_t result_nxtr;
     if(nxtr_read(path, &result_nxtr) == KERN_SUCCESS &&
@@ -1046,7 +1048,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
         return identity;
     }
-#endif /* KSURFACE_SEC_CODESIGNATURE_ACCEPT_NXTR */
+#endif /* KSURFACE_CS_ACCEPT_NXTR */
     
     /* fallback */
 fallback:
