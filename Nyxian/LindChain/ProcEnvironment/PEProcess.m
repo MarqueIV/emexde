@@ -35,6 +35,7 @@
     NSHashTable<id<PEProcessObserver>> *_observers;
     os_unfair_lock _lock;
     _Atomic(int) _termState;
+    _Atomic(int) _counted;
 }
 
 - (instancetype)initWithItems:(NSDictionary*)items
@@ -52,12 +53,14 @@
         proctil(kProctilActionUncount);
         return nil;
     }
+    atomic_store(&_counted, true);
     
     _observers = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality capacity:0];
     _lock = OS_UNFAIR_LOCK_INIT;
     
     if(proctil(kProctilActionLock) != KERN_SUCCESS)
     {
+        proctil(kProctilActionUncount);
         return nil;
     }
     
@@ -294,7 +297,11 @@
 
 - (void)dealloc
 {
-    proctil(kProctilActionUncount);
+    if(atomic_exchange(&_counted, false))
+    {
+        proctil(kProctilActionUncount);
+    }
+    
 #if DEBUG
     NSLog(@"deallocated %@", self);
 #endif /* DEBUG */
