@@ -49,6 +49,13 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     
     child_new->nyx.identity = identity;
     
+    if(parent == kernel_proc_)
+    {
+        /* process needs new credentials */
+        proc_setmobilecred(child_new);
+        proc_setsid(child_new, proc_getpid(child_new));
+    }
+    
 #if KSURFACE_SYS_UCRED_ENABLED
     
     /* only platform processes can use those */
