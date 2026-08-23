@@ -70,12 +70,11 @@
     ksurface_trust_identity_t *identity = trust_identity_create_from_path([self.executablePath UTF8String]);
     if(identity == NULL)
     {
-        [self terminate];
         proctil(kProctilActionUnlock);
         return nil;
     }
     
-    if(identity->type == kPETrustTypeTrusted)
+    if(identity->trustLevel == kPETrustLevelTrusted)
     {
         NSMutableDictionary *mutableItems = [items mutableCopy];
         [mutableItems setObject:@[

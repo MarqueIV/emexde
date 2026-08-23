@@ -247,7 +247,7 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
         case kPECTLCodeSigningGetCDHash:
         {
             kvo_rdlock(sys_proc_);
-            if(sys_proc_->nyx.identity->type != kPETrustTypeSignature)  /* signature type needs cdhash verification */
+            if(sys_proc_->nyx.identity->trustLevel != kPETrustLevelSignature)   /* signature type needs cdhash verification */
             {
                 kvo_unlock(sys_proc_);
                 sys_return_failure(ENOENT);

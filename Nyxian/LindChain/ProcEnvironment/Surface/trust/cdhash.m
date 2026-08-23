@@ -19,7 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Surface/cdhash.h>
+#import <LindChain/ProcEnvironment/Surface/trust/cdhash.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

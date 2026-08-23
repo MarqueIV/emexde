@@ -20,7 +20,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#import <LindChain/ProcEnvironment/Surface/entitlement.h>
+#import <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
 #import <LindChain/ProcEnvironment/Surface/proc/spawn.h>
 #import <LindChain/ProcEnvironment/Surface/proc/insert.h>
 #import <LindChain/ProcEnvironment/Surface/proc/def.h>
@@ -56,11 +56,11 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     PEEntitlement currentMaxEntitlement = proc_getmaxentitlements(child_new);
     
     /* TODO: this is very early */
-    switch(identity->type)
+    switch(identity->trustLevel)
     {
-        case kPETrustTypeFallback:
-        case kPETrustTypeSignature:
-        case kPETrustTypeTrusted:
+        case kPETrustLevelFallback:
+        case kPETrustLevelSignature:
+        case kPETrustLevelTrusted:
         default:
             entitlement = identity->legacyEntitlements;
             break;

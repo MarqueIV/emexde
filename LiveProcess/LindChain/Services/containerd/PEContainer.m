@@ -22,7 +22,7 @@
 #import <LindChain/Services/containerd/PEContainer.h>
 #import <LindChain/Services/containerd/PEContainerProtocol.h>
 #import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
-#import <LindChain/ProcEnvironment/Surface/trust.h>
+#import <LindChain/ProcEnvironment/Surface/trust/trust.h>
 
 #define PE_PROXY_OR_SIGNAL(sema) \
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *_) { \

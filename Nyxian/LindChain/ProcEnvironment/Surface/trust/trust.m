@@ -22,11 +22,11 @@
 
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
-#include <LindChain/ProcEnvironment/Surface/trust.h>
-#include <LindChain/ProcEnvironment/Surface/entitlement.h>
+#include <LindChain/ProcEnvironment/Surface/trust/cdhash.h>
+#include <LindChain/ProcEnvironment/Surface/trust/trust.h>
+#include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
-#include <LindChain/ProcEnvironment/Surface/cdhash.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -807,8 +807,8 @@ static NSString *PECanonicalizePath(NSString *path)
     return [NSString stringWithUTF8String:resolved];
 }
 
-static CFArrayRef trust_identity_gib_file_permissions(CFStringRef executableString,
-                                                      CFDictionaryRef entitlements)
+static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableString,
+                                                       CFDictionaryRef entitlements)
 {
     NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
     NSDictionary *vars = @{
@@ -905,9 +905,13 @@ ksurface_trust_identity_t *trust_identity_get_kernel(void)
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         identity = calloc(1, sizeof(ksurface_trust_identity_t));
-        identity->legacyEntitlements = kPEEntitlementKernel;
-        identity->maxLegacyEntitlements = kPEEntitlementKernel;
-        identity->type = kPETrustTypeTrusted;
+        identity->legacyEntitlements = kPEEntitlementPlatform | kPEEntitlementPlatformRoot;
+        identity->maxLegacyEntitlements = kPEEntitlementPlatform | kPEEntitlementPlatformRoot;
+        identity->trustLevel = kPETrustLevelTrusted;
+        identity->entitlements = (__bridge_retained CFDictionaryRef)[@{
+            (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM: @(YES),
+            (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_ROOT: @(YES),
+        } copy];
         
         uint32_t bufsize = PATH_MAX;
         if(_NSGetExecutablePath(identity->path, &bufsize) > 0)
@@ -933,7 +937,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         return NULL;
     }
     
-    /* check if in daemon trustpath */
+    /* daemon trustpath validation */
     for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
     {
         if(strncmp(path, trustDaemonPath[index], MAXPATHLEN - 1) == 0)
@@ -944,7 +948,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                 goto fallback;
             }
             strlcpy(identity->path, path, MAXPATHLEN);
-            identity->type = kPETrustTypeTrusted;
+            identity->trustLevel = kPETrustLevelTrusted;
             identity->legacyEntitlements = kPEEntitlementSystemDaemon;
             identity->maxLegacyEntitlements = kPEEntitlementSystemDaemon;
             identity->entitlements = trust_identity_entitlements_from_legacy_entitlements(kPEEntitlementSystemDaemon);
@@ -957,8 +961,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         }
     }
     
-    /* signature */
-    
+    /* signature validation */
 #if KSURFACE_CS_ALLOW_NXT2
     {
         ksurface_nxt2_t result_nxt2;
@@ -983,7 +986,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             strlcpy(identity->path, path, MAXPATHLEN);
             memcpy(identity->cdhash, result_nxt2.cdhash, USER_FSIGNATURES_CDHASH_LEN);
             
-            identity->type = kPETrustTypeSignature;
+            identity->trustLevel = kPETrustLevelSignature;
             identity->entitlements = trust_identity_validate_entitlements(executableString, result_nxt2.entitlements);
             CFRelease(result_nxt2.entitlements);
             if(identity->entitlements == NULL)
@@ -993,7 +996,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             }
             identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
             identity->maxLegacyEntitlements = identity->legacyEntitlements;
-            identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
+            identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
             return identity;
         }
     }
@@ -1027,7 +1030,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             strlcpy(identity->path, path, MAXPATHLEN);
             memcpy(identity->cdhash, result_nxtr.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
             
-            identity->type = kPETrustTypeSignature;
+            identity->trustLevel = kPETrustLevelSignature;
             
             CFDictionaryRef convertedEntitlements = trust_identity_entitlements_from_legacy_entitlements(result_nxtr.blob.entitlement);
             if(convertedEntitlements == NULL)
@@ -1047,7 +1050,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             }
             identity->legacyEntitlements = result_nxtr.blob.entitlement;
             identity->maxLegacyEntitlements = identity->legacyEntitlements;
-            identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
+            identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
             return identity;
         }
     }
@@ -1080,11 +1083,11 @@ fallback:
         }
         strlcpy(identity->path, path, MAXPATHLEN);
         
-        identity->type = kPETrustTypeFallback;
+        identity->trustLevel = kPETrustLevelSignature;
         identity->entitlements = newEntitlements;
         identity->legacyEntitlements = kPEEntitlementNone;
         identity->maxLegacyEntitlements = kPEEntitlementNone;
-        identity->filePermissions = trust_identity_gib_file_permissions(executableString, identity->entitlements);
+        identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
         
         CFRelease(executableString);
         return identity;

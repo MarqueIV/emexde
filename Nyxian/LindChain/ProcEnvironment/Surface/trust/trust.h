@@ -25,7 +25,7 @@
 /* ----------------------------------------------------------------------
  *  Surface API Headers
  * -------------------------------------------------------------------- */
-#include <LindChain/ProcEnvironment/Surface/entitlement.h>
+#include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
 #include <sys/param.h>
 #include <stdbool.h>
 
@@ -40,10 +40,10 @@ kern_return_t trust_nxt2_read(const char *path, ksurface_nxt2_t *result);
 kern_return_t trust_nxt2_read_fd(int fd, ksurface_nxt2_t *result);
 
 typedef enum: UInt8 {
-    kPETrustTypeFallback = 0,
-    kPETrustTypeSignature = 1,
-    kPETrustTypeTrusted = 2,
-} PETrustType;
+    kPETrustLevelFallback = 0,  /* no trust */
+    kPETrustLevelSignature = 1, /* signature trust */
+    kPETrustLevelTrusted = 2,   /* system trust */
+} PETrustLevel;
 
 typedef struct {
     char path[MAXPATHLEN];
@@ -52,7 +52,7 @@ typedef struct {
     CFArrayRef filePermissions;
     PEEntitlement legacyEntitlements;
     PEEntitlement maxLegacyEntitlements;
-    PETrustType type;
+    PETrustLevel trustLevel;
 } ksurface_trust_identity_t;
 
 ksurface_trust_identity_t *trust_identity_get_kernel(void);

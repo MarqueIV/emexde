@@ -19,10 +19,10 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <LindChain/ProcEnvironment/Surface/entitlement.h>
+#include <LindChain/ProcEnvironment/Surface/trust/entitlement.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #import <LindChain/ProcEnvironment/Surface/key.h>
-#include <LindChain/ProcEnvironment/Surface/trust.h>
+#include <LindChain/ProcEnvironment/Surface/trust/trust.h>
 #include <OpenSSL/evp.h>
 #include <OpenSSL/err.h>
 #include <OpenSSL/ec.h>
