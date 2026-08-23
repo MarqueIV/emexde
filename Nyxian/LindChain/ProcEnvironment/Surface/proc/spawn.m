@@ -28,7 +28,6 @@
 #import <LindChain/ProcEnvironment/Surface/proc/remove.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
 #import <LindChain/ProcEnvironment/PEUserspaceManager.h>
-#import <LindChain/Services/containerd/PEContainer.h>
 #include <ksurface_config.h>
 
 kern_return_t proc_spawn(ksurface_proc_t *parent,

@@ -66,7 +66,6 @@
 
 /* Daemon Interfaces Headers */
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
-#import <LindChain/Services/containerd/PEContainer.h>
 
 void refreshFile(const char* path);
 
