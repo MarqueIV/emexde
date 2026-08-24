@@ -42,11 +42,4 @@ CF_EXPORT void *HWHookGetReplacementPtr(HWHookRef hook);
 CF_EXPORT Boolean HWHookGetDisableContextHooksInFrame(HWHookRef hook);
 CF_EXPORT void HWHookSetDisableContextHooksInFrame(HWHookRef hook, Boolean disableContextHooksInFrame);
 
-/*
- * makes you able to call this exact symbol in the hook it self
- * without fiddling around much.
- */
-CF_EXPORT Boolean HWHookGetDisableHookInFrame(HWHookRef hook);
-CF_EXPORT void HWHookSetDisableHookInFrame(HWHookRef hook, Boolean disableContextHooksInFrame);
-
 #endif /* HWHOOK_H */

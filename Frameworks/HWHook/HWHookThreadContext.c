@@ -147,7 +147,7 @@ static void *__HWHookThreadContextServer(void *ctxp)
         uint16_t imm;
         uint32_t ec = (es.__esr >> 26) & 0x3F;
         
-        switch((es.__esr >> 26) & 0x3F)
+        switch(ec)
         {
             case 0x3C:  /* software breakpoint, thread want's something from us */
             {
