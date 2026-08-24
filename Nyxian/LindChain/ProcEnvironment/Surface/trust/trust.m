@@ -161,6 +161,7 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         /* sandbox */
         { KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ,        CFArrayGetTypeID()   },
         { KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE,  CFArrayGetTypeID()   },
+        { KSURFACE_NXT2_ENTITLEMENT_ID_SB_NO_CONTAINER,     CFBooleanGetTypeID() },
     };
     const size_t schema_count = sizeof(schema) / sizeof(schema[0]);
     
@@ -216,21 +217,16 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
     
     if(rwPaths && roPaths)
     {
-        /* the dyld patches currently need the node to be writable */
+        /* dyld needs to see the executable */
         CFArrayAppendValue(roPaths, CFSTR("$(EXECUTABLE)"));
+        CFArrayAppendValue(roPaths, CFSTR("$(BUNDLE)"));    /* if it is a bundle and bootstrapd has the same opinion about it */
         
-        @autoreleasepool {
-            LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:(__bridge NSString*)executablePath];
-            if(applicationObject != NULL && applicationObject.bundlePath != NULL && applicationObject.containerPath != NULL)
-            {
-                CFArrayAppendValue(roPaths, (__bridge CFStringRef)applicationObject.bundlePath);
-                CFArrayAppendValue(roPaths, (__bridge CFStringRef)applicationObject.containerPath);
-                CFArrayAppendValue(rwPaths, (__bridge CFStringRef)[applicationObject.containerPath stringByAppendingString:@"/*"]);
-            }
-            else
-            {
-                CFArrayAppendValue(rwPaths, CFSTR("$(ROOTFS)/var/blastbox"));
-            }
+        /* some random entitlement */
+        if(CFDictionaryGetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_NO_CONTAINER) != kCFBooleanTrue)
+        {
+            /* grant container access */
+            CFArrayAppendValue(roPaths, CFSTR("$(CONTAINER)"));
+            CFArrayAppendValue(rwPaths, CFSTR("$(CONTAINER)/*"));
         }
         
         CFDictionarySetValue(clean, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ, roPaths);
@@ -292,47 +288,62 @@ static NSString *PECanonicalizePath(NSString *path)
 static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableString,
                                                        CFDictionaryRef entitlements)
 {
-    NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
-    NSDictionary *vars = @{
-        @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
-        @"EXECUTABLE": (__bridge NSString*)executableString,
-    };
-    NSDictionary *nsEntitlements = (__bridge NSDictionary*)entitlements;
-    NSArray<NSString*> *readFilePermissions = nsEntitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
-    NSArray<NSString*> *readWriteFilePermissions = nsEntitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
-    for(NSString *readWriteFilePermission in readWriteFilePermissions)
+    @autoreleasepool
     {
-        NSArray<NSString*> *paths = PEResolveEntitlementPaths(readWriteFilePermission, vars);
-        for(NSString *path in paths)
+        NSMutableArray<NSData*> *filePermissions = [[NSMutableArray alloc] init];
+        
+        /* prepare variables */
+        NSMutableDictionary *vars = [@{
+            @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
+            @"EXECUTABLE": (__bridge NSString*)executableString,
+        } mutableCopy];
+        
+        /* append applicable variables */
+        LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForExecutablePath:(__bridge NSString*)executableString];
+        if(applicationObject != nil && applicationObject.bundlePath != nil && applicationObject.containerPath != nil)
         {
-            NSString *actualPath = PECanonicalizePath(path);
-            if(actualPath)
+            /* is a application bundle */
+            vars[@"CONTAINER"] = applicationObject.bundlePath;
+            vars[@"BUNDLE"] = applicationObject.bundlePath;
+        }
+        
+        NSDictionary *nsEntitlements = (__bridge NSDictionary*)entitlements;
+        NSArray<NSString*> *readFilePermissions = nsEntitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ];
+        NSArray<NSString*> *readWriteFilePermissions = nsEntitlements[(__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE];
+        for(NSString *readWriteFilePermission in readWriteFilePermissions)
+        {
+            NSArray<NSString*> *paths = PEResolveEntitlementPaths(readWriteFilePermission, vars);
+            for(NSString *path in paths)
             {
-                NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
-                if(sandboxExtension != nil)
+                NSString *actualPath = PECanonicalizePath(path);
+                if(actualPath)
                 {
-                    [filePermissions addObject:sandboxExtension];
+                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:YES];
+                    if(sandboxExtension != nil)
+                    {
+                        [filePermissions addObject:sandboxExtension];
+                    }
                 }
             }
         }
-    }
-    for(NSString *readFilePermission in readFilePermissions)
-    {
-        NSArray<NSString*> *paths = PEResolveEntitlementPaths(readFilePermission, vars);
-        for(NSString *path in paths)
+        for(NSString *readFilePermission in readFilePermissions)
         {
-            NSString *actualPath = PECanonicalizePath(path);
-            if(actualPath)
+            NSArray<NSString*> *paths = PEResolveEntitlementPaths(readFilePermission, vars);
+            for(NSString *path in paths)
             {
-                NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
-                if(sandboxExtension != nil)
+                NSString *actualPath = PECanonicalizePath(path);
+                if(actualPath)
                 {
-                    [filePermissions addObject:sandboxExtension];
+                    NSData *sandboxExtension = [NXBootstrap issueSandboxFileExtensionForURL:[NSURL fileURLWithPath:actualPath] readWrite:NO];
+                    if(sandboxExtension != nil)
+                    {
+                        [filePermissions addObject:sandboxExtension];
+                    }
                 }
             }
         }
+        return (__bridge_retained CFArrayRef)filePermissions;
     }
-    return (__bridge_retained CFArrayRef)filePermissions;
 }
 
 static PEEntitlement trust_identity_legacy_entitlements_from_entitlements(CFDictionaryRef entitlements)

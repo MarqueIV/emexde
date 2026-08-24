@@ -159,6 +159,7 @@ typedef CF_OPTIONS(uint64_t, PEEntitlement) {
 /* sandbox */
 #define KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ       CFSTR("org.emexlabs.nyxian.sandbox.file.read")          /* type shall be CFArray */
 #define KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE CFSTR("org.emexlabs.nyxian.sandbox.file.read-write")    /* type shall be CFArray */
+#define KSURFACE_NXT2_ENTITLEMENT_ID_SB_NO_CONTAINER    CFSTR("org.emexlabs.nyxian.sandbox.no-container")
 
 /* ----------------------------------------------------------------------
  *  Types

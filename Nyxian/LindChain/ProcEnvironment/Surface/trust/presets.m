@@ -51,5 +51,6 @@ void TrustPresetsInit(void)
         (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ_WRITE: @[
             @"$(ROOTFS)"
         ],
+        (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_SB_NO_CONTAINER: @(YES),
     };
 }
