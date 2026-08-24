@@ -36,6 +36,7 @@
 @interface PEMachPort : NSObject <NSSecureCoding,NSCopying>
 
 @property (nonatomic, readonly) mach_port_t port;
+@property (nonatomic, readwrite) BOOL sendOnce;
 @property (nonatomic, readonly, getter=isUsable) BOOL usable;
 @property (nonatomic, readonly, getter=getIPCType) ipc_info_object_type_t ipc_type;
 @property (nonatomic, readonly, getter=getRefCnt) mach_port_urefs_t ref;
