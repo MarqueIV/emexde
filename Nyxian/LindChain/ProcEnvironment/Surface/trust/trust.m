@@ -303,7 +303,7 @@ static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableStr
         if(applicationObject != nil && applicationObject.bundlePath != nil && applicationObject.containerPath != nil)
         {
             /* is a application bundle */
-            vars[@"CONTAINER"] = applicationObject.bundlePath;
+            vars[@"CONTAINER"] = applicationObject.containerPath;
             vars[@"BUNDLE"] = applicationObject.bundlePath;
         }
         
