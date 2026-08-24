@@ -387,13 +387,10 @@ ksurface_trust_identity_t *trust_identity_get_kernel(void)
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         identity = calloc(1, sizeof(ksurface_trust_identity_t));
-        identity->legacyEntitlements = kPEEntitlementPlatform | kPEEntitlementPlatformRoot;
-        identity->maxLegacyEntitlements = kPEEntitlementPlatform | kPEEntitlementPlatformRoot;
         identity->trustLevel = kPETrustLevelTrusted;
-        identity->entitlements = (__bridge_retained CFDictionaryRef)[@{
-            (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM: @(YES),
-            (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_ROOT: @(YES),
-        } copy];
+        identity->entitlements = CFDictionaryCreateCopy(kCFAllocatorDefault, kPEEntitlementsNXT2PresetsKernel);
+        identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
+        identity->maxLegacyEntitlements = identity->legacyEntitlements;
         
         uint32_t bufsize = PATH_MAX;
         if(_NSGetExecutablePath(identity->path, &bufsize) > 0)
@@ -413,6 +410,12 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         return NULL;
     }
     
+    CFStringRef executableString = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingUTF8);
+    if(executableString == NULL)
+    {
+        return NULL;
+    }
+    
     /* daemon trustpath validation */
     for(int index = 0; index < sizeof(trustDaemonPath) / sizeof(const char*); index++)
     {
@@ -429,19 +432,15 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                  * 3. now it runs with fallback entitlements.
                  */
                 errno = ENOMEM;
+                CFRelease(executableString);
                 return NULL;
             }
             strlcpy(identity->path, path, MAXPATHLEN);
             identity->trustLevel = kPETrustLevelTrusted;
-            identity->legacyEntitlements = kPEEntitlementSystemDaemon;
-            identity->maxLegacyEntitlements = kPEEntitlementSystemDaemon;
-            identity->entitlements = trust_identity_entitlements_from_legacy_entitlements(kPEEntitlementSystemDaemon);
-            if(identity->entitlements == NULL)
-            {
-                free(identity);
-                errno = ENOMEM;
-                return NULL;
-            }
+            identity->entitlements = kPEEntitlementsNXT2PresetsDaemon;
+            identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(kPEEntitlementsNXT2PresetsDaemon);
+            identity->legacyEntitlements = identity->legacyEntitlements;
+            identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
             return identity;
         }
     }
@@ -449,12 +448,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     /* check if path is readable and signed (required for trust levels lower than kPETrustLevelTrusted, because paths are attacker controlled) */
     if(access(path, R_OK) != 0)
     {
-        return NULL;
-    }
-    
-    CFStringRef executableString = CFStringCreateWithCString(kCFAllocatorDefault, path, kCFStringEncodingUTF8);
-    if(executableString == NULL)
-    {
+        CFRelease(executableString);
         return NULL;
     }
     
