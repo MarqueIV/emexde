@@ -445,9 +445,6 @@
 		8FF32E1A3036F5F500C46FE4 /* Exceptions for "Frameworks" folder in "HWHook" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				HWHook/HWHKCFType.m,
-				HWHook/HWHKHook.m,
-				HWHook/HWHKHookThreadContext.m,
 				HWHook/HWHook.c,
 				HWHook/HWHookThreadContext.c,
 			);
