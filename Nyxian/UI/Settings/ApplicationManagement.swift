@@ -401,10 +401,6 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 
                 // The app indeed wants something bruh
                 DispatchQueue.main.async {
-                    DispatchQueue.global().async {
-                        _ = proceedWithInstall()
-                    }
-                    
                     alert.dismiss(animated: true) {
                         let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Unknown"
                         let alert = UIAlertController(
