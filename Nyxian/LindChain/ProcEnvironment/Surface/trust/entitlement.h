@@ -227,7 +227,4 @@ PEEntitlement entitlement_sanitize(PEEntitlement base);
 #define entitlement_sanitize(base) (base)
 #endif /* KSURFACE_CS_SANITIZE_ENTITLEMENTS */
 
-CFDataRef entitlement_dict_to_plist(CFDictionaryRef dict);
-CFDictionaryRef entitlement_plist_to_dict(CFDataRef data);
-
 #endif /* TRUST_ENTITLEMENT_H */

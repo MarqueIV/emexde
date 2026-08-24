@@ -672,6 +672,8 @@ ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(
         CFDictionaryRemoveAllValues(parentMergingEntitlements);
     }
     
+    /* TODO: merging remaining parent entitlements */
+    
     /* refreshing childIdentity */
     CFRelease(childIdentity->entitlements);
     childIdentity->entitlements = childNewEntitlements;
