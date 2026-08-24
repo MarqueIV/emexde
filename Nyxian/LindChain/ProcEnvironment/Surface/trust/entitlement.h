@@ -133,6 +133,7 @@ typedef CF_OPTIONS(uint64_t, PEEntitlement) {
 #define KSURFACE_NXT2_ENTITLEMENT_ID_GET_TASK_ALLOW     CFSTR("org.emexlabs.nyxian.get-task-allow")
 #define KSURFACE_NXT2_ENTITLEMENT_ID_TASK_FOR_PID       CFSTR("org.emexlabs.nyxian.task-for-pid")
 #define KSURFACE_NXT2_ENTITLEMENT_ID_SUGID              CFSTR("org.emexlabs.nyxian.sugid")
+#define KSURFACE_NXT2_ENTITLEMENT_ID_SYSTEM_TASK_PORTS  CFSTR("org.emexlabs.nyxian.system-task-ports")
 
 /* dyld */
 #define KSURFACE_NXT2_ENTITLEMENT_ID_DYLD_HIDE_LP       CFSTR("org.emexlabs.nyxian.dyld.hide-live-process")

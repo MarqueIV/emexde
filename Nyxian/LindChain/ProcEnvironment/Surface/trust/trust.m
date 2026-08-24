@@ -135,6 +135,7 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         { KSURFACE_NXT2_ENTITLEMENT_ID_GET_TASK_ALLOW,      CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_TASK_FOR_PID,        CFBooleanGetTypeID() },
         { KSURFACE_NXT2_ENTITLEMENT_ID_SUGID,               CFBooleanGetTypeID() },
+        { KSURFACE_NXT2_ENTITLEMENT_ID_SYSTEM_TASK_PORTS,   CFBooleanGetTypeID() },
         
         /* dyld */
         { KSURFACE_NXT2_ENTITLEMENT_ID_DYLD_HIDE_LP,        CFBooleanGetTypeID() },
