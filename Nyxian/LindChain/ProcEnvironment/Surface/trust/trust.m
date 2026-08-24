@@ -41,9 +41,9 @@
 /* ----------------------------------------------------------------------
  *  Constants
  * -------------------------------------------------------------------- */
-const char *trustDaemonPath[] = {
+const char *trustDaemonPath[] = {   /* those paths are immutable */
     "/sbin/launchd",
-    "/usr/libexec/installd",
+    "/usr/libexec/bootstrapd",
 };
 
 /* ----------------------------------------------------------------------

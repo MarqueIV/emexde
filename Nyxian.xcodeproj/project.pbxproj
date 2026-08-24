@@ -242,7 +242,7 @@
 				"LindChain/ProcEnvironment/LiveContainer/Tweaks/UIKit+GuestHooksInit.m",
 				LindChain/ProcEnvironment/LiveContainer/utils.m,
 				LindChain/ProcEnvironment/LiveContainer/ZSign/Utils.mm,
-				LindChain/ProcEnvironment/Object/ArchiveObject.m,
+				LindChain/ProcEnvironment/PEArchiveHandle.m,
 				LindChain/ProcEnvironment/PEFileHandle.m,
 				LindChain/ProcEnvironment/PEFileTable.m,
 				LindChain/ProcEnvironment/PEMachPort.m,
