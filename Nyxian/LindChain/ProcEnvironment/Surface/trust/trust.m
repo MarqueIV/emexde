@@ -600,7 +600,7 @@ fallback:
         }
         strlcpy(identity->path, path, MAXPATHLEN);
         
-        identity->trustLevel = kPETrustLevelSignature;
+        identity->trustLevel = kPETrustLevelFallback;
         identity->entitlements = newEntitlements;
         identity->legacyEntitlements = kPEEntitlementNone;
         identity->maxLegacyEntitlements = kPEEntitlementNone;
