@@ -297,7 +297,7 @@
             (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PROC_KILL: @(NO),
             (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN: @(NO),
             (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN_SIGNED: @(NO),
-            (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PROC_INHERITE_ENT: @(NO),
+            (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN_INHERITE_ENT: @(NO),
             
             /* management */
             (__bridge NSString*)KSURFACE_NXT2_ENTITLEMENT_ID_MGMT_HOST: @(NO),
