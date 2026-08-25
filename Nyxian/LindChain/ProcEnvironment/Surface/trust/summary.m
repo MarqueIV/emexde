@@ -184,6 +184,8 @@ static NSString *KSNXT2FormatPaths(NSArray *raw,
         }
     }
     
+    *severityInOut = KSNXT2SeverityCrit;    /* any appended file system access shall be treated as ab critical entitlement */
+    
     return [NSListFormatter localizedStringByJoiningStrings:collapsed];
 }
 
