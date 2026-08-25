@@ -274,6 +274,7 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
         {
             __block errno_t errWin = 0;
             dispatch_sync(dispatch_get_main_queue(), ^{
+                /* FIXME: causes deadlocks sometimes possibly */
                 NXWindowServer *sharedWindowServer = [NXWindowServer shared];
                 if(sharedWindowServer == nil)
                 {
