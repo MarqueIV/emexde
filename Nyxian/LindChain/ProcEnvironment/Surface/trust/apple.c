@@ -136,6 +136,13 @@ CFDictionaryRef ExtractNXT2OutOfAppleCSEntitlements(CFDictionaryRef appleCSEntit
         CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_ENUM, kCFBooleanTrue);
     }
     
+    if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.security.no-sandbox")) == kCFBooleanTrue)
+    {
+        CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_ENUM, kCFBooleanTrue);
+        CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_KILL, kCFBooleanTrue);
+        CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN_SIGNED, kCFBooleanTrue);
+    }
+    
     CFArrayRef temporarySBXException = AppleCSTypeSanizizeKey(appleCSEntitlements, CFSTR("com.apple.security.temporary-exception.sbpl"), CFArrayGetTypeID());
     if(temporarySBXException != NULL)
     {
