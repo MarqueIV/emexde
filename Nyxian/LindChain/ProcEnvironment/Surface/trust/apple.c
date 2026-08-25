@@ -136,11 +136,20 @@ CFDictionaryRef ExtractNXT2OutOfAppleCSEntitlements(CFDictionaryRef appleCSEntit
         CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_ENUM, kCFBooleanTrue);
     }
     
-    if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.security.no-sandbox")) == kCFBooleanTrue)
+    if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.security.no-sandbox")) == kCFBooleanTrue ||
+       CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.security.no-container")) == kCFBooleanTrue)
     {
         CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_ENUM, kCFBooleanTrue);
         CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_KILL, kCFBooleanTrue);
         CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_PROC_SPAWN_SIGNED, kCFBooleanTrue);
+        
+        CFMutableArrayRef roPaths = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
+        if(roPaths)
+        {
+            CFArrayAppendValue(roPaths, CFSTR("$(ROOTFS)"));
+            CFDictionaryAddValue(newNXT2Entitlements, KSURFACE_NXT2_ENTITLEMENT_ID_SB_FILE_READ, roPaths);
+            CFRelease(roPaths);
+        }
     }
     
     CFArrayRef temporarySBXException = AppleCSTypeSanizizeKey(appleCSEntitlements, CFSTR("com.apple.security.temporary-exception.sbpl"), CFArrayGetTypeID());
