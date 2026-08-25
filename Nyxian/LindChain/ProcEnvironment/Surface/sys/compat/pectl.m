@@ -275,14 +275,12 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
             recv_buffer_t *recv = *recv_buffer;
             *recv_buffer = NULL;    /* claiming ownership */
             pid_t pid = proc_getpid(sys_proc_snapshot_);
-
-            __block errno_t errWin = 0;
             dispatch_async(dispatch_get_main_queue(), ^{
                 NXWindowServer *sharedWindowServer = [NXWindowServer shared];
                 if(sharedWindowServer == nil)
                 {
                     /* window server is not running yet */
-                    errWin = EAGAIN;
+                    send_reply(&(recv->header), -1, NULL, 0, true, EAGAIN);
                     return;
                 }
                 
@@ -290,15 +288,15 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
                 if(process == nil || process.bundleIdentifier == nil)
                 {
                     /* process must exist in Process Manager */
-                    errWin = EACCES;
+                    send_reply(&(recv->header), -1, NULL, 0, true, EACCES);
                     return;
                 }
                 
                 id_t wid = [sharedWindowServer windowIdentifierForBundleIdentifier:process.bundleIdentifier];
                 if(wid < 0)
                 {
-                    /* bundleid is already presented */
-                    errWin = EACCES;
+                    /* bundle is already presented as a window */
+                    send_reply(&(recv->header), -1, NULL, 0, true, EACCES);
                     return;
                 }
                 
@@ -307,7 +305,7 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
                     send_reply(&(recv->header), finished ? 0 : -1, NULL, 0, true, 0);
                 }];
             });
-            sys_return_failure_with_errno(errWin);
+            sys_return;
         }
         default:
             sys_return_failure_with_errno(ENOSYS);
