@@ -334,7 +334,7 @@ NSAttributedString *KSurfaceNXT2CreateEntitlementSummary(NSDictionary *entitleme
         {
             continue;
         }
-        [lines[KSNXT2SectionUnrecognized] addObject:@[ @(KSNXT2SeverityCrit), [NSString stringWithFormat:@"%@ — not recognised by this version.", ident] ]];
+        [lines[KSNXT2SectionUnrecognized] addObject:@[ @(KSNXT2SeverityCrit), [NSString stringWithFormat:@"%@, not recognised by this version.", ident] ]];
     }
     
     NSMutableAttributedString *attributedString = [NSMutableAttributedString new];
