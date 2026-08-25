@@ -271,6 +271,15 @@
     return YES;
 }
 
+- (BOOL)needRatioLocked
+{
+    if(self.process.applicationObject == nil)
+    {
+        return NO;
+    }
+    return self.process.applicationObject.isFullscreenRequired;
+}
+
 - (UIImage*)snapshotWindow
 {
     if(_process == nil) return nil;
