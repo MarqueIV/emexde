@@ -449,7 +449,13 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             }
             strlcpy(identity->path, path, MAXPATHLEN);
             identity->trustLevel = kPETrustLevelTrusted;
-            identity->entitlements = kPEEntitlementsNXT2PresetsDaemon;
+            identity->entitlements = CFDictionaryCreateCopy(kCFAllocatorDefault, kPEEntitlementsNXT2PresetsDaemon);
+            if(identity->entitlements == NULL)
+            {
+                errno = ENOMEM;
+                CFRelease(executableString);
+                return NULL;
+            }
             identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(kPEEntitlementsNXT2PresetsDaemon);
             identity->legacyEntitlements = identity->legacyEntitlements;
             identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
