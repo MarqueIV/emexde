@@ -96,12 +96,6 @@ bool wait4_proc_event_handler(uint32_t type,
             }
             
             break;
-        case kvObjEventUnregister:
-            kvo_unlock(child);
-            pthread_mutex_unlock(&(parent->children.mutex));
-            mach_port_deallocate(mach_task_self(), payload->task);
-            free(payload);
-            return true;
         default:
             break;
     }
