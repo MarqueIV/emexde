@@ -254,6 +254,16 @@
         return NO;
     }
     
+    if(self.process.applicationObject != nil && self.process.applicationObject.isFullscreenRequired)
+    {
+        CGRect screenRect = UIScreen.mainScreen.bounds;
+        screenRect.size.width = screenRect.size.width / 2;
+        screenRect.size.height = screenRect.size.height / 2;
+        screenRect.origin.x = 50;
+        screenRect.origin.y = 50;
+        self.startWindowRect = screenRect;
+    }
+    
     return [self bindInApplicationWindow];
 }
 
