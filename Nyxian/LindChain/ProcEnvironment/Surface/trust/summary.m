@@ -26,7 +26,7 @@
 #include <errno.h>
 
 static const KSNXT2Descriptor kKSNXT2Descriptors[] = {
-    { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM, KSNXT2SectionIdentity, KSNXT2ValueBool, KSNXT2SeverityNote, NO, CFSTR("Runs as a platform process and is exempt from some restrictions.") },
+    { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM, KSNXT2SectionIdentity, KSNXT2ValueBool, KSNXT2SeverityWarn, NO, CFSTR("Runs as a platform process and is exempt from some restrictions.") },
     { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_ROOT, KSNXT2SectionIdentity, KSNXT2ValueBool, KSNXT2SeverityCrit, NO, CFSTR("Runs with root privileges.") },
     { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_USER, KSNXT2SectionIdentity, KSNXT2ValueInteger, KSNXT2SeverityNote, NO, CFSTR("Runs as user %@.") },
     { KSURFACE_NXT2_ENTITLEMENT_ID_PLATFORM_GROUP, KSNXT2SectionIdentity, KSNXT2ValueInteger, KSNXT2SeverityNote, NO, CFSTR("Runs as group %@.") },
