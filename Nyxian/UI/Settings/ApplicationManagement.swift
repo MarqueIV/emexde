@@ -81,22 +81,6 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
             
             var menu: [UIMenuElement] = [openMenu]
             
-            let entitlementsPatchAction = UIAction(title: "Patch Entitlements", image: UIImage(systemName: "bandage.fill")) { _ in
-                guard let application = application else { return }
-                if application.isLaunchAllowed {
-                    let machOViewController: MachOPatcherViewController = MachOPatcherViewController(machOPath: application.executablePath) {
-                        if let process = PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) {
-                            process.sendSignal(SIGKILL)
-                        }
-                    }
-                    let navMachOViewController: UINavigationController = UINavigationController(rootViewController: machOViewController)
-                    navMachOViewController.modalPresentationStyle = .formSheet
-                    self.present(navMachOViewController, animated: true)
-                } else {
-                    NotificationServer.NotifyUser(level: .error, notification: "\"\(application.localizedName ?? "Unknown")\" Is No Longer Available")
-                }
-            }
-            
             let clearContainerAction = UIAction(title: "Clear Data Container", image: UIImage(systemName: "arrow.up.trash.fill")) { _ in
                 guard let application = application else { return }
                 if let process = PEProcessManager.shared().process(forBundleIdentifier: application.bundleIdentifier) {
@@ -118,7 +102,7 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 }
             }
             
-            menu.append(contentsOf: [entitlementsPatchAction, clearContainerAction, deleteAction])
+            menu.append(contentsOf: [clearContainerAction, deleteAction])
             
             return UIMenu(title: "", children: menu)
         }
