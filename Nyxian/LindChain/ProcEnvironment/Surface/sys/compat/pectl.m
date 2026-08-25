@@ -272,9 +272,12 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
     {
         case kPECTLUserInterfaceInit:
         {
+            recv_buffer_t *recv = *recv_buffer;
+            *recv_buffer = NULL;    /* claiming ownership */
+            pid_t pid = proc_getpid(sys_proc_snapshot_);
+
             __block errno_t errWin = 0;
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                /* FIXME: causes deadlocks sometimes possibly */
+            dispatch_async(dispatch_get_main_queue(), ^{
                 NXWindowServer *sharedWindowServer = [NXWindowServer shared];
                 if(sharedWindowServer == nil)
                 {
@@ -283,7 +286,7 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
                     return;
                 }
                 
-                PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:proc_getpid(sys_proc_snapshot_)];
+                PEProcess *process = [[PEProcessManager shared] processForProcessIdentifier:pid];
                 if(process == nil || process.bundleIdentifier == nil)
                 {
                     /* process must exist in Process Manager */
@@ -300,7 +303,9 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
                 }
                 
                 NXWindowSessionApplication *session = [[NXWindowSessionApplication alloc] initWithProcess:process];
-                [sharedWindowServer openWindowWithSession:session withCompletion:nil];
+                [sharedWindowServer openWindowWithSession:session withCompletion:^(BOOL finished){
+                    send_reply(&(recv->header), finished ? 0 : -1, NULL, 0, true, 0);
+                }];
             });
             sys_return_failure_with_errno(errWin);
         }
