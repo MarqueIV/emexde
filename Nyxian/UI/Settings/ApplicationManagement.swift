@@ -406,9 +406,13 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                         let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Unknown"
                         let alert = UIAlertController(
                             title: "Install \"\(displayName)\"?",
-                            message: "Entitlements application contains: \(ent)",
+                            message: nil,
                             preferredStyle: .alert
                         )
+                        
+                        let fullMessage = NSMutableAttributedString()
+                        fullMessage.append(KSurfaceNXT2CreateEntitlementSummary(ent))
+                        alert.setValue(fullMessage, forKey: "attributedMessage")
                         
                         alert.addAction(UIAlertAction(title: "Install", style: .default) { _ in
                             DispatchQueue.global().async {
