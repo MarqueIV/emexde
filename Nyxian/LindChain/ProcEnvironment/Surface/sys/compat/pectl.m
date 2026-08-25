@@ -203,46 +203,8 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
             /* too much of a security concern */
             sys_return_failure_with_errno(ENOSYS);
         case kPECTLCodeSigningSignPath:
-        {
-            /*
-             * checking entitlements weither the process is entitled enough to
-             * sign unsigned binaries for opening or executing them, this is
-             * done by checking if it is entitled to spawn processes, this
-             * entitlement is meant to be a arbitary spawn entitlement against
-             * equevalents like PEEntitlementProcessSpawnSignedOnly which is
-             * used to only allow the spawn of binaries which are already signed.
-             * all this is done to ensure the user does consent do these things!
-             */
-            if(!entitlement_got_entitlement(proc_getentitlements(sys_proc_), kPEEntitlementProcessSpawn))
-            {
-                sys_return_failure_with_errno(EPERM);
-            }
-            
-            /* getting path */
-            userspace_pointer_t userspace_str = (userspace_pointer_t)args[2];
-            
-            char *path = mach_syscall_copy_str_in(sys_task_, userspace_str, MAXHOSTNAMELEN);
-            if(path == NULL)
-            {
-                sys_return_failure_with_errno(ENOMEM);
-            }
-            
-            NSString *nsPath = [NSString stringWithCString:path encoding:NSUTF8StringEncoding];
-            free(path);
-            if(nsPath == nil)
-            {
-                sys_return_failure_with_errno(ENOMEM);
-            }
-            
-            /* signing that shit */
-            if(![LCUtils signMachOAtURL:[NSURL fileURLWithPath:nsPath]])
-            {
-                sys_return_failure_with_errno(ENOEXEC);
-            }
-            vnode_refresh_at_path([nsPath UTF8String]);
-            
-            sys_return;
-        }
+            /* deprecated with SYS_sign */
+            sys_return_failure_with_errno(ENOSYS);
         case kPECTLCodeSigningGetCDHash:
         {
             kvo_rdlock(sys_proc_);

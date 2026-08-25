@@ -19,11 +19,11 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SURFACE_SYS_PROCPATH
-#define SURFACE_SYS_PROCPATH
+#ifndef SURFACE_SYS_PROCPATH_H
+#define SURFACE_SYS_PROCPATH_H
 
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 
 DEFINE_SYSCALL_HANDLER(procpath);
 
-#endif /* SURFACE_SYS_PROCPATH */
+#endif /* SURFACE_SYS_PROCPATH_H */
