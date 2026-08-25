@@ -654,7 +654,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(
             {
                 return false;
             }
-            CFDictionaryGetKeysAndValues(parentMergingEntitlements, childKeys, NULL);
+            CFDictionaryGetKeysAndValues(childNewEntitlements, childKeys, NULL);
             for(CFIndex index = 0; index < childCount; index++)
             {
                 if(!CFDictionaryContainsKey(parentMergingEntitlements, childKeys[index]))
