@@ -508,7 +508,7 @@
 
 - (bool)isRestricted
 {
-    return true;
+    return false;
 }
 
 - (bool)isContainerized
@@ -533,7 +533,7 @@
 
 - (NSString*)teamID
 {
-    return @"nya";
+    return @"";
 }
 
 - (NSString*)sdkVersion
@@ -543,7 +543,7 @@
 
 - (NSDictionary<NSString*,id<NSCoding>>*)entitlements
 {
-    return @{};
+    return _applicationObject.entitlements;
 }
 
 - (NSURL*)bundleContainerURL
@@ -609,20 +609,57 @@
     return _applicationObject.iconDictionary;
 }
 
-/*- (id)handlerRankOfClaimForContentType:(id)arg1;
-- (bool)hasMIDBasedSINF;
-- (id)iconDataForVariant:(int)arg1;
-- (id)iconDataForVariant:(int)arg1 withOptions:(int)arg2;
-- (bool)iconIsPrerendered;
-- (bool)iconUsesAssetCatalog;
-- (id)initWithCoder:(id)arg1;
-- (id)installFailureReason;
-- (id)installProgress;
-- (id)installProgressSync;
-- (unsigned long long)installType;
-- (bool)isAppUpdate;
-- (bool)isDeletableIgnoringRestrictions;
-- (bool)isDeviceBasedVPP;
+- (id)handlerRankOfClaimForContentType:(id)arg1
+{
+    return nil;
+}
+
+- (bool)hasMIDBasedSINF
+{
+    return false;
+}
+
+- (bool)iconIsPrerendered
+{
+    return _applicationObject.icon == nil;
+}
+
+- (bool)iconUsesAssetCatalog
+{
+    return false;   /* FIXME: properly check for it in LDEApplicationObject */
+}
+
+- (id)installFailureReason
+{
+    return nil; /* no reason */
+}
+
+- (id)installProgress
+{
+    return nil; /* no progress */
+}
+
+- (id)installProgressSync
+{
+    return nil;
+}
+
+- (unsigned long long)installType
+{
+    return 0;
+}
+
+- (bool)isAppUpdate
+{
+    return false;
+}
+
+- (bool)isDeletableIgnoringRestrictions
+{
+    return false;
+}
+
+/*
 - (bool)isGameCenterEnabled;
 - (bool)isNewsstandApp;
 - (bool)isPlaceholder;

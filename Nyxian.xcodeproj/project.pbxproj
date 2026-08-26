@@ -259,6 +259,7 @@
 				LindChain/ProcEnvironment/Shims/README.txt,
 				LindChain/ProcEnvironment/Shims/vfork.c,
 				LindChain/ProcEnvironment/Surface/extra/relax.c,
+				LindChain/ProcEnvironment/Surface/trust/signing.c,
 				LindChain/ProcEnvironment/Utils/fd.c,
 				LindChain/ProcEnvironment/Utils/ktfp.c,
 				LindChain/ProcEnvironment/Utils/vnode.c,
@@ -1120,7 +1121,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = "$(VERSION)";
-				OTHER_CFLAGS = "-DCLIENT_ENV";
+				OTHER_CFLAGS = (
+					"-DCLIENT_ENV",
+					"-D__NXTOOL",
+				);
 				OTHER_LDFLAGS = (
 					"-Wl,-U,_OBJC_CLASS_$_FBSSceneParameters",
 					"-Wl,-U,_OBJC_CLASS_$_LSApplicationWorkspace",
@@ -1165,7 +1169,10 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = "$(VERSION)";
-				OTHER_CFLAGS = "-DCLIENT_ENV";
+				OTHER_CFLAGS = (
+					"-DCLIENT_ENV",
+					"-D__NXTOOL",
+				);
 				OTHER_LDFLAGS = (
 					"-Wl,-U,_OBJC_CLASS_$_FBSSceneParameters",
 					"-Wl,-U,_OBJC_CLASS_$_LSApplicationWorkspace",
