@@ -46,6 +46,8 @@
 @implementation LDEApplicationWorkspace {
     NSHashTable<id<LDEApplicationWorkspaceObserver>> *_observers;
     os_unfair_lock _lock;
+    os_unfair_lock _connectLock;
+    os_unfair_lock _applicationsLock;
 }
 
 - (instancetype)init
@@ -56,6 +58,9 @@
         _syncSema = dispatch_semaphore_create(0);
         _applications = [[NSMutableDictionary alloc] init];
         _observers = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality capacity:0];
+        _lock = OS_UNFAIR_LOCK_INIT;
+        _connectLock = OS_UNFAIR_LOCK_INIT;
+        _applicationsLock = OS_UNFAIR_LOCK_INIT;
     }
     return self;
 }
@@ -72,24 +77,23 @@
 
 - (BOOL)connect
 {
-    if(_connection != NULL && _connection.processIdentifier != 0)
+    os_unfair_lock_lock(&_connectLock);
+    if(_connection != NULL)
     {
+        os_unfair_lock_unlock(&_connectLock);
         return YES;
-    }
-    
-    @synchronized(self)
-    {
-        self.syncDone = NO;
-        _syncSema = dispatch_semaphore_create(0);
-        @synchronized(self.applications)
-        {
-            [_applications removeAllObjects];
-        }
     }
     
 #if !LIVEPROCESS
     PELaunchServiceManager *serviceManager = [PELaunchServiceManager shared];
     _connection = [serviceManager connectToService:@"org.emexlabs.bootstrapd" protocol:@protocol(LDEApplicationWorkspaceService) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceObserver)];
+    os_unfair_lock_unlock(&_connectLock);
+    
+    os_unfair_lock_lock(&_applicationsLock);
+    self.syncDone = NO;
+    _syncSema = dispatch_semaphore_create(0);
+    [_applications removeAllObjects];
+    os_unfair_lock_unlock(&_applicationsLock);
     return _connection != nil;
 #else
     extern NSObject<OS_xpc_object> *xpc_endpoint_create_mach_port_4sim(mach_port_t port);
@@ -99,6 +103,7 @@
     {
         NSLog(@"failed looking up org.emexlabs.bootstrapd port: %s", strerror(errno));
         dispatch_semaphore_signal(_syncSema);   /* no permission */
+        os_unfair_lock_unlock(&_connectLock);
         return NO;
     }
     
@@ -108,6 +113,7 @@
     {
         NSLog(@"failed craft NSXPCListenerEndpoint for org.emexlabs.bootstrapd port");
         dispatch_semaphore_signal(_syncSema);   /* something terrible happened? */
+        os_unfair_lock_unlock(&_connectLock);
         return NO;
     }
     
@@ -120,7 +126,31 @@
         [_connection resume];
     }
 #endif /* !LIVEPROCESS */
+    os_unfair_lock_unlock(&_connectLock);
+    
+    os_unfair_lock_lock(&_applicationsLock);
+    self.syncDone = NO;
+    _syncSema = dispatch_semaphore_create(0);
+    [_applications removeAllObjects];
+    os_unfair_lock_unlock(&_applicationsLock);
     return _connection != nil;
+}
+
+- (void)disconnect
+{
+    os_unfair_lock_lock(&_connectLock);
+    [_connection invalidate];
+    _connection = nil;
+    os_unfair_lock_unlock(&_connectLock);
+    
+    os_unfair_lock_lock(&_applicationsLock);
+    if(!self.syncDone)
+    {
+        self.syncDone = YES;
+        [_applications removeAllObjects];
+        dispatch_semaphore_signal(_syncSema);
+    }
+    os_unfair_lock_unlock(&_applicationsLock);
 }
 
 - (void)ping
@@ -135,17 +165,20 @@
     [self connect];
     
     __block BOOL result = NO;
+    __block BOOL failed = NO;
     PEArchiveHandle *archiveObject = [PEArchiveHandle objectForDirectoryAtPath:bundlePath];
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -157,6 +190,11 @@
     }
     
     dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    if(failed)
+    {
+        [self disconnect];
+        return NO;
+    }
     return result;
 }
 
@@ -165,17 +203,20 @@
     [self connect];
     
     __block BOOL result = NO;
+    __block BOOL failed = NO;
     PEArchiveHandle *handle = [PEArchiveHandle handleForFileAtPath:packagePath];
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -187,6 +228,11 @@
     }
     
     dispatch_semaphore_wait(sema, DISPATCH_TIME_FOREVER);
+    if(failed)
+    {
+        [self disconnect];
+        return NO;
+    }
     return result;
 }
 
@@ -195,16 +241,19 @@
     [self connect];
     
     __block BOOL result = NO;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -216,6 +265,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return NO;
+    }
     return result;
 }
 
@@ -224,16 +278,19 @@
     [self connect];
     
     __block BOOL result = NO;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -245,6 +302,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return NO;
+    }
     return result;
 }
 
@@ -253,16 +315,19 @@
     [self connect];
     
     __block LDEApplicationObject *result = nil;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -274,6 +339,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return nil;
+    }
     return result;
 }
 
@@ -282,18 +352,17 @@
     [self connect];
     
     BOOL done;
-    @synchronized(self)
-    {
-        done = self.syncDone;
-    }
+    os_unfair_lock_lock(&_applicationsLock);
+    done = self.syncDone;
+    os_unfair_lock_unlock(&_applicationsLock);
     if(!done)
     {
         dispatch_semaphore_wait(self.syncSema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0 * NSEC_PER_SEC)));
     }
-    
-    @synchronized(self.applications) {
-        return [_applications.allValues copy];
-    }
+    os_unfair_lock_lock(&_applicationsLock);
+    NSArray<LDEApplicationObject*> *applications = [_applications.allValues copy];
+    os_unfair_lock_unlock(&_applicationsLock);
+    return applications;
 }
 
 - (BOOL)clearContainerForBundleID:(NSString *)bundleID
@@ -301,16 +370,19 @@
     [self connect];
     
     __block BOOL result = NO;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -322,6 +394,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return NO;
+    }
     return result;
 }
 
@@ -330,16 +407,19 @@
     [self connect];
     
     __block NSString *fastpath = nil;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -351,6 +431,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return nil;
+    }
     return fastpath;
 }
 
@@ -359,16 +444,19 @@
     [self connect];
     
     __block LDEApplicationObject *application = nil;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -380,6 +468,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return nil;
+    }
     return application;
 }
 
@@ -388,16 +481,19 @@
     [self connect];
     
     __block NSString *utilityHomePath = nil;
+    __block BOOL failed = NO;
     dispatch_semaphore_t sema = dispatch_semaphore_create(0);
     
     id proxy = [_connection remoteObjectProxyWithErrorHandler:^(NSError *error) {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }];
     
     if(proxy == NULL)
     {
         /* semaphores remember the signal, it doesnt have to catch them in time */
+        failed = YES;
         dispatch_semaphore_signal(sema);
     }
     else
@@ -409,6 +505,11 @@
     }
     
     dispatch_semaphore_wait(sema, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)));
+    if(failed)
+    {
+        [self disconnect];
+        return nil;
+    }
     return utilityHomePath;
 }
 
@@ -429,10 +530,9 @@
     [self enumerateObservers:^(id<LDEApplicationWorkspaceObserver> observer) {
         [observer applicationWasInstalled:app];
     }];
-    @synchronized(self.applications)
-    {
-        [self.applications setObject:app forKey:app.bundleIdentifier];
-    }
+    os_unfair_lock_lock(&_applicationsLock);
+    [self.applications setObject:app forKey:app.bundleIdentifier];
+    os_unfair_lock_unlock(&_applicationsLock);
     
 }
 
@@ -441,10 +541,9 @@
     [self enumerateObservers:^(id<LDEApplicationWorkspaceObserver> observer) {
         [observer applicationWithBundleIdentifierWasUninstalled:bundleIdentifier];
     }];
-    @synchronized(self.applications)
-    {
-        [self.applications removeObjectForKey:bundleIdentifier];
-    }
+    os_unfair_lock_lock(&_applicationsLock);
+    [self.applications removeObjectForKey:bundleIdentifier];
+    os_unfair_lock_unlock(&_applicationsLock);
 }
 
 - (void)enumerateObservers:(void (^)(id<LDEApplicationWorkspaceObserver> observer))block
