@@ -85,7 +85,7 @@
     
 #if !LIVEPROCESS
     PELaunchServiceManager *serviceManager = [PELaunchServiceManager shared];
-    _connection = [serviceManager connectToService:@"org.emexlabs.bootstrapd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
+    _connection = [serviceManager connectToService:@"org.emexlabs.bootstrapd" protocol:@protocol(LDEApplicationWorkspaceService) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceObserver)];
     return _connection != nil;
 #else
     extern NSObject<OS_xpc_object> *xpc_endpoint_create_mach_port_4sim(mach_port_t port);
@@ -110,8 +110,8 @@
     _connection = [[NSXPCConnection alloc] initWithListenerEndpoint:endpoint];
     if(_connection)
     {
-        _connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(LDEApplicationWorkspaceProxyProtocol)];
-        _connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
+        _connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:@protocol(LDEApplicationWorkspaceService)];
+        _connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:@protocol(LDEApplicationWorkspaceObserver)];
         _connection.exportedObject = self;
         [_connection resume];
     }
