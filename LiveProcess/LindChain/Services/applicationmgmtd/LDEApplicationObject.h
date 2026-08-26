@@ -33,6 +33,7 @@
 @property (nonatomic) NSString *bundlePath;
 @property (nonatomic) NSString *containerPath;
 @property (nonatomic) NSString *executablePath;
+@property (nonatomic) NSDictionary *iconDictionary;
 
 @property (nonatomic) BOOL isLaunchAllowed;
 @property (nonatomic) BOOL isFullscreenRequired;

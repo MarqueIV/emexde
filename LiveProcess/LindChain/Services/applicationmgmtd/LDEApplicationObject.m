@@ -35,6 +35,8 @@
 #else
     self = [super init];
     
+    self.iconDictionary = [bundle objectForInfoDictionaryKey:@"CFBundleIcons"];
+    
     self.bundleIdentifier = bundle.bundleIdentifier;
     
     id fullScreen = [bundle objectForInfoDictionaryKey:@"UIRequiresFullScreen"];
@@ -96,6 +98,7 @@
     [coder encodeObject:self.localizedName forKey:@"localizedName"];
     [coder encodeObject:self.containerPath forKey:@"containerPath"];
     [coder encodeObject:self.icon forKey:@"icon"];
+    [coder encodeObject:self.iconDictionary forKey:@"iconDictionary"];
     [coder encodeObject:@(self.isLaunchAllowed) forKey:@"isLaunchAllowed"];
     [coder encodeObject:@(self.isFullscreenRequired) forKey:@"isFullscreenRequired"];
 }
@@ -110,6 +113,7 @@
         _localizedName = [coder decodeObjectOfClass:[NSString class] forKey:@"localizedName"];
         _containerPath = [coder decodeObjectOfClass:[NSString class] forKey:@"containerPath"];
         _icon = [coder decodeObjectOfClass:[UIImage class] forKey:@"icon"];
+        _iconDictionary = [coder decodeObjectOfClasses:[NSSet setWithArray:@[[NSDictionary class], [NSArray class], [NSString class], [NSNumber class], [NSData class]]] forKey:@"iconDictionary"];
         _isLaunchAllowed = [[coder decodeObjectOfClass:[NSNumber class] forKey:@"isLaunchAllowed"] boolValue];
         _isFullscreenRequired = [[coder decodeObjectOfClass:[NSNumber class] forKey:@"isFullscreenRequired"] boolValue];
     }

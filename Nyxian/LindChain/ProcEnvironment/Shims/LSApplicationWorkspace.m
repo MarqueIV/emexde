@@ -634,7 +634,7 @@
 
 - (NSDictionary*)iconsDictionary
 {
-    return @{};
+    return _applicationObject.iconDictionary;
 }
 
 /*- (id)handlerRankOfClaimForContentType:(id)arg1;
