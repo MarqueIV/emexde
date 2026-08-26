@@ -35,7 +35,6 @@ extension UTType {
 }
 
 class ApplicationManagementViewController: UIThemedTableViewController, UITextFieldDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
-    @objc static var shared: ApplicationManagementViewController = ApplicationManagementViewController(style: .insetGrouped)
     var applications: [LDEApplicationObject] = []
     
     override init(style: UITableView.Style) {
@@ -52,6 +51,13 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
         LDEApplicationWorkspace.shared().ping()
         self.title = "Applications"
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(plusButtonPressed))
+        
+        DispatchQueue.global().async {
+            self.applications = LDEApplicationWorkspace.shared().allApplicationObjects()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -295,39 +301,6 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 
             } catch {
                 NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    @objc func applicationWasInstalled(_ app: LDEApplicationObject!) {
-        DispatchQueue.main.async {
-            if let index = self.applications.firstIndex(of: app) {
-                self.applications[index] = app
-                self.tableView.reloadRows(
-                    at: [IndexPath(row: index, section: 0)],
-                    with: .automatic
-                )
-            } else {
-                self.applications.append(app)
-                let index = self.applications.count - 1
-                self.tableView.insertRows(
-                    at: [IndexPath(row: index, section: 0)],
-                    with: .automatic
-                )
-            }
-        }
-    }
-    
-    @objc func application(withBundleIdentifierWasUninstalled bundleIdentifier: String!) {
-        DispatchQueue.main.async {
-            let temp = LDEApplicationObject()
-            temp.bundleIdentifier = bundleIdentifier
-            if let index = self.applications.firstIndex(of: temp) {
-                self.applications.remove(at: index)
-                self.tableView.deleteRows(
-                    at: [IndexPath(row: index, section: 0)],
-                    with: .automatic
-                )
             }
         }
     }

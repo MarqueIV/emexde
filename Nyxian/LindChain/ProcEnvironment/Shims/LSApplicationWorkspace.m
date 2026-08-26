@@ -713,6 +713,7 @@
 
 - (NSArray<LSApplicationSpoofProxy*>*)hook_allApplications
 {
+    NSLog(@"called!");
     LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
     [workspace ping];
     

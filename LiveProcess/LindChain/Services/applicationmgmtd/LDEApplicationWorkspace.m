@@ -73,6 +73,16 @@
         return YES;
     }
     
+    @synchronized(self)
+    {
+        self.syncDone = NO;
+        _syncSema = dispatch_semaphore_create(0);
+        @synchronized(self.applications)
+        {
+            [_applications removeAllObjects];
+        }
+    }
+    
 #if !LIVEPROCESS
     PELaunchServiceManager *serviceManager = [PELaunchServiceManager shared];
     _connection = [serviceManager connectToService:@"org.emexlabs.bootstrapd" protocol:@protocol(LDEApplicationWorkspaceProxyProtocol) observer:self observerProtocol:@protocol(LDEApplicationWorkspaceProtocol)];
@@ -413,11 +423,6 @@
     {
         [self.applications setObject:app forKey:app.bundleIdentifier];
     }
-#if !LIVEPROCESS
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ApplicationManagementViewController shared] applicationWasInstalled:app];
-    });
-#endif /* !LIVEPROCESS */
     
 }
 
@@ -427,11 +432,6 @@
     {
         [self.applications removeObjectForKey:bundleIdentifier];
     }
-#if !LIVEPROCESS
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[ApplicationManagementViewController shared] applicationWithBundleIdentifierWasUninstalled:bundleIdentifier];
-    });
-#endif /* !LIVEPROCESS */
 }
 
 @end
