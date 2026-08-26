@@ -77,7 +77,6 @@
     connection.remoteObjectInterface = [NSXPCInterface interfaceWithProtocol:protocol];
     connection.exportedInterface = [NSXPCInterface interfaceWithProtocol:observerProtocol];
     connection.exportedObject = observer;
-    [connection resume];
     
     return connection;
 }
