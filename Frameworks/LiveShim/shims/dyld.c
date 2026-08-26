@@ -174,7 +174,7 @@ static int lv_bypass_open(int fd,
                 dup2(copyfd, fd);
                 close(copyfd);
                 dyld_hook_log("[lv_bypass_open] [library validation bypass] path already has APFS CoW copy\n");
-                goto skip_inode_setup;
+                goto lv_bypass_setup_done;
             }
             
             dyld_hook_log("[lv_bypass_open] [library validation bypass] APFS CoW copy needed\n");
@@ -185,7 +185,7 @@ static int lv_bypass_open(int fd,
                 if(copyfd < 0)
                 {
                     dyld_hook_log("[lv_bypass_open] [library validation bypass] couldn't open file descriptor\n");
-                    goto skip_inode_setup;
+                    goto lv_bypass_setup_done;
                 }
             }
             else
@@ -196,7 +196,7 @@ static int lv_bypass_open(int fd,
                 if(copyfd < 0)
                 {
                     dyld_hook_log("[lv_bypass_open] [library validation bypass] couldn't open file descriptor\n");
-                    goto skip_inode_setup;
+                    goto lv_bypass_setup_done;
                 }
             
                 int ret = fcopyfile(fd, copyfd, NULL, COPYFILE_DATA);
@@ -204,7 +204,7 @@ static int lv_bypass_open(int fd,
                 if(ret != 0)
                 {
                     dyld_hook_log("[lv_bypass_open] [library validation bypass] fcopyfile failed: %s\n", strerror(errno));
-                    goto skip_inode_setup;
+                    goto lv_bypass_setup_done;
                 }
                 dyld_hook_log("[lv_bypass_open] [library validation bypass] fcopyfile succeeded\n");
                 
@@ -212,7 +212,7 @@ static int lv_bypass_open(int fd,
                 if(copyfd < 0)
                 {
                     dyld_hook_log("[lv_bypass_open] [library validation bypass] couldn't open file descriptor\n");
-                    goto skip_inode_setup;
+                    goto lv_bypass_setup_done;
                 }
             }
             
@@ -226,7 +226,7 @@ static int lv_bypass_open(int fd,
             dup2(copyfd, fd);
             close(copyfd);
             
-        skip_inode_setup:
+        lv_bypass_setup_done:
             
             if(cdhash_must_valid && !cdhash_verified)
             {
