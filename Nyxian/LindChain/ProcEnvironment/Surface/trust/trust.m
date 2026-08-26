@@ -76,8 +76,6 @@ static CFDictionaryRef trust_identity_entitlements_from_legacy_entitlements(PEEn
     
     /* management */
     CFDictionaryAddValue(dictionary, kNXT2EntitlementManagementHost, entitlement_got_entitlement(entitlement, kPEEntitlementHostManager) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementManagementCredentials, entitlement_got_entitlement(entitlement, kPEEntitlementCredentialsManager) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementManagementLaunchServices, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesManager) ? kCFBooleanTrue : kCFBooleanFalse);
     
     /* launch services */
     CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStart, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesStart) ? kCFBooleanTrue : kCFBooleanFalse);
@@ -140,8 +138,6 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         
         /* management */
         { kNXT2EntitlementManagementHost,               CFBooleanGetTypeID() },
-        { kNXT2EntitlementManagementCredentials,        CFBooleanGetTypeID() },
-        { kNXT2EntitlementManagementLaunchServices,     CFBooleanGetTypeID() },
         
         /* launch services */
         { kNXT2EntitlementLaunchServicesStart,          CFBooleanGetTypeID() },
@@ -149,6 +145,8 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         { kNXT2EntitlementLaunchServicesToggle,         CFBooleanGetTypeID() },
         { kNXT2EntitlementLaunchServicesGetEndpoint,    CFBooleanGetTypeID() },
         { kNXT2EntitlementLaunchServicesSetEndpoint,    CFBooleanGetTypeID() },
+        { kNXT2EntitlementLaunchServicesGetEndpointAllowList,   CFArrayGetTypeID() },
+        { kNXT2EntitlementLaunchServicesSetEndpointAllowList,   CFArrayGetTypeID() },
         
         /* sandbox */
         { kNXT2EntitlementSandboxFileRead,              CFArrayGetTypeID()   },
@@ -370,8 +368,6 @@ static PEEntitlement trust_identity_legacy_entitlements_from_entitlements(CFDict
     
     /* management */
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementManagementHost)) legacyEntitlements |= kPEEntitlementHostManager;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementManagementCredentials)) legacyEntitlements |= kPEEntitlementCredentialsManager;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementManagementLaunchServices)) legacyEntitlements |= kPEEntitlementLaunchServicesManager;
     
     /* launch services */
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesStart)) legacyEntitlements |= kPEEntitlementLaunchServicesStart;
