@@ -28,6 +28,7 @@
 #if __has_include(<Nyxian-Swift.h>)
 #define LIVEPROCESS 0
 #import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
+#import <LindChain/ProcEnvironment/PEProcessManager.h>
 #else
 #include <ksurface_config.h>
 #include <ksurface_abi.h>
@@ -575,6 +576,13 @@
 
 - (void)applicationWithBundleIdentifierWasUninstalled:(NSString*)bundleIdentifier
 {
+#if HOST_ENV
+    PEProcess *process = [[PEProcessManager shared] processForBundleIdentifier:bundleIdentifier];
+    if(process)
+    {
+        [process forceTerminate];
+    }
+#endif /* HOST_ENV */
     [self enumerateObservers:^(id<LDEApplicationWorkspaceObserver> observer) {
         [observer applicationWithBundleIdentifierWasUninstalled:bundleIdentifier];
     }];
