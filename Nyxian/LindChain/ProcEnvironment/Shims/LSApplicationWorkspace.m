@@ -38,7 +38,17 @@
     LDEApplicationObject *obj = [[LDEApplicationWorkspace shared] applicationObjectForBundleID:bundleIdentifier];
     if(obj)
     {
-        return obj.icon;
+        UIImage *rawIcon = obj.icon;
+        CGRect r = (CGRect){ .size = rawIcon.size };
+        UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:rawIcon.size.width * 0.2237];
+        UIGraphicsImageRendererFormat *fmt = [UIGraphicsImageRendererFormat defaultFormat];
+        fmt.scale = scale;
+        UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:rawIcon.size format:fmt];
+        UIImage *curvedImage = [rr imageWithActions:^(UIGraphicsImageRendererContext *ctx){
+            [mask addClip];
+            [rawIcon drawInRect:r];
+        }];
+        return curvedImage;
     }
     return [self hook_iconForBundleID:bundleIdentifier format:format scale:scale];
 }
