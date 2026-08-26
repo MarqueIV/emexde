@@ -92,15 +92,16 @@ bool wait4_proc_event_handler(uint32_t type,
                 if(!kvo_retain(child))
                 {
                     environment_panic("failed to retain exited child process");
-                    goto out_trigger_unregister;
                 }
                 
                 pthread_t thread;
                 if(pthread_create(&thread, NULL, proc_reap_thread, child) != 0)
                 {
                     environment_panic("failed to create reap thread for exited child process");
-                    kvo_release(child);
-                    goto out_trigger_unregister;
+                }
+                else
+                {
+                    pthread_detach(thread);
                 }
                 
                 /* in-case it did stop but is now zombified */
