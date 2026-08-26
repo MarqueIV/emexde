@@ -569,7 +569,7 @@
 
 - (NSString*)sdkVersion
 {
-    return @"nya";
+    return _applicationObject.sdkVersion;
 }
 
 - (NSDictionary<NSString*,id<NSCoding>>*)entitlements
@@ -615,7 +615,6 @@
 
 - (NSData *)iconDataForVariant:(int)variant
 {
-    NSLog(@"CALLED!\n");
     UIImage *icon = _applicationObject.icon;
     return UIImagePNGRepresentation(icon);
 }
@@ -623,13 +622,17 @@
 - (NSData *)iconDataForVariant:(int)variant
                    withOptions:(int)options
 {
-    NSLog(@"CALLED!\n");
     return [self iconDataForVariant:variant];
 }
 
 - (NSString*)bundleVersion
 {
-    return @"";
+    return _applicationObject.bundleVersion;
+}
+
+- (NSString*)shortVersionString
+{
+    return _applicationObject.bundleShortVersion;
 }
 
 - (NSDictionary*)iconsDictionary
