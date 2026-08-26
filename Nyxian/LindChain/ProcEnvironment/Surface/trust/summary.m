@@ -45,7 +45,8 @@ static BOOL KSNXT2ValueIsAsserted(id value,
 
 static NSString *KSNXT2FormatPaths(NSArray *raw,
                                    KSNXT2Severity *severityInOut,
-                                   KSNXT2Section section)
+                                   KSNXT2Section section,
+                                   NXT2Entitlement entitlement)
 {
     NSMutableArray<NSString *> *paths = [NSMutableArray array];
     for(id entry in raw)
@@ -66,10 +67,21 @@ static NSString *KSNXT2FormatPaths(NSArray *raw,
     NSMutableArray<NSString *> *collapsed = [NSMutableArray array];
     for(NSString *p in paths)
     {
-        NSString *prefix = collapsed.lastObject;
-        BOOL covered = prefix && ([p isEqualToString:prefix] || [p hasPrefix:[prefix hasSuffix:@"/"] ? prefix : [prefix stringByAppendingString:@"/"]]);
-        if(!covered)
+        if(section == KSNXT2SectionFilesystem)
         {
+            NSString *prefix = collapsed.lastObject;
+            BOOL covered = prefix && ([p isEqualToString:prefix] || [p hasPrefix:[prefix hasSuffix:@"/"] ? prefix : [prefix stringByAppendingString:@"/"]]);
+            if(!covered)
+            {
+                [collapsed addObject:p];
+            }
+        }
+        else if(section == KSNXT2SectionServices)
+        {
+            if([p hasPrefix:@"org.emexlabs."])
+            {
+                *severityInOut = [(__bridge NSString*)entitlement isEqualToString:(__bridge NSString*)kNXT2EntitlementLaunchServicesSetEndpointAllowList] ? KSNXT2SeverityCrit : KSNXT2SeverityWarn;
+            }
             [collapsed addObject:p];
         }
     }
@@ -340,7 +352,7 @@ NSAttributedString *KSurfaceNXT2CreateEntitlementSummary(NSDictionary *entitleme
         switch(desc->kind)
         {
             case KSNXT2ValuePathArray:
-                text = [NSString stringWithFormat:format, KSNXT2FormatPaths(entitlements[ident], &severity, desc->section)];
+                text = [NSString stringWithFormat:format, KSNXT2FormatPaths(entitlements[ident], &severity, desc->section, desc->identifier)];
                 break;
             case KSNXT2ValueStringArray:
                 text = [NSString stringWithFormat:format, [NSListFormatter localizedStringByJoiningStrings:entitlements[ident]]];
