@@ -44,7 +44,8 @@ static BOOL KSNXT2ValueIsAsserted(id value,
 }
 
 static NSString *KSNXT2FormatPaths(NSArray *raw,
-                                   KSNXT2Severity *severityInOut)
+                                   KSNXT2Severity *severityInOut,
+                                   KSNXT2Section section)
 {
     NSMutableArray<NSString *> *paths = [NSMutableArray array];
     for(id entry in raw)
@@ -73,7 +74,10 @@ static NSString *KSNXT2FormatPaths(NSArray *raw,
         }
     }
     
-    *severityInOut = KSNXT2SeverityCrit;    /* any appended file system access shall be treated as ab critical entitlement */
+    if(section == KSNXT2SectionFilesystem)
+    {
+        *severityInOut = KSNXT2SeverityCrit;    /* any appended file system access shall be treated as ab critical entitlement */
+    }
     
     return [NSListFormatter localizedStringByJoiningStrings:collapsed];
 }
@@ -158,6 +162,8 @@ NSAttributedString *KSurfaceNXT2CreateEntitlementSummary(NSDictionary *entitleme
         { kNXT2EntitlementLaunchServicesSetEndpoint, KSNXT2SectionServices, KSNXT2ValueBool, KSNXT2SeverityWarn, NO, CFSTR("Can redirect service endpoints of some 3rd party services to code of its own.") },
         { kNXT2EntitlementManagementHost, KSNXT2SectionManagement, KSNXT2ValueBool, KSNXT2SeverityWarn, NO, CFSTR("Can overwrite the hostname (as of now).") },
         { kNXT2EntitlementDYLDHideLP, KSNXT2SectionStealth, KSNXT2ValueBool, KSNXT2SeverityNote, NO, CFSTR("Runs hidden from DYLD inside of it's own address space.") },
+        { kNXT2EntitlementLaunchServicesGetEndpointAllowList, KSNXT2SectionServices, KSNXT2ValuePathArray, KSNXT2SeverityNote, NO, CFSTR("Can look up service endpoints: %@") },
+        { kNXT2EntitlementLaunchServicesSetEndpointAllowList, KSNXT2SectionServices, KSNXT2ValuePathArray, KSNXT2SeverityWarn, NO, CFSTR("Can redirect service service endpoints: %@") },
     };
 
     static const size_t kKSNXT2DescriptorCount = sizeof(kKSNXT2Descriptors) / sizeof(kKSNXT2Descriptors[0]);
@@ -334,7 +340,7 @@ NSAttributedString *KSurfaceNXT2CreateEntitlementSummary(NSDictionary *entitleme
         switch(desc->kind)
         {
             case KSNXT2ValuePathArray:
-                text = [NSString stringWithFormat:format, KSNXT2FormatPaths(entitlements[ident], &severity)];
+                text = [NSString stringWithFormat:format, KSNXT2FormatPaths(entitlements[ident], &severity, desc->section)];
                 break;
             case KSNXT2ValueStringArray:
                 text = [NSString stringWithFormat:format, [NSListFormatter localizedStringByJoiningStrings:entitlements[ident]]];
