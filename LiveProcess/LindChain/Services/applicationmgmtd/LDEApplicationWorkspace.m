@@ -24,9 +24,9 @@
 #import <LindChain/ProcEnvironment/Server/Server.h>
 #import <LindChain/ProcEnvironment/PEArchiveHandle.h>
 #import <LindChain/Utils/Zip.h>
+#import <os/lock.h>
 #if __has_include(<Nyxian-Swift.h>)
 #define LIVEPROCESS 0
-#import <Nyxian-Swift.h>
 #import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #else
 #include <ksurface_config.h>
@@ -43,7 +43,10 @@
 
 @end
 
-@implementation LDEApplicationWorkspace
+@implementation LDEApplicationWorkspace {
+    NSHashTable<id<LDEApplicationWorkspaceObserver>> *_observers;
+    os_unfair_lock _lock;
+}
 
 - (instancetype)init
 {
@@ -52,6 +55,7 @@
     {
         _syncSema = dispatch_semaphore_create(0);
         _applications = [[NSMutableDictionary alloc] init];
+        _observers = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory | NSPointerFunctionsObjectPointerPersonality capacity:0];
     }
     return self;
 }
@@ -410,6 +414,9 @@
 
 - (void)applicationInitialPopulationDone
 {
+    [self enumerateObservers:^(id<LDEApplicationWorkspaceObserver> observer) {
+        [observer applicationInitialPopulationDone];
+    }];
     @synchronized(self)
     {
         self.syncDone = YES;
@@ -419,6 +426,9 @@
 
 - (void)applicationWasInstalled:(LDEApplicationObject*)app
 {
+    [self enumerateObservers:^(id<LDEApplicationWorkspaceObserver> observer) {
+        [observer applicationWasInstalled:app];
+    }];
     @synchronized(self.applications)
     {
         [self.applications setObject:app forKey:app.bundleIdentifier];
@@ -428,10 +438,39 @@
 
 - (void)applicationWithBundleIdentifierWasUninstalled:(NSString*)bundleIdentifier
 {
+    [self enumerateObservers:^(id<LDEApplicationWorkspaceObserver> observer) {
+        [observer applicationWithBundleIdentifierWasUninstalled:bundleIdentifier];
+    }];
     @synchronized(self.applications)
     {
         [self.applications removeObjectForKey:bundleIdentifier];
     }
+}
+
+- (void)enumerateObservers:(void (^)(id<LDEApplicationWorkspaceObserver> observer))block
+{
+    os_unfair_lock_lock(&_lock);
+    NSArray<id<LDEApplicationWorkspaceObserver>> *snapshot = _observers.allObjects;
+    os_unfair_lock_unlock(&_lock);
+    for(id<LDEApplicationWorkspaceObserver> observer in snapshot)
+    {
+        block(observer);
+    }
+}
+
+- (void)addObserver:(id<LDEApplicationWorkspaceObserver>)observer
+{
+    NSParameterAssert(observer);
+    os_unfair_lock_lock(&_lock);
+    [_observers addObject:observer];
+    os_unfair_lock_unlock(&_lock);
+}
+
+- (void)removeObserver:(id<LDEApplicationWorkspaceObserver>)observer
+{
+    os_unfair_lock_lock(&_lock);
+    [_observers removeObject:observer];
+    os_unfair_lock_unlock(&_lock);
 }
 
 @end

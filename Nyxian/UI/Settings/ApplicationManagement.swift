@@ -34,7 +34,8 @@ extension UTType {
     }
 }
 
-class ApplicationManagementViewController: UIThemedTableViewController, UITextFieldDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
+class ApplicationManagementViewController: UIThemedTableViewController, UITextFieldDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate, LDEApplicationWorkspaceObserver {
+    
     var applications: [LDEApplicationObject] = []
     
     override init(style: UITableView.Style) {
@@ -54,6 +55,7 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
         
         DispatchQueue.global().async {
             self.applications = LDEApplicationWorkspace.shared().allApplicationObjects()
+            LDEApplicationWorkspace.shared().add(self)
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -310,6 +312,43 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
             return 80
         } else {
             return 70
+        }
+    }
+    
+    func applicationInitialPopulationDone() {
+        self.applications = LDEApplicationWorkspace.shared().allApplicationObjects()
+    }
+    
+    func applicationWasInstalled(_ app: LDEApplicationObject!) {
+        DispatchQueue.main.async {
+            if let index = self.applications.firstIndex(of: app) {
+                self.applications[index] = app
+                self.tableView.reloadRows(
+                    at: [IndexPath(row: index, section: 0)],
+                    with: .automatic
+                )
+            } else {
+                self.applications.append(app)
+                let index = self.applications.count - 1
+                self.tableView.insertRows(
+                    at: [IndexPath(row: index, section: 0)],
+                    with: .automatic
+                )
+            }
+        }
+    }
+    
+    func application(withBundleIdentifierWasUninstalled bundleIdentifier: String!) {
+        DispatchQueue.main.async {
+            let temp = LDEApplicationObject()
+            temp.bundleIdentifier = bundleIdentifier
+            if let index = self.applications.firstIndex(of: temp) {
+                self.applications.remove(at: index)
+                self.tableView.deleteRows(
+                    at: [IndexPath(row: index, section: 0)],
+                    with: .automatic
+                )
+            }
         }
     }
     

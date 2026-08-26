@@ -46,6 +46,9 @@
 - (LDEApplicationObject*)applicationObjectForExecutablePath:(NSString*)executablePath;
 - (NSString*)utilityHomePath;
 
+- (void)addObserver:(id<LDEApplicationWorkspaceObserver>)observer;
+- (void)removeObserver:(id<LDEApplicationWorkspaceObserver>)observer;
+
 @end
 
 #endif /* LDEAPPLICATIONWORKSPACEPROXY_H */
