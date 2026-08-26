@@ -627,6 +627,16 @@
     return [self iconDataForVariant:variant];
 }
 
+- (NSString*)bundleVersion
+{
+    return @"";
+}
+
+- (NSDictionary*)iconsDictionary
+{
+    return @{};
+}
+
 /*- (id)handlerRankOfClaimForContentType:(id)arg1;
 - (bool)hasMIDBasedSINF;
 - (id)iconDataForVariant:(int)arg1;
