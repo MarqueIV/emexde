@@ -24,6 +24,27 @@
 #import <LindChain/Private/UIKitPrivate.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
 
+@implementation UIImage (PrivateHook)
+
++ (void)lazyLoad
+{
+    SwizzleObjCMethod(@selector(_applicationIconImageForBundleIdentifier:format:scale:), [UIImage class], @selector(hook_iconForBundleID:format:scale:), [UIImage class], kSwizzleMethodTypeClass);
+}
+
++ (UIImage *)hook_iconForBundleID:(NSString *)bundleIdentifier
+                           format:(int)format
+                            scale:(CGFloat)scale
+{
+    LDEApplicationObject *obj = [[LDEApplicationWorkspace shared] applicationObjectForBundleID:bundleIdentifier];
+    if(obj)
+    {
+        return obj.icon;
+    }
+    return [self hook_iconForBundleID:bundleIdentifier format:format scale:scale];
+}
+
+@end
+
 /* WIP TO A HUGE EXTEND! */
 
 @interface _LSDiskUsage : NSObject
@@ -582,6 +603,20 @@
     return [NSURL fileURLWithPath:_applicationObject.containerPath];
 }
 
+- (NSData *)iconDataForVariant:(int)variant
+{
+    NSLog(@"CALLED!\n");
+    UIImage *icon = _applicationObject.icon;
+    return UIImagePNGRepresentation(icon);
+}
+
+- (NSData *)iconDataForVariant:(int)variant
+                   withOptions:(int)options
+{
+    NSLog(@"CALLED!\n");
+    return [self iconDataForVariant:variant];
+}
+
 /*- (id)handlerRankOfClaimForContentType:(id)arg1;
 - (bool)hasMIDBasedSINF;
 - (id)iconDataForVariant:(int)arg1;
@@ -675,6 +710,11 @@
 
 - (NSArray<LSApplicationSpoofProxy*>*)hook_allApplications
 {
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        [UIImage lazyLoad];
+    });
+    
     LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
     [workspace ping];
     
