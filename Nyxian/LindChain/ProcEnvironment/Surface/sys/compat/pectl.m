@@ -328,6 +328,38 @@ DEFINE_SYSCALL_HANDLER(pectl_userinterface)
             });
             sys_return;
         }
+        case kPECTLUserInterfaceOpenBundleIdentifier:
+        {
+            kvo_rdlock(sys_proc_);
+            if(CFDictionaryGetValue(sys_proc_->nyx.identity->entitlements, kNXT2EntitlementManagementProcEnvironment) != kCFBooleanTrue)
+            {
+                kvo_unlock(sys_proc_);
+                sys_return_failure_with_errno(EPERM);
+            }
+            kvo_unlock(sys_proc_);
+            
+            userspace_pointer_t bundleid_str = (userspace_pointer_t)args[2];
+            char *bundleid = mach_syscall_copy_str_in(sys_task_, bundleid_str, MAXHOSTNAMELEN);
+            if(bundleid == NULL)
+            {
+                sys_return_failure_with_errno(ENOMEM);
+            }
+            
+            NSString *bundleIdentifier = [NSString stringWithCString:bundleid encoding:NSUTF8StringEncoding];
+            free(bundleid);
+            if(bundleIdentifier == NULL)
+            {
+                sys_return_failure_with_errno(ENOMEM);
+            }
+            
+            pid_t pid = [[PEProcessManager shared] spawnProcessWithBundleIdentifier:bundleIdentifier withItems:@{} withKernelSurfaceProcess:kernel_proc_ doRestartIfRunning:NO];
+            if(pid < 0)
+            {
+                sys_return_failure_with_errno(EAGAIN);
+            }
+            
+            sys_return;
+        }
         default:
             sys_return_failure_with_errno(ENOSYS);
     }
