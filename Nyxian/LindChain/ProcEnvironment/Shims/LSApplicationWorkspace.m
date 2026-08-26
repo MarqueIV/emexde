@@ -569,7 +569,7 @@
 
 - (NSString*)minimumSystemVersion
 {
-    return @"";
+    return _applicationObject.minimumSystemVersion;
 }
 
 - (NSURL*)bundleURL
@@ -601,7 +601,7 @@
 
 - (NSString*)shortVersionString
 {
-    return _applicationObject.bundleShortVersion;
+    return _applicationObject.shortVersionString;
 }
 
 - (NSDictionary*)iconsDictionary
