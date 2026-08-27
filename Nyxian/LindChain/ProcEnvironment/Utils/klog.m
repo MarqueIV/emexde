@@ -23,14 +23,8 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #include <os/lock.h>
 
-#if DEBUG
-
 /* not the kfd exploit dummy >:3 */
 int kfd = -1;
-
-#endif /* DEBUG */
-
-#if DEBUG
 
 static struct timespec g_process_start_time;
 
@@ -127,11 +121,8 @@ static void klog_truncate_if_needed(void)
     lseek(kfd, 0, SEEK_END);
 }
 
-#endif /* DEBUG */
-
 void klog_log_internal(const char *system, const char *format, ...)
 {
-#if DEBUG
     @autoreleasepool {
         /* only open klog once */
         static os_unfair_lock lock = OS_UNFAIR_LOCK_INIT;
@@ -139,9 +130,10 @@ void klog_log_internal(const char *system, const char *format, ...)
         
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            NSString *kfd_path = [NSString stringWithFormat:@"%@/Documents/mntfs/devfs/klog", NSHomeDirectory()];
             NSString *entry_path = [NSString stringWithFormat:@"%@/Documents/klog.txt", NSHomeDirectory()];
             
+#if DEBUG
+            NSString *kfd_path = [NSString stringWithFormat:@"%@/Documents/mntfs/devfs/klog", NSHomeDirectory()];
             int rfd = open([kfd_path UTF8String], O_RDONLY);
             unlink([kfd_path UTF8String]);
             
@@ -179,6 +171,7 @@ void klog_log_internal(const char *system, const char *format, ...)
                 }
                 close(rfd);
             }
+#endif /* DEBUG */
             
             kfd = open([entry_path UTF8String], O_RDWR | O_CREAT | O_TRUNC, 0644);
             if(kfd == -1)
@@ -186,12 +179,14 @@ void klog_log_internal(const char *system, const char *format, ...)
                 return;
             }
             
+#if DEBUG
             if(tail.length > 0)
             {
                 dprintf(kfd, "(last 20 lines from previous debugging session)\n");
                 dprintf(kfd, "%s", [tail UTF8String]);
                 dprintf(kfd, "\n(new debugging session)\n");
             }
+#endif /* DEBUG */
         });
         
         /* checking kfd */
@@ -246,12 +241,10 @@ void klog_log_internal(const char *system, const char *format, ...)
         
         os_unfair_lock_unlock(&(lock));
     }
-#endif /* DEBUG */
 }
 
 NSString *klog_dump(void)
 {
-#if DEBUG
     
     /* checking kfd */
     if(kfd == -1)
@@ -303,7 +296,5 @@ NSString *klog_dump(void)
     /* releasing buffer and return */
     free(buffer);
     return result;
-#else
     return nil;
-#endif /* DEBUG */
 }

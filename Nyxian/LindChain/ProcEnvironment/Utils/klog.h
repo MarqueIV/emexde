@@ -26,18 +26,16 @@
 #import <Foundation/Foundation.h>
 #endif /* __OBJC__ */
 
-#if DEBUG && HOST_ENV
+#if HOST_ENV
 
 #define klog_log(system, format, ...) \
     klog_log_internal((system), (format), ##__VA_ARGS__)
 
 #else
 
-// When disabled: nothing is evaluated, nothing is called, arguments not touched.
 #define klog_log(system, format, ...)
 
 #endif
-
 
 void klog_log_internal(const char *system, const char *format, ...);
 
