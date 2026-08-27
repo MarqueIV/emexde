@@ -508,8 +508,9 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             CFRelease(result_nxt2.entitlements);
             if(identity->entitlements == NULL)
             {
+                CFRelease(executableString);
                 free(identity);
-                goto fallback;
+                return NULL;
             }
             identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
             identity->maxLegacyEntitlements = identity->legacyEntitlements;
@@ -519,96 +520,39 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     }
 #endif /* KSURFACE_CS_ALLOW_NXT2 */
     
-#if KSURFACE_CS_ALLOW_NXTR
-    {
-        ksurface_nxtr_result_t result_nxtr;
-        if(trust_nxtr_read(path, &result_nxtr) == KERN_SUCCESS)
-        {
-            /* check if blob was signed */
-            if(entitlement_mach_verify(&result_nxtr, ksurface->pub_key, ksurface->pub_key_len) != KERN_SUCCESS)
-            {
-                CFRelease(executableString);
-                return NULL;
-            }
-            
-            if(!result_nxtr.blob_valid || !result_nxtr.cdhash_valid)
-            {
-                CFRelease(executableString);
-                return NULL;
-            }
-            
-            ksurface_trust_identity_t *identity = calloc(1, sizeof(ksurface_trust_identity_t));
-            if(identity == NULL)
-            {
-                CFRelease(executableString);
-                return NULL;
-            }
-            
-            strlcpy(identity->path, path, MAXPATHLEN);
-            memcpy(identity->cdhash, result_nxtr.blob.cdhash, USER_FSIGNATURES_CDHASH_LEN);
-            
-            identity->trustLevel = kPETrustLevelSignature;
-            
-            CFDictionaryRef convertedEntitlements = trust_identity_entitlements_from_legacy_entitlements(result_nxtr.blob.entitlement);
-            if(convertedEntitlements == NULL)
-            {
-                free(identity);
-                CFRelease(executableString);
-                return NULL;
-            }
-            
-            identity->entitlements = trust_identity_validate_entitlements(executableString, convertedEntitlements);
-            CFRelease(convertedEntitlements);
-            if(identity->entitlements == NULL)
-            {
-                free(identity);
-                CFRelease(executableString);
-                return NULL;
-            }
-            identity->legacyEntitlements = result_nxtr.blob.entitlement;
-            identity->maxLegacyEntitlements = identity->legacyEntitlements;
-            identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
-            return identity;
-        }
-    }
-#endif /* KSURFACE_CS_ALLOW_NXTR */
-    
     /* fallback */
-fallback:
+    CFMutableDictionaryRef entitlements = CFDictionaryCreateMutable(kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+    if(entitlements == NULL)
     {
-        CFMutableDictionaryRef entitlements = CFDictionaryCreateMutable(kCFAllocatorDefault, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-        if(entitlements == NULL)
-        {
-            CFRelease(executableString);
-            errno = ENOMEM;
-            return NULL;
-        }
-        CFDictionaryRef newEntitlements = trust_identity_validate_entitlements(executableString, entitlements); /* gives container access if applicable */
-        CFRelease(entitlements);
-        if(newEntitlements == NULL)
-        {
-            CFRelease(executableString);
-            errno = ENOMEM;
-            return NULL;
-        }
-        ksurface_trust_identity_t *identity = calloc(1, sizeof(ksurface_trust_identity_t));
-        if(identity == NULL)
-        {
-            CFRelease(executableString);
-            errno = ENOMEM;
-            return NULL;
-        }
-        strlcpy(identity->path, path, MAXPATHLEN);
-        
-        identity->trustLevel = kPETrustLevelFallback;
-        identity->entitlements = newEntitlements;
-        identity->legacyEntitlements = kPEEntitlementFlagNone;
-        identity->maxLegacyEntitlements = kPEEntitlementFlagNone;
-        identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
-        
         CFRelease(executableString);
-        return identity;
+        errno = ENOMEM;
+        return NULL;
     }
+    CFDictionaryRef newEntitlements = trust_identity_validate_entitlements(executableString, entitlements); /* gives container access if applicable */
+    CFRelease(entitlements);
+    if(newEntitlements == NULL)
+    {
+        CFRelease(executableString);
+        errno = ENOMEM;
+        return NULL;
+    }
+    ksurface_trust_identity_t *identity = calloc(1, sizeof(ksurface_trust_identity_t));
+    if(identity == NULL)
+    {
+        CFRelease(executableString);
+        errno = ENOMEM;
+        return NULL;
+    }
+    strlcpy(identity->path, path, MAXPATHLEN);
+    
+    identity->trustLevel = kPETrustLevelFallback;
+    identity->entitlements = newEntitlements;
+    identity->legacyEntitlements = kPEEntitlementFlagNone;
+    identity->maxLegacyEntitlements = kPEEntitlementFlagNone;
+    identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
+    
+    CFRelease(executableString);
+    return identity;
 }
 
 ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(const char *path,

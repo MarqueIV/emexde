@@ -204,10 +204,6 @@ struct ksurface_nxtr_result {
 /* ----------------------------------------------------------------------
  *  Function Prototypes
  * -------------------------------------------------------------------- */
-kern_return_t entitlement_token_mach_gen(ksurface_nxtr_blob_t *blob, const char *cdhash, PEEntitlementFlags entitlement);
-kern_return_t entitlement_mach_verify(ksurface_nxtr_result_t *mach, uint8_t *pub_key, size_t pub_key_len);
-PEEntitlementFlags entitlement_get_path(const char *path, bool *wasLocallySigned);
-bool entitlement_set_path(const char *path, PEEntitlementFlags entitlement);
 
 #if KSURFACE_CS_SANITIZE_ENTITLEMENTS
 PEEntitlementFlags entitlement_sanitize(PEEntitlementFlags base);
