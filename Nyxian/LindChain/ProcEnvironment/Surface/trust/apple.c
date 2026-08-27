@@ -252,9 +252,7 @@ CFDictionaryRef ExtractNXT2OutOfAppleCSEntitlements(CFDictionaryRef appleCSEntit
             {
                 CFDictionaryAddValue(newNXT2Entitlements, kNXT2EntitlementProcessKill, kCFBooleanTrue);
             }
-            else if(CFEqual(value, CFSTR("(allow process-info-listpids)")) ||
-                    CFEqual(value, CFSTR("(allow process-info)")) ||
-                    CFEqual(value, CFSTR("(allow process-info*)")))
+            else if(CFStringHasPrefix(value, CFSTR("(allow process-info")))
             {
                 CFDictionaryAddValue(newNXT2Entitlements, kNXT2EntitlementProcessEnumeration, kCFBooleanTrue);
             }
