@@ -27,6 +27,7 @@
 #import <LindChain/ProcEnvironment/Surface/sys/syscall.h>
 #import <LindChain/ProcEnvironment/LiveContainer/utils.h>
 #import <LindChain/ProcEnvironment/Surface/sys/host/sysctl.h>
+#import <LindChain/ProcEnvironment/Surface/fs/fs.h>
 #import <ksurface_config.h>
 #import <ksurface_abi.h>
 
@@ -324,4 +325,8 @@ void ksurface_kinit(void)
     ksurface_kinit_kinfo();
     ksurface_kinit_kserver();
     ksurface_kinit_kproc();
+    if(ksurface_fs_init() != KERN_SUCCESS)
+    {
+        environment_panic("fs didn't initialize");
+    }
 }
