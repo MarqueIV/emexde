@@ -39,6 +39,8 @@ char ksurface_fs_rootfs_boot_mount_root[PATH_MAX];
 
 char ksurface_fs_tmp_root[PATH_MAX];
 char ksurface_fs_var_root[PATH_MAX];
+char ksurface_fs_var_mobile_root[PATH_MAX];
+char ksurface_fs_var_root_root[PATH_MAX];
 char ksurface_fs_bin_root[PATH_MAX];
 char ksurface_fs_sbin_root[PATH_MAX];
 char ksurface_fs_rootfs_bin_mount_root[PATH_MAX];
@@ -71,6 +73,8 @@ kern_return_t ksurface_fs_init(void)
     snprintf(ksurface_fs_rootfs_boot_mount_root, PATH_MAX, "%s/boot", ksurface_fs_rootfs_mount_root);   /* you could say Nyxian is the bootloader x3 */
     snprintf(ksurface_fs_tmp_root, PATH_MAX, "%s/tmp", ksurface_fs_rootfs_root);
     snprintf(ksurface_fs_var_root, PATH_MAX, "%s/var", ksurface_fs_rootfs_root);
+    snprintf(ksurface_fs_var_mobile_root, PATH_MAX, "%s/var/mobile", ksurface_fs_rootfs_root);
+    snprintf(ksurface_fs_var_root_root, PATH_MAX, "%s/var/root", ksurface_fs_rootfs_root);
     snprintf(ksurface_fs_bin_root, PATH_MAX, "%s/usr/bin", ksurface_fs_rootfs_root);
     snprintf(ksurface_fs_sbin_root, PATH_MAX, "%s/usr/sbin", ksurface_fs_rootfs_root);
     snprintf(ksurface_fs_rootfs_bin_mount_root, PATH_MAX, "%s/bin", ksurface_fs_rootfs_root);
@@ -85,6 +89,8 @@ kern_return_t ksurface_fs_init(void)
         { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_boot_mount_root, ksurface_fs_boot_root },
         { kFSNodeTypeDirectory, ksurface_fs_tmp_root, NULL },
         { kFSNodeTypeDirectory, ksurface_fs_var_root, NULL },
+        { kFSNodeTypeDirectory, ksurface_fs_var_mobile_root, NULL },
+        { kFSNodeTypeDirectory, ksurface_fs_var_root_root, NULL },
         { kFSNodeTypeDirectory, ksurface_fs_bin_root, NULL },
         { kFSNodeTypeDirectory, ksurface_fs_sbin_root, NULL },
         { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_bin_mount_root, ksurface_fs_bin_root },
