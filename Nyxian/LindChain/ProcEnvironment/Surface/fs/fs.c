@@ -59,6 +59,19 @@ kern_return_t ksurface_fs_init(void)
         { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_dev_mount_root, ksurface_fs_devfs_root },
     };
     
+    klog_log("ksurface:fs", "preserving:");
+    for(int i = 0; i < sizeof(layout) / sizeof(FSPreserverDesc); i++)
+    {
+        if(layout[i].type == kFSNodeTypeDirectory)
+        {
+            klog_log("ksurface:fs", "[%d] directory at %s", i, layout[i].name);
+        }
+        else
+        {
+            klog_log("ksurface:fs", "[%d] symlink at %s pointing to %s", i, layout[i].name, layout[i].target);
+        }
+    }
+    
     size_t bad;
     kern_return_t kr = ksurface_fs_preserver_add_nodes(layout, sizeof layout / sizeof layout[0], &bad);
     if(kr != KERN_SUCCESS)
@@ -68,6 +81,7 @@ kern_return_t ksurface_fs_init(void)
     }
     klog_log("ksurface:fs", "layout registered [ok] (%zu nodes)", sizeof layout / sizeof layout[0]);
     
+    klog_log("ksurface:fs", "starting preserver");
     kr = ksurface_fs_preserver_kickstart();
     if(kr != KERN_SUCCESS)
     {
