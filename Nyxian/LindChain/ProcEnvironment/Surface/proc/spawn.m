@@ -48,6 +48,9 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     
     child_new->nyx.identity = identity;
     
+    child_new->nyx.entitlements = trust_identity_entitlement_flags_from_entitlements(identity->entitlements);
+    child_new->nyx.maxEntitlements = child_new->nyx.entitlements;
+    
     if(parent == kernel_proc_)
     {
         /* process needs new credentials */

@@ -49,44 +49,6 @@ typedef struct {
 /* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */
-static CFDictionaryRef trust_identity_entitlements_from_legacy_entitlements(PEEntitlementFlags entitlement)
-{
-    CFMutableDictionaryRef dictionary = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-    if(dictionary == NULL)
-    {
-        return NULL;
-    }
-    
-    /* foundational */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementPlatform, entitlement_got_entitlement(entitlement, kPEEntitlementFlagPlatform) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementPlatformRoot, entitlement_got_entitlement(entitlement, kPEEntitlementFlagPlatformRoot) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementGetTaskAllow, entitlement_got_entitlement(entitlement, kPEEntitlementFlagGetTaskAllowed) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementTaskForPid, entitlement_got_entitlement(entitlement, kPEEntitlementFlagTaskForPid) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementSUGID, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessElevate) ? kCFBooleanTrue : kCFBooleanFalse);
-    
-    /* dyld */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementDYLDHideLP, entitlement_got_entitlement(entitlement, kPEEntitlementFlagDyldHideLiveProcess) ? kCFBooleanTrue : kCFBooleanFalse);
-    
-    /* process */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessEnumeration, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessEnumeration) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessKill, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessKill) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawn, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessSpawn) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawnSignedOnly, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessSpawnSignedOnly) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawnInheriteEntitlements, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessSpawnInheriteEntitlements) ? kCFBooleanTrue : kCFBooleanFalse);
-    
-    /* management */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementManagementHost, entitlement_got_entitlement(entitlement, kPEEntitlementFlagHostManager) ? kCFBooleanTrue : kCFBooleanFalse);
-    
-    /* launch services */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStart, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesStart) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStop, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesStop) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesToggle, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesToggle) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesGetEndpoint, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesGetEndpoint) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesSetEndpoint, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesSetEndpoint) ? kCFBooleanTrue : kCFBooleanFalse);
-    
-    return dictionary;
-}
-
 static bool array_is_all_strings(CFArrayRef arr)
 {
     CFIndex n = CFArrayGetCount(arr);
@@ -336,7 +298,7 @@ static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableStr
     }
 }
 
-static PEEntitlementFlags trust_identity_legacy_entitlements_from_entitlements(CFDictionaryRef entitlements)
+PEEntitlementFlags trust_identity_entitlement_flags_from_entitlements(CFDictionaryRef entitlements)
 {
     PEEntitlementFlags legacyEntitlements = kPEEntitlementFlagNone;
     if(entitlements == NULL)
@@ -388,8 +350,6 @@ ksurface_trust_identity_t *trust_identity_get_kernel(void)
         identity = calloc(1, sizeof(ksurface_trust_identity_t));
         identity->trustLevel = kPETrustLevelTrusted;
         identity->entitlements = CFDictionaryCreateCopy(kCFAllocatorDefault, kPEEntitlementsNXT2PresetsKernel);
-        identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
-        identity->maxLegacyEntitlements = identity->legacyEntitlements;
         
         uint32_t bufsize = PATH_MAX;
         if(_NSGetExecutablePath(identity->path, &bufsize) > 0)
@@ -450,8 +410,6 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                 CFRelease(executableString);
                 return NULL;
             }
-            identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(kPEEntitlementsNXT2PresetsDaemonBootstrap);
-            identity->legacyEntitlements = identity->legacyEntitlements;
             identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
             return identity;
         }
@@ -512,8 +470,6 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                 free(identity);
                 return NULL;
             }
-            identity->legacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(identity->entitlements);
-            identity->maxLegacyEntitlements = identity->legacyEntitlements;
             identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
             return identity;
         }
@@ -547,8 +503,6 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     
     identity->trustLevel = kPETrustLevelFallback;
     identity->entitlements = newEntitlements;
-    identity->legacyEntitlements = kPEEntitlementFlagNone;
-    identity->maxLegacyEntitlements = kPEEntitlementFlagNone;
     identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
     
     CFRelease(executableString);
@@ -637,8 +591,6 @@ ksurface_trust_identity_t *trust_identity_create_from_path_with_parent_identity(
     /* refreshing childIdentity */
     CFRelease(childIdentity->entitlements);
     childIdentity->entitlements = childNewEntitlements;
-    childIdentity->maxLegacyEntitlements = trust_identity_legacy_entitlements_from_entitlements(childNewEntitlements);
-    childIdentity->legacyEntitlements = childIdentity->maxLegacyEntitlements;
     
     return childIdentity;
 }
