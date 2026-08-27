@@ -37,6 +37,10 @@
 #include <OpenSSL/pem.h>
 #include <ksurface_config.h>
 
+/* ----------------------------------------------------------------------
+ *  Constants
+ * -------------------------------------------------------------------- */
+
 /* foundational */
 NXT2Entitlement const kNXT2EntitlementPlatform = CFSTR("org.emexlabs.nyxian.platform");
 NXT2Entitlement const kNXT2EntitlementPlatformRoot = CFSTR("org.emexlabs.nyxian.platform-root");
@@ -75,6 +79,10 @@ NXT2Entitlement const kNXT2EntitlementSandboxFileRead = CFSTR("org.emexlabs.nyxi
 NXT2Entitlement const kNXT2EntitlementSandboxFileReadWrite = CFSTR("org.emexlabs.nyxian.sandbox.file.read-write");
 NXT2Entitlement const kNXT2EntitlementSandboxNoContainer = CFSTR("org.emexlabs.nyxian.sandbox.no-container");
 
+/* ----------------------------------------------------------------------
+ *  Functions
+ * -------------------------------------------------------------------- */
+
 #if KSURFACE_CS_SANITIZE_ENTITLEMENTS
 PEEntitlementFlags entitlement_sanitize(PEEntitlementFlags base)
 {
@@ -105,4 +113,5 @@ PEEntitlementFlags entitlement_sanitize(PEEntitlementFlags base)
     }
     return base;
 }
+
 #endif /* KSURFACE_CS_SANITIZE_ENTITLEMENTS */
