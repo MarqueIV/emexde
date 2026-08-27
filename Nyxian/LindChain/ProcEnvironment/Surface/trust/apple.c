@@ -184,6 +184,48 @@ CFDictionaryRef ExtractNXT2OutOfAppleCSEntitlements(CFDictionaryRef appleCSEntit
         CFArrayAppendValue(roPaths, CFSTR("$(ROOTFS)"));
     }
     
+    CFArrayRef absoluteRwPaths = CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.security.exception.files.absolute-path.read-write"));
+    if(absoluteRwPaths != NULL && CFGetTypeID(absoluteRwPaths) == CFArrayGetTypeID())
+    {
+        CFIndex count = CFArrayGetCount(absoluteRwPaths);
+        for(CFIndex index = 0; index < count; index++)
+        {
+            CFStringRef absoluteRwPath = CFArrayGetValueAtIndex(absoluteRwPaths, index);
+            if(CFGetTypeID(absoluteRwPath) == CFStringGetTypeID())
+            {
+                CFMutableStringRef pathStr = CFStringCreateMutable(kCFAllocatorDefault, 0);
+                if(pathStr != NULL)
+                {
+                    CFStringAppend(pathStr, CFSTR("$(ROOTFS)"));
+                    CFStringAppend(pathStr, absoluteRwPath);
+                    CFArrayAppendValue(rwPaths, pathStr);
+                    CFRelease(pathStr);
+                }
+            }
+        }
+    }
+    
+    CFArrayRef absoluteRoPaths = CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.security.exception.files.absolute-path.read-only"));
+    if(absoluteRoPaths != NULL && CFGetTypeID(absoluteRoPaths) == CFArrayGetTypeID())
+    {
+        CFIndex count = CFArrayGetCount(absoluteRoPaths);
+        for(CFIndex index = 0; index < count; index++)
+        {
+            CFStringRef absoluteRoPath = CFArrayGetValueAtIndex(absoluteRoPaths, index);
+            if(CFGetTypeID(absoluteRoPath) == CFStringGetTypeID())
+            {
+                CFMutableStringRef pathStr = CFStringCreateMutable(kCFAllocatorDefault, 0);
+                if(pathStr != NULL)
+                {
+                    CFStringAppend(pathStr, CFSTR("$(ROOTFS)"));
+                    CFStringAppend(pathStr, absoluteRoPath);
+                    CFArrayAppendValue(roPaths, pathStr);
+                    CFRelease(pathStr);
+                }
+            }
+        }
+    }
+    
     if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.MobileContainerManager.allowed")) == kCFBooleanTrue)
     {
         CFArrayAppendValue(lsGetAllowed, CFSTR("org.emexlabs.bootstrapd"));
