@@ -38,15 +38,6 @@ DEFINE_SYSCALL_HANDLER(gettask)
     }
     
     /*
-     * in case it has system task ports primitive
-     * we can skip most fun.
-     */
-    if(entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), kPEEntitlementFlagSystemTaskPorts | kPEEntitlementFlagTaskForPid | kPEEntitlementFlagPlatform))
-    {
-        goto skip_bsd_primitive_semantic_check;
-    }
-        
-    /*
      * checks if target gives permissions to get the task port of it self
      * in the first place and if the process allows for it except if the
      * caller is a special process.
@@ -54,6 +45,17 @@ DEFINE_SYSCALL_HANDLER(gettask)
     if(!proc_snapshot_primitive_over_pid_allowed(sys_proc_snapshot_, pid, name_only ? kPEEntitlementFlagNone : kPEEntitlementFlagTaskForPid, name_only ? kPEEntitlementFlagNone : kPEEntitlementFlagGetTaskAllowed))
     {
         sys_set_errno(errno);
+        
+        /*
+         * in case it has system task ports primitive
+         * it is granted anyways.
+         */
+        if(errno != ESRCH &&    /* making sure we can see the target */
+           entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), kPEEntitlementFlagSystemTaskPorts | kPEEntitlementFlagTaskForPid | kPEEntitlementFlagPlatform))
+        {
+            goto skip_bsd_primitive_semantic_check;
+        }
+        
         kvo_release(target);
         sys_return_failure();
     }
