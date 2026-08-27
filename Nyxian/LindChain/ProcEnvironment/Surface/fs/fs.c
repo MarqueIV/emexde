@@ -19,6 +19,7 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
 #include <LindChain/ProcEnvironment/Surface/fs/fs.h>
 #include <LindChain/ProcEnvironment/Surface/fs/preserver.h>
@@ -31,8 +32,10 @@
 char ksurface_fs_mntfs_root[PATH_MAX];
 char ksurface_fs_devfs_root[PATH_MAX];
 char ksurface_fs_rootfs_root[PATH_MAX];
+char ksurface_fs_boot_root[PATH_MAX];
 char ksurface_fs_rootfs_mount_root[PATH_MAX];
 char ksurface_fs_rootfs_dev_mount_root[PATH_MAX];
+char ksurface_fs_rootfs_boot_mount_root[PATH_MAX];
 
 kern_return_t ksurface_fs_init(void)
 {
@@ -45,11 +48,20 @@ kern_return_t ksurface_fs_init(void)
     
     klog_log("ksurface:fs", "initializing mntfs");
     
+    CFBundleRef bundle = CFBundleGetMainBundle();
+    CFURLRef url = CFBundleCopyBundleURL(bundle);
+    CFStringRef path = CFURLCopyFileSystemPath(url, kCFURLPOSIXPathStyle);
+    const char *cStr = CFStringGetCStringPtr(path, kCFStringEncodingUTF8);
+    strlcpy(ksurface_fs_boot_root, cStr, (size_t)CFStringGetLength(path) + 1);
+    CFRelease(path);
+    CFRelease(url);
+    
     snprintf(ksurface_fs_mntfs_root, PATH_MAX, "%s/Documents/mntfs", home);
     snprintf(ksurface_fs_rootfs_root, PATH_MAX, "%s/Documents/rootfs", home);
     snprintf(ksurface_fs_devfs_root, PATH_MAX, "%s/devfs", ksurface_fs_mntfs_root);
     snprintf(ksurface_fs_rootfs_mount_root, PATH_MAX, "%s/rootfs", ksurface_fs_mntfs_root);
     snprintf(ksurface_fs_rootfs_dev_mount_root, PATH_MAX, "%s/dev", ksurface_fs_rootfs_mount_root);
+    snprintf(ksurface_fs_rootfs_boot_mount_root, PATH_MAX, "%s/boot", ksurface_fs_rootfs_mount_root);   /* you could say Nyxian is the bootloader x3 */
     
     const FSPreserverDesc layout[] = {
         { kFSNodeTypeDirectory, ksurface_fs_mntfs_root, NULL },
@@ -57,6 +69,7 @@ kern_return_t ksurface_fs_init(void)
         { kFSNodeTypeDirectory, ksurface_fs_rootfs_root, NULL },
         { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_mount_root, ksurface_fs_rootfs_root },
         { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_dev_mount_root, ksurface_fs_devfs_root },
+        { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_boot_mount_root, ksurface_fs_boot_root },
     };
     
     klog_log("ksurface:fs", "preserving:");
