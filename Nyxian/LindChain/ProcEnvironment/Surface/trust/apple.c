@@ -184,10 +184,19 @@ CFDictionaryRef ExtractNXT2OutOfAppleCSEntitlements(CFDictionaryRef appleCSEntit
         CFArrayAppendValue(roPaths, CFSTR("$(ROOTFS)"));
     }
     
+    if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.MobileContainerManager.allowed")) == kCFBooleanTrue)
+    {
+        CFArrayAppendValue(lsGetAllowed, CFSTR("org.emexlabs.bootstrapd"));
+    }
+    
     if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.security.storage.AppDataContainers")) == kCFBooleanTrue)
     {
         CFArrayAppendValue(rwPaths, CFSTR("$(ROOTFS)/var/mobile/Containers/Data/Application"));
-        CFArrayAppendValue(lsGetAllowed, CFSTR("org.emexlabs.bootstrapd"));
+    }
+    
+    if(CFDictionaryGetValue(appleCSEntitlements, CFSTR("com.apple.private.security.storage.AppBundles")) == kCFBooleanTrue)
+    {
+        CFArrayAppendValue(rwPaths, CFSTR("$(ROOTFS)/var/containers/Bundle/Application"));
     }
     
     CFArrayRef temporarySBXException = AppleCSTypeSanizizeKey(appleCSEntitlements, CFSTR("com.apple.security.temporary-exception.sbpl"), CFArrayGetTypeID());
