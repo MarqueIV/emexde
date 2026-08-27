@@ -77,7 +77,7 @@ NXT2Entitlement const kNXT2EntitlementSandboxNoContainer = CFSTR("org.emexlabs.n
 
 kern_return_t entitlement_token_mach_gen(ksurface_nxtr_blob_t *blob,
                                          const char *cdhash,
-                                         PEEntitlement entitlement)
+                                         PEEntitlementFlags entitlement)
 {
     blob->entitlement = entitlement;
     
@@ -186,14 +186,14 @@ kern_return_t entitlement_mach_verify(ksurface_nxtr_result_t *mach,
     return KERN_SUCCESS;
 }
 
-PEEntitlement entitlement_get_path(const char *path,
-                                   bool *wasLocallySigned)
+PEEntitlementFlags entitlement_get_path(const char *path,
+                                        bool *wasLocallySigned)
 {
     ksurface_nxtr_result_t mach;
     if(trust_nxtr_read(path, &mach) != KERN_SUCCESS)
     {
         *wasLocallySigned = false;
-        return kPEEntitlementNone;
+        return kPEEntitlementFlagNone;
     }
     
     kern_return_t kr = entitlement_mach_verify(&mach, ksurface->pub_key, ksurface->pub_key_len);
@@ -202,7 +202,7 @@ PEEntitlement entitlement_get_path(const char *path,
 }
 
 bool entitlement_set_path(const char *path,
-                          PEEntitlement entitlement)
+                          PEEntitlementFlags entitlement)
 {
     int fd = open(path, O_RDWR);
     if(fd < 0)
@@ -217,32 +217,32 @@ bool entitlement_set_path(const char *path,
 }
 
 #if KSURFACE_CS_SANITIZE_ENTITLEMENTS
-PEEntitlement entitlement_sanitize(PEEntitlement base)
+PEEntitlementFlags entitlement_sanitize(PEEntitlementFlags base)
 {
-    base &= kPEEntitlementAll;  /* making sure no unused bit fields are enabled */
+    base &= kPEEntitlementFlagAll;  /* making sure no unused bit fields are enabled */
     
     /* can it see a other process ever? */
-    if(!entitlement_got_entitlement(base, kPEEntitlementProcessSpawn) &&
-       !entitlement_got_entitlement(base, kPEEntitlementProcessSpawnSignedOnly) &&
-       !entitlement_got_entitlement(base, kPEEntitlementProcessEnumeration))
+    if(!entitlement_got_entitlement(base, kPEEntitlementFlagProcessSpawn) &&
+       !entitlement_got_entitlement(base, kPEEntitlementFlagProcessSpawnSignedOnly) &&
+       !entitlement_got_entitlement(base, kPEEntitlementFlagProcessEnumeration))
     {
         /* you cannot do much when you cannot see the target */
-        entitlement_strip(base, kPEEntitlementTaskForPid | kPEEntitlementProcessKill);
+        entitlement_strip(base, kPEEntitlementFlagTaskForPid | kPEEntitlementFlagProcessKill);
     }
     
     /* can it spawn a other process ever? */
-    if(!entitlement_got_entitlement(base, kPEEntitlementProcessSpawn) &&
-       !entitlement_got_entitlement(base, kPEEntitlementProcessSpawnSignedOnly))
+    if(!entitlement_got_entitlement(base, kPEEntitlementFlagProcessSpawn) &&
+       !entitlement_got_entitlement(base, kPEEntitlementFlagProcessSpawnSignedOnly))
     {
-        entitlement_strip(base, kPEEntitlementProcessSpawnInheriteEntitlements);
+        entitlement_strip(base, kPEEntitlementFlagProcessSpawnInheriteEntitlements);
     }
     
     /* can it be platform root? */
-    if(entitlement_got_entitlement(base, kPEEntitlementPlatformRoot) &&
-       !entitlement_got_entitlement(base, kPEEntitlementPlatform))
+    if(entitlement_got_entitlement(base, kPEEntitlementFlagPlatformRoot) &&
+       !entitlement_got_entitlement(base, kPEEntitlementFlagPlatform))
     {
         /* you cannot be platformized as root user if you're not platform */
-        entitlement_strip(base, kPEEntitlementPlatformRoot);
+        entitlement_strip(base, kPEEntitlementFlagPlatformRoot);
     }
     return base;
 }

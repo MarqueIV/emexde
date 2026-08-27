@@ -157,7 +157,7 @@ kern_return_t trust_remove_blob_fd(int fd)
 }
 
 kern_return_t trust_nxtr_sign(const char *path,
-                              PEEntitlement entitlement)
+                              PEEntitlementFlags entitlement)
 {
     int fd = open(path, O_RDWR);
     if(fd < 0)
@@ -172,7 +172,7 @@ kern_return_t trust_nxtr_sign(const char *path,
 }
 
 kern_return_t trust_nxtr_sign_fd(int fd,
-                                 PEEntitlement entitlement)
+                                 PEEntitlementFlags entitlement)
 {
 #if !__NXTOOL
     LCMachO *machO = LCMapMachOFromFDRO(dup(fd));

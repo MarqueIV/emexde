@@ -54,8 +54,8 @@ typedef struct {
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     CFDictionaryRef entitlements;
     CFArrayRef filePermissions;
-    PEEntitlement legacyEntitlements;
-    PEEntitlement maxLegacyEntitlements;
+    PEEntitlementFlags legacyEntitlements;
+    PEEntitlementFlags maxLegacyEntitlements;
     PETrustLevel trustLevel;
 } ksurface_trust_identity_t;
 

@@ -49,7 +49,7 @@ typedef struct {
 /* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */
-static CFDictionaryRef trust_identity_entitlements_from_legacy_entitlements(PEEntitlement entitlement)
+static CFDictionaryRef trust_identity_entitlements_from_legacy_entitlements(PEEntitlementFlags entitlement)
 {
     CFMutableDictionaryRef dictionary = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
     if(dictionary == NULL)
@@ -58,31 +58,31 @@ static CFDictionaryRef trust_identity_entitlements_from_legacy_entitlements(PEEn
     }
     
     /* foundational */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementPlatform, entitlement_got_entitlement(entitlement, kPEEntitlementPlatform) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementPlatformRoot, entitlement_got_entitlement(entitlement, kPEEntitlementPlatformRoot) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementGetTaskAllow, entitlement_got_entitlement(entitlement, kPEEntitlementGetTaskAllowed) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementTaskForPid, entitlement_got_entitlement(entitlement, kPEEntitlementTaskForPid) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementSUGID, entitlement_got_entitlement(entitlement, kPEEntitlementProcessElevate) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementPlatform, entitlement_got_entitlement(entitlement, kPEEntitlementFlagPlatform) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementPlatformRoot, entitlement_got_entitlement(entitlement, kPEEntitlementFlagPlatformRoot) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementGetTaskAllow, entitlement_got_entitlement(entitlement, kPEEntitlementFlagGetTaskAllowed) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementTaskForPid, entitlement_got_entitlement(entitlement, kPEEntitlementFlagTaskForPid) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementSUGID, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessElevate) ? kCFBooleanTrue : kCFBooleanFalse);
     
     /* dyld */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementDYLDHideLP, entitlement_got_entitlement(entitlement, kPEEntitlementDyldHideLiveProcess) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementDYLDHideLP, entitlement_got_entitlement(entitlement, kPEEntitlementFlagDyldHideLiveProcess) ? kCFBooleanTrue : kCFBooleanFalse);
     
     /* process */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessEnumeration, entitlement_got_entitlement(entitlement, kPEEntitlementProcessEnumeration) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessKill, entitlement_got_entitlement(entitlement, kPEEntitlementProcessKill) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawn, entitlement_got_entitlement(entitlement, kPEEntitlementProcessSpawn) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawnSignedOnly, entitlement_got_entitlement(entitlement, kPEEntitlementProcessSpawnSignedOnly) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawnInheriteEntitlements, entitlement_got_entitlement(entitlement, kPEEntitlementProcessSpawnInheriteEntitlements) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessEnumeration, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessEnumeration) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessKill, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessKill) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawn, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessSpawn) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawnSignedOnly, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessSpawnSignedOnly) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementProcessSpawnInheriteEntitlements, entitlement_got_entitlement(entitlement, kPEEntitlementFlagProcessSpawnInheriteEntitlements) ? kCFBooleanTrue : kCFBooleanFalse);
     
     /* management */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementManagementHost, entitlement_got_entitlement(entitlement, kPEEntitlementHostManager) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementManagementHost, entitlement_got_entitlement(entitlement, kPEEntitlementFlagHostManager) ? kCFBooleanTrue : kCFBooleanFalse);
     
     /* launch services */
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStart, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesStart) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStop, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesStop) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesToggle, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesToggle) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesGetEndpoint, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesGetEndpoint) ? kCFBooleanTrue : kCFBooleanFalse);
-    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesSetEndpoint, entitlement_got_entitlement(entitlement, kPEEntitlementLaunchServicesSetEndpoint) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStart, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesStart) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesStop, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesStop) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesToggle, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesToggle) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesGetEndpoint, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesGetEndpoint) ? kCFBooleanTrue : kCFBooleanFalse);
+    CFDictionaryAddValue(dictionary, kNXT2EntitlementLaunchServicesSetEndpoint, entitlement_got_entitlement(entitlement, kPEEntitlementFlagLaunchServicesSetEndpoint) ? kCFBooleanTrue : kCFBooleanFalse);
     
     return dictionary;
 }
@@ -336,9 +336,9 @@ static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableStr
     }
 }
 
-static PEEntitlement trust_identity_legacy_entitlements_from_entitlements(CFDictionaryRef entitlements)
+static PEEntitlementFlags trust_identity_legacy_entitlements_from_entitlements(CFDictionaryRef entitlements)
 {
-    PEEntitlement legacyEntitlements = kPEEntitlementNone;
+    PEEntitlementFlags legacyEntitlements = kPEEntitlementFlagNone;
     if(entitlements == NULL)
     {
         return legacyEntitlements;
@@ -350,31 +350,31 @@ static PEEntitlement trust_identity_legacy_entitlements_from_entitlements(CFDict
         && CFBooleanGetValue((CFBooleanRef)_v)); })
     
     /* foundational */
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementPlatform)) legacyEntitlements |= kPEEntitlementPlatform;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementPlatformRoot)) legacyEntitlements |= kPEEntitlementPlatformRoot;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementGetTaskAllow)) legacyEntitlements |= kPEEntitlementGetTaskAllowed;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementTaskForPid)) legacyEntitlements |= kPEEntitlementTaskForPid;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementSUGID)) legacyEntitlements |= kPEEntitlementProcessElevate;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementPlatform)) legacyEntitlements |= kPEEntitlementFlagPlatform;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementPlatformRoot)) legacyEntitlements |= kPEEntitlementFlagPlatformRoot;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementGetTaskAllow)) legacyEntitlements |= kPEEntitlementFlagGetTaskAllowed;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementTaskForPid)) legacyEntitlements |= kPEEntitlementFlagTaskForPid;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementSUGID)) legacyEntitlements |= kPEEntitlementFlagProcessElevate;
     
     /* dyld */
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementDYLDHideLP)) legacyEntitlements |= kPEEntitlementDyldHideLiveProcess;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementDYLDHideLP)) legacyEntitlements |= kPEEntitlementFlagDyldHideLiveProcess;
     
     /* process */
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessEnumeration)) legacyEntitlements |= kPEEntitlementProcessEnumeration;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessKill)) legacyEntitlements |= kPEEntitlementProcessKill;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessSpawn)) legacyEntitlements |= kPEEntitlementProcessSpawn;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessSpawnSignedOnly)) legacyEntitlements |= kPEEntitlementProcessSpawnSignedOnly;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessSpawnInheriteEntitlements)) legacyEntitlements |= kPEEntitlementProcessSpawnInheriteEntitlements;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessEnumeration)) legacyEntitlements |= kPEEntitlementFlagProcessEnumeration;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessKill)) legacyEntitlements |= kPEEntitlementFlagProcessKill;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessSpawn)) legacyEntitlements |= kPEEntitlementFlagProcessSpawn;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessSpawnSignedOnly)) legacyEntitlements |= kPEEntitlementFlagProcessSpawnSignedOnly;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementProcessSpawnInheriteEntitlements)) legacyEntitlements |= kPEEntitlementFlagProcessSpawnInheriteEntitlements;
     
     /* management */
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementManagementHost)) legacyEntitlements |= kPEEntitlementHostManager;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementManagementHost)) legacyEntitlements |= kPEEntitlementFlagHostManager;
     
     /* launch services */
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesStart)) legacyEntitlements |= kPEEntitlementLaunchServicesStart;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesStop)) legacyEntitlements |= kPEEntitlementLaunchServicesStop;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesToggle)) legacyEntitlements |= kPEEntitlementLaunchServicesToggle;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesGetEndpoint)) legacyEntitlements |= kPEEntitlementLaunchServicesGetEndpoint;
-    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesSetEndpoint)) legacyEntitlements |= kPEEntitlementLaunchServicesSetEndpoint;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesStart)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesStart;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesStop)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesStop;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesToggle)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesToggle;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesGetEndpoint)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesGetEndpoint;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesSetEndpoint)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesSetEndpoint;
     
     #undef ENT_IS_TRUE
     return legacyEntitlements;
@@ -602,8 +602,8 @@ fallback:
         
         identity->trustLevel = kPETrustLevelFallback;
         identity->entitlements = newEntitlements;
-        identity->legacyEntitlements = kPEEntitlementNone;
-        identity->maxLegacyEntitlements = kPEEntitlementNone;
+        identity->legacyEntitlements = kPEEntitlementFlagNone;
+        identity->maxLegacyEntitlements = kPEEntitlementFlagNone;
         identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
         
         CFRelease(executableString);
