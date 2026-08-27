@@ -316,6 +316,7 @@ PEEntitlementFlags trust_identity_entitlement_flags_from_entitlements(CFDictiona
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementPlatformRoot)) legacyEntitlements |= kPEEntitlementFlagPlatformRoot;
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementGetTaskAllow)) legacyEntitlements |= kPEEntitlementFlagGetTaskAllowed;
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementTaskForPid)) legacyEntitlements |= kPEEntitlementFlagTaskForPid;
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementSystemTaskPorts)) legacyEntitlements |= kPEEntitlementFlagSystemTaskPorts;
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementSUGID)) legacyEntitlements |= kPEEntitlementFlagProcessElevate;
     
     /* dyld */

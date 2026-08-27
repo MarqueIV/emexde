@@ -36,6 +36,15 @@ DEFINE_SYSCALL_HANDLER(gettask)
     {
         sys_return_failure_with_errno(ESRCH);
     }
+    
+    /*
+     * in case it has system task ports primitive
+     * we can skip most fun.
+     */
+    if(entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), kPEEntitlementFlagSystemTaskPorts | kPEEntitlementFlagTaskForPid | kPEEntitlementFlagPlatform))
+    {
+        goto skip_bsd_primitive_semantic_check;
+    }
         
     /*
      * checks if target gives permissions to get the task port of it self
@@ -44,24 +53,12 @@ DEFINE_SYSCALL_HANDLER(gettask)
      */
     if(!proc_snapshot_primitive_over_pid_allowed(sys_proc_snapshot_, pid, name_only ? kPEEntitlementFlagNone : kPEEntitlementFlagTaskForPid, name_only ? kPEEntitlementFlagNone : kPEEntitlementFlagGetTaskAllowed))
     {
-        if(errno != ESRCH)
-        {
-            /* check for system task ports entitlement */
-            kvo_rdlock(sys_proc_);
-            if(CFDictionaryGetValue(sys_proc_->nyx.identity->entitlements, kNXT2EntitlementSystemTaskPorts) == kCFBooleanTrue &&
-               CFDictionaryGetValue(sys_proc_->nyx.identity->entitlements, kNXT2EntitlementTaskForPid) == kCFBooleanTrue &&
-               CFDictionaryGetValue(sys_proc_->nyx.identity->entitlements, kNXT2EntitlementPlatform) == kCFBooleanTrue)
-            {
-                kvo_unlock(sys_proc_);
-                goto skip_bsd_permission_checks;
-            }
-            kvo_unlock(sys_proc_);
-        }
+        sys_set_errno(errno);
         kvo_release(target);
-        sys_return_failure_with_errno(errno);
+        sys_return_failure();
     }
     
-skip_bsd_permission_checks:
+skip_bsd_primitive_semantic_check:
     {
         /* getting task port of flavour */
         task_t exportTask = MACH_PORT_NULL;
