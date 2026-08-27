@@ -53,40 +53,44 @@ kern_return_t proc_spawn(ksurface_proc_t *parent,
     
     if(parent == kernel_proc_)
     {
-        /* process needs new credentials */
+        /* process needs fresh credentials */
         proc_setmobilecred(child_new);
         proc_setsid(child_new, proc_getpid(child_new));
     }
     
 #if KSURFACE_SYS_UCRED_ENABLED
     
-    /* only platform processes can use those */
     if(CFDictionaryGetValue(identity->entitlements, kNXT2EntitlementPlatform) == kCFBooleanTrue)
     {
-        /*
-         * child process exeuctable is platform binary and has
-         * the special platform root entitlement.
-         */
+        /* only platform processes can use those */
+        
         if(CFDictionaryGetValue(identity->entitlements, kNXT2EntitlementPlatformRoot) == kCFBooleanTrue)
         {
+            /*
+             * child process exeuctable is platform binary and has
+             * the special platform root entitlement which overweighs
+             * the platform user and group entitlement.
+             */
             proc_setrootcred(child_new);
         }
-        
-        /* special user and group entitlement */
-        CFNumberRef entitlementUserIdentifier = CFDictionaryGetValue(identity->entitlements, kNXT2EntitlementPlatformUser);
-        CFNumberRef entitlementGroupIdentifier = CFDictionaryGetValue(identity->entitlements, kNXT2EntitlementPlatformGroup);
-        int32_t identifier;
-        if(entitlementUserIdentifier != NULL && CFNumberGetValue(entitlementUserIdentifier, kCFNumberSInt32Type, &identifier))
+        else
         {
-            proc_setruid(child_new, identifier);
-            proc_seteuid(child_new, identifier);
-            proc_setsvuid(child_new, identifier);
-        }
-        if(entitlementGroupIdentifier != NULL && CFNumberGetValue(entitlementGroupIdentifier, kCFNumberSInt32Type, &identifier))
-        {
-            proc_setrgid(child_new, identifier);
-            proc_setegid(child_new, identifier);
-            proc_setsvgid(child_new, identifier);
+            /* special user and group entitlement handling */
+            CFNumberRef entitlementUserIdentifier = CFDictionaryGetValue(identity->entitlements, kNXT2EntitlementPlatformUser);
+            CFNumberRef entitlementGroupIdentifier = CFDictionaryGetValue(identity->entitlements, kNXT2EntitlementPlatformGroup);
+            int32_t identifier;
+            if(entitlementUserIdentifier != NULL && CFNumberGetValue(entitlementUserIdentifier, kCFNumberSInt32Type, &identifier))
+            {
+                proc_setruid(child_new, identifier);
+                proc_seteuid(child_new, identifier);
+                proc_setsvuid(child_new, identifier);
+            }
+            if(entitlementGroupIdentifier != NULL && CFNumberGetValue(entitlementGroupIdentifier, kCFNumberSInt32Type, &identifier))
+            {
+                proc_setrgid(child_new, identifier);
+                proc_setegid(child_new, identifier);
+                proc_setsvgid(child_new, identifier);
+            }
         }
     }
     
