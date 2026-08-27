@@ -114,6 +114,9 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         { kNXT2EntitlementSandboxFileRead,              CFArrayGetTypeID()   },
         { kNXT2EntitlementSandboxFileReadWrite,         CFArrayGetTypeID()   },
         { kNXT2EntitlementSandboxNoContainer,           CFBooleanGetTypeID() },
+        
+        /* storage */
+        { kNXT2EntitlementStorageDevfs,                 CFBooleanGetTypeID() },
     };
     const size_t schema_count = sizeof(schema) / sizeof(schema[0]);
     
@@ -292,6 +295,14 @@ static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableStr
                         [filePermissions addObject:sandboxExtension];
                     }
                 }
+            }
+        }
+        if(CFDictionaryGetValue(entitlements, kNXT2EntitlementStorageDevfs) == kCFBooleanTrue)
+        {
+            NSData *sandboxExtension = [NXBootstrap issueReadOnlyUnsanitizedSandboxFileExtensionForURL:[[[NXBootstrap shared] rootURL] URLByAppendingPathComponent:@"/mntfs/devfs"]];
+            if(sandboxExtension != nil)
+            {
+                [filePermissions addObject:sandboxExtension];
             }
         }
         return (__bridge_retained CFArrayRef)filePermissions;

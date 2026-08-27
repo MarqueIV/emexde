@@ -149,6 +149,9 @@ extern NXT2Entitlement const kNXT2EntitlementSandboxFileRead;                   
 extern NXT2Entitlement const kNXT2EntitlementSandboxFileReadWrite;                  /* has to be CFArray filled with CFString */
 extern NXT2Entitlement const kNXT2EntitlementSandboxNoContainer;                    /* unfinished, container path here needs to default to $(ROOTFS)/var/mobile */
 
+/* storage */
+extern NXT2Entitlement const kNXT2EntitlementStorageDevfs;
+
 /* ----------------------------------------------------------------------
  *  Types
  * -------------------------------------------------------------------- */
