@@ -79,9 +79,6 @@ NXT2Entitlement const kNXT2EntitlementSandboxFileRead = CFSTR("org.emexlabs.nyxi
 NXT2Entitlement const kNXT2EntitlementSandboxFileReadWrite = CFSTR("org.emexlabs.nyxian.sandbox.file.read-write");
 NXT2Entitlement const kNXT2EntitlementSandboxNoContainer = CFSTR("org.emexlabs.nyxian.sandbox.no-container");
 
-/* storage */
-NXT2Entitlement const kNXT2EntitlementStorageDevfs = CFSTR("org.emexlabs.nyxian.storage.devfs.read");   /* devfs is read-only always */
-
 /* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */

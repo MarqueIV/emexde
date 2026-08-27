@@ -80,7 +80,6 @@ syscall_list_item_t sys_list[] = {
 #endif /* KSURFACE_SYS_PROC_ENABLED */
 };
 
-
 ksurface_mapping_t *ksurface = NULL;
 
 int ksurface_sethostname(NSString *hostname)
