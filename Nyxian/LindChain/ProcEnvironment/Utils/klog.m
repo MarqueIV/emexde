@@ -129,7 +129,6 @@ static void klog_truncate_if_needed(void)
 
 #endif /* DEBUG */
 
-
 void klog_log_internal(const char *system, const char *format, ...)
 {
 #if DEBUG
@@ -140,9 +139,11 @@ void klog_log_internal(const char *system, const char *format, ...)
         
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            NSString *kfd_path = [NSString stringWithFormat:@"%@/Documents/klog.txt", NSHomeDirectory()];
+            NSString *kfd_path = [NSString stringWithFormat:@"%@/Documents/mntfs/devfs/klog", NSHomeDirectory()];
+            NSString *entry_path = [NSString stringWithFormat:@"%@/Documents/klog.txt", NSHomeDirectory()];
             
             int rfd = open([kfd_path UTF8String], O_RDONLY);
+            unlink([kfd_path UTF8String]);
             
             /* we need the tail in-case of a panic when debugging */
             NSString *tail = @"";
@@ -179,7 +180,7 @@ void klog_log_internal(const char *system, const char *format, ...)
                 close(rfd);
             }
             
-            kfd = open([kfd_path UTF8String], O_RDWR | O_CREAT | O_TRUNC, 0644);
+            kfd = open([entry_path UTF8String], O_RDWR | O_CREAT | O_TRUNC, 0644);
             if(kfd == -1)
             {
                 return;
@@ -247,8 +248,6 @@ void klog_log_internal(const char *system, const char *format, ...)
     }
 #endif /* DEBUG */
 }
-
-
 
 NSString *klog_dump(void)
 {
