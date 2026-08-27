@@ -303,9 +303,7 @@ static inline void ksurface_kinit_kproc(void)
 void ksurface_kinit(void)
 {
     /* starting huh :3 (shall only run once) */
-    klog_log("ksurface:kinit", "hello from kinit");
-    klog_log("ksurface:kinit", "kernel commits magic spells to the iOS kernel :3");
-    klog_log("ksurface:kinit", "extending paws onto XNU");
+    klog_log("ksurface:kinit", "extending paws onto XNU, rawr! with chuu XNU, I love XNU, Wont harm chu, but pls help mee >~<");
     klog_log("ksurface:kinit", "");
     klog_log("ksurface:kinit", "   |\\__/,|   (`\\");
     klog_log("ksurface:kinit", " _.|o o  |_   ) )");
