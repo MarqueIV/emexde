@@ -202,7 +202,10 @@ CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
         
         CCDiagnosticRef diagnostic = CCDiagnosticCreate(kCFAllocatorSystemDefault, kCCDiagnosticTypeFile, level, mainSource, fileSourceLocation, messageStr);
         CFRelease(messageStr);
-        CFRelease(fileSourceLocation);
+        if(fileSourceLocation != nullptr)
+        {
+            CFRelease(fileSourceLocation);
+        }
         if(diagnostic == nullptr)
         {
             continue;
