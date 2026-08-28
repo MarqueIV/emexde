@@ -114,6 +114,9 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         { kNXT2EntitlementSandboxFileRead,              CFArrayGetTypeID()   },
         { kNXT2EntitlementSandboxFileReadWrite,         CFArrayGetTypeID()   },
         { kNXT2EntitlementSandboxNoContainer,           CFBooleanGetTypeID() },
+        
+        /* ksurface */
+        { kNXT2EntitlementKsurfaceKEXTLoading,          CFBooleanGetTypeID() },
     };
     const size_t schema_count = sizeof(schema) / sizeof(schema[0]);
     
@@ -343,6 +346,9 @@ PEEntitlementFlags trust_identity_entitlement_flags_from_entitlements(CFDictiona
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesToggle)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesToggle;
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesGetEndpoint)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesGetEndpoint;
     if(ENT_IS_TRUE(entitlements, kNXT2EntitlementLaunchServicesSetEndpoint)) legacyEntitlements |= kPEEntitlementFlagLaunchServicesSetEndpoint;
+    
+    /* ksurface */
+    if(ENT_IS_TRUE(entitlements, kNXT2EntitlementKsurfaceKEXTLoading)) legacyEntitlements |= kPEEntitlementFlagLoadKEXT;
     
     #undef ENT_IS_TRUE
     return legacyEntitlements;
