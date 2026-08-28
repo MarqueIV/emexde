@@ -134,6 +134,7 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
             @"-resource-dir",
             @"$(BSROOT)/Include",
             @"-L$(BSROOT)/lib",
+            @"-I$(SHDROOT)/kernel",
             
             /* main kext flags */
             @"-shared",
