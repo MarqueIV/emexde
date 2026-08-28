@@ -191,6 +191,13 @@ CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
             continue;
         }
         
+        CFStringRef fileSource = CFStringCreateWithCString(kCFAllocatorDefault, d.file.c_str(), kCFStringEncodingUTF8);
+        if(fileSource == nullptr)
+        {
+            CFRelease(messageStr);
+            continue;
+        }
+        
         CCFileSourceLocationRef fileSourceLocation = nullptr;
         CCFileRef file = CCFileCreateWithCString(kCFAllocatorSystemDefault, d.file.c_str(), kCFStringEncodingUTF8);
         if(file != nullptr)
@@ -200,7 +207,7 @@ CC_EXPORT Boolean CCSwiftCompilerJobExecute(CCJobRef job,
             CFRelease(file);
         }
         
-        CCDiagnosticRef diagnostic = CCDiagnosticCreate(kCFAllocatorSystemDefault, kCCDiagnosticTypeFile, level, mainSource, fileSourceLocation, messageStr);
+        CCDiagnosticRef diagnostic = CCDiagnosticCreate(kCFAllocatorSystemDefault, kCCDiagnosticTypeFile, level, fileSource, fileSourceLocation, messageStr);
         CFRelease(messageStr);
         if(fileSourceLocation != nullptr)
         {
