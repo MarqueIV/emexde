@@ -273,6 +273,11 @@
                 @"NXOutputPath": @"$(CACHEROOT)/$(NXExecutable)"
             }];
             break;
+        case NXProjectSchemeKindKSurfaceKext:
+            [projConfigPlist setValuesForKeysWithDictionary:@{
+                @"NXOutputPath": @"$(CACHEROOT)/$(NXExecutable)"
+            }];
+            break;
         default:
             [defaultFileManager removeItemAtURL:projectURL error:nil];
             return nil;

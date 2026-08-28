@@ -98,7 +98,7 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
             @"UIKit"
         ]];
     }
-    else
+    else if(schemeKind == NXProjectSchemeKindUtility)
     {
         if(languageKind == NXProjectLanguageKindObjectiveC)
         {
@@ -122,6 +122,33 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
                 @"Foundation"
             ]];
         }
+    }
+    else
+    {
+        return @[
+            /* target */
+            @"-target",
+            @"arm64-apple-ios$(NXDeploymentTarget)",
+            @"-isysroot",
+            @"$(SDKROOT)",
+            @"-resource-dir",
+            @"$(BSROOT)/Include",
+            @"-L$(BSROOT)/lib",
+            
+            /* main kext flags */
+            @"-shared",
+            @"-ffreestanding",
+            @"-fno-builtin",
+            @"-fno-common",
+            @"-fno-stack-protector",
+            @"-nostdlib",
+            
+            /* relaxing the damn linker */
+            @"-Wl,-undefined,dynamic_lookup",
+            @"-Wl,-kext",
+            
+            @"-lSystem",
+        ];
     }
     
     return baseFlags;
