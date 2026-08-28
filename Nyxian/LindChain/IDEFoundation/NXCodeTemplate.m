@@ -157,6 +157,11 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
 NSArray<NSString*> *NXSwiftFlagsForCodeTemplateLanguage(NXProjectSchemeKind schemeKind,
                                                         NXProjectLanguageKind languageKind)
 {
+    if(schemeKind == NXProjectSchemeKindKSurfaceKext)
+    {
+        return @[];
+    }
+    
     NSArray *baseFlags = @[
         @"-target",
         @"arm64-apple-ios$(NXDeploymentTarget)",
