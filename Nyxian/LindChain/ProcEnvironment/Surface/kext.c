@@ -102,13 +102,25 @@ kern_return_t kext_load_at_path(const char *path,
     uint64_t randomKey;
     arc4random_buf(&randomKey, sizeof(randomKey));
     
+    kext_table_wrlock();
     klog_log("ksurface:kext:load", "path: %s", path);
     
+    /* finding out if this is already loaded */
+    void *loadedHandle = dlopen(path, RTLD_NOLOAD);
+    if(loadedHandle != NULL)
+    {
+        klog_log("ksurface:kext:load", "kext %s is already loaded", path);
+        dlclose(loadedHandle);  /* dropping the refcount back */
+        kext_table_unlock();
+        return KERN_NAME_EXISTS;
+    }
+    
     /* loading kernel extension into address space */
-    void *loadedHandle = dlopen(path, RTLD_LAZY);
+    loadedHandle = dlopen(path, RTLD_LAZY);
     if(loadedHandle == NULL)
     {
         klog_log("ksurface:kext:load", "failed to load handle: %s", dlerror());
+        kext_table_unlock();
         return KERN_INVALID_ARGUMENT;
     }
     else
@@ -126,6 +138,7 @@ kern_return_t kext_load_at_path(const char *path,
     {
         klog_log("ksurface:kext:load", "start or exit symbols are missing in kext, cannot continue loading");
         dlclose(loadedHandle);
+        kext_table_unlock();
         return KERN_INVALID_OBJECT;
     }
     
@@ -135,6 +148,7 @@ kern_return_t kext_load_at_path(const char *path,
     {
         klog_log("ksurface:kext:load", "failed to allocate kext object");
         dlclose(loadedHandle);
+        kext_table_unlock();
         return KERN_NO_SPACE;
     }
     
@@ -145,16 +159,14 @@ kern_return_t kext_load_at_path(const char *path,
     object->isUnloadable = unloadable();
     
     /* inserting kext object */
-    kext_table_wrlock();
     if(radix_insert(&(ksurface->kext_info.kexts), randomKey, object) != 0)
     {
         klog_log("ksurface:kext:load", "failed to insert kext object into radix tree");
-        kext_table_unlock();
         free(object);
         dlclose(loadedHandle);
+        kext_table_unlock();
         return KERN_FAILURE;
     }
-    kext_table_unlock();
     
     /* now we can safely load it */
     pthread_t thread;
@@ -163,9 +175,11 @@ kern_return_t kext_load_at_path(const char *path,
         klog_log("ksurface:kext:load", "failed start thread for kext object");
         free(object);
         dlclose(loadedHandle);
+        kext_table_unlock();
         return KERN_FAILURE;
     }
     pthread_detach(thread);
+    kext_table_unlock();
     
     /* done =3 */
     klog_log("ksurface:kext:load", "successfully initialized kext of %s @ %p", path, loadedHandle);

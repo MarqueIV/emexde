@@ -301,12 +301,13 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
             /* spinning the extension up~ */
             uint64_t key;
             kern_return_t kr = kext_load_at_path(extensionPath, &key);
-            if(kr != KERN_SUCCESS)
+            switch(kr)
             {
-                sys_return_failure_with_errno(ENOEXEC);
+                case KERN_SUCCESS: return (int64_t)key;
+                case KERN_NAME_EXISTS: sys_return_failure_with_errno(EEXIST);
+                case KERN_NO_SPACE: sys_return_failure_with_errno(ENOMEM);
+                default: sys_return_failure_with_errno(ENOEXEC);
             }
-            
-            return (int64_t)key;
         }
         case kPECTLCodeSigningUnloadKernelExtension:
         {
@@ -317,12 +318,13 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
             
             uint64_t key = (uint64_t)args[2];
             kern_return_t kr = kext_unload_with_key(key);
-            if(kr != KERN_SUCCESS)
+            switch(kr)
             {
-                sys_return_failure_with_errno(EACCES);
+                case KERN_SUCCESS: return (int64_t)key;
+                case KERN_NAME_EXISTS: sys_return_failure_with_errno(EEXIST);
+                case KERN_NO_SPACE: sys_return_failure_with_errno(ENOMEM);
+                default: sys_return_failure_with_errno(EACCES);
             }
-            
-            sys_return;
         }
         default:
             sys_return_failure_with_errno(ENOSYS);
