@@ -135,6 +135,7 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
             @"$(BSROOT)/Include",
             @"-L$(BSROOT)/lib",
             @"-I$(SHDROOT)/kernel",
+            @"-DHOST_ENV",  /* kext becomes Nyxian */
             
             /* main kext flags */
             @"-shared",
