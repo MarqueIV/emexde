@@ -329,7 +329,7 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
             
             dlclose((void*)args[2]);
             
-            klog_log("ksurface:kext:load", "unloaded %p", (void*)args[2]);
+            klog_log("ksurface:kext:unload", "unloaded %p", (void*)args[2]);
             sys_return;
         }
         default:
