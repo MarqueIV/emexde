@@ -475,7 +475,7 @@
 - (NSURL*)resourcesURL { return [self.url URLByAppendingPathComponent:@"Resources"]; }
 - (NSURL*)payloadURL { return [self.cacheURL URLByAppendingPathComponent:@"Payload"]; }
 - (NSURL*)bundleURL {
-    if(self.projectConfig.formatKind == NXProjectSchemeKindKSurfaceKext)
+    if(self.projectConfig.schemeKind == NXProjectSchemeKindKSurfaceKext)
     {
         return [self.cacheURL  URLByAppendingPathComponent:[self.projectConfig.bundleid stringByAppendingPathExtension:@"kext"]];
     }
