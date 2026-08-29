@@ -281,7 +281,13 @@
                     @"CFBundleIdentifier": @"$(NXBundleIdentifier)",
                     @"CFBundleVersion": @"$(NXBundleVersion)",
                     @"CFBundleShortVersionString": @"$(NXBundleShortVersion)",
-                    @"PEMinimumVersion": [NSBundle.mainBundle objectForInfoDictionaryKey:@"CFBundleShortVersionString"],
+                    @"PEDependencies": @[
+                        @"ksurface<min:0.11.4,max:0.11.4>",
+                        /*
+                         * you define the next dependency kexts your self by their bundleid,
+                         * in the future that will alter the kext load chain
+                         */
+                    ],
                 },
                 @"NXBundleVersion": @"1.0",
                 @"NXBundleShortVersion": @"1.0",
