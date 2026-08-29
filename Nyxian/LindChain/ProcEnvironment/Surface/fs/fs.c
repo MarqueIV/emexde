@@ -46,6 +46,33 @@ char ksurface_fs_sbin_root[PATH_MAX];
 char ksurface_fs_rootfs_bin_mount_root[PATH_MAX];
 char ksurface_fs_rootfs_sbin_mount_root[PATH_MAX];
 
+kern_return_t ksurface_fs_mount(const char *mount_dir,
+                                const char *bind_dir)
+{
+    if(mount_dir == NULL)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    /* if bind_dir is givven it becomes a directory */
+    FSNodeType type = kFSNodeTypeDirectory;
+    if(bind_dir != NULL)
+    {
+        type = kFSNodeTypeSymbolicLink;
+    }
+    
+    /* preparing node */
+    FSPreserverNode node = { .type = type, 0 };
+    strlcpy(node.name, mount_dir, PATH_MAX);
+    if(bind_dir != NULL)
+    {
+        strlcpy(node.target, bind_dir, PATH_MAX);
+    }
+    
+    /* and register it */
+    return ksurface_fs_preserver_add_node(node);
+}
+
 kern_return_t ksurface_fs_init(void)
 {
     const char *home = getenv("HOME");
@@ -80,50 +107,29 @@ kern_return_t ksurface_fs_init(void)
     snprintf(ksurface_fs_rootfs_bin_mount_root, PATH_MAX, "%s/bin", ksurface_fs_rootfs_root);
     snprintf(ksurface_fs_rootfs_sbin_mount_root, PATH_MAX, "%s/sbin", ksurface_fs_rootfs_root);
     
-    const FSPreserverDesc layout[] = {
-        { kFSNodeTypeDirectory, ksurface_fs_mntfs_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_devfs_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_rootfs_root, NULL },
-        { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_mount_root, ksurface_fs_rootfs_root },
-        { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_dev_mount_root, ksurface_fs_devfs_root },
-        { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_boot_mount_root, ksurface_fs_boot_root },
-        { kFSNodeTypeDirectory, ksurface_fs_tmp_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_var_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_var_mobile_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_var_root_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_bin_root, NULL },
-        { kFSNodeTypeDirectory, ksurface_fs_sbin_root, NULL },
-        { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_bin_mount_root, ksurface_fs_bin_root },
-        { kFSNodeTypeSymbolicLink, ksurface_fs_rootfs_sbin_mount_root, ksurface_fs_sbin_root },
-    };
+    klog_log("ksurface:fs", "preparing userspace mounts");
+    ksurface_fs_mount(ksurface_fs_mntfs_root, NULL);
+    ksurface_fs_mount(ksurface_fs_devfs_root, NULL);
+    ksurface_fs_mount(ksurface_fs_rootfs_root, NULL);
+    ksurface_fs_mount(ksurface_fs_rootfs_mount_root, ksurface_fs_rootfs_root);
+    ksurface_fs_mount(ksurface_fs_rootfs_dev_mount_root, ksurface_fs_devfs_root);
+    ksurface_fs_mount(ksurface_fs_rootfs_boot_mount_root, ksurface_fs_boot_root);
+    ksurface_fs_mount(ksurface_fs_tmp_root, NULL);
+    ksurface_fs_mount(ksurface_fs_var_root, NULL);
+    ksurface_fs_mount(ksurface_fs_var_mobile_root, NULL);
+    ksurface_fs_mount(ksurface_fs_var_root_root, NULL);
+    ksurface_fs_mount(ksurface_fs_bin_root, NULL);
+    ksurface_fs_mount(ksurface_fs_sbin_root, NULL);
+    ksurface_fs_mount(ksurface_fs_bin_root, NULL);
+    ksurface_fs_mount(ksurface_fs_sbin_root, NULL);
+    ksurface_fs_mount(ksurface_fs_rootfs_bin_mount_root, ksurface_fs_bin_root);
+    ksurface_fs_mount(ksurface_fs_rootfs_sbin_mount_root, ksurface_fs_sbin_root);
     
-    klog_log("ksurface:fs", "preserving:");
-    for(int i = 0; i < sizeof(layout) / sizeof(FSPreserverDesc); i++)
-    {
-        if(layout[i].type == kFSNodeTypeDirectory)
-        {
-            klog_log("ksurface:fs", "[%d] directory at %s", i, layout[i].name);
-        }
-        else
-        {
-            klog_log("ksurface:fs", "[%d] symlink at %s pointing to %s", i, layout[i].name, layout[i].target);
-        }
-    }
-    
-    size_t bad;
-    kern_return_t kr = ksurface_fs_preserver_add_nodes(layout, sizeof layout / sizeof layout[0], &bad);
+    klog_log("ksurface:fs", "starting mount preserver");
+    kern_return_t kr = ksurface_fs_preserver_kickstart();
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ksurface:fs", "layout entry %zu rejected (%s): %s", bad, mach_error_string(kr), layout[bad].name);
-        return KERN_FAILURE;
-    }
-    klog_log("ksurface:fs", "layout registered [ok] (%zu nodes)", sizeof layout / sizeof layout[0]);
-    
-    klog_log("ksurface:fs", "starting preserver");
-    kr = ksurface_fs_preserver_kickstart();
-    if(kr != KERN_SUCCESS)
-    {
-        klog_log("ksurface:fs", "failed to start preserver");
+        klog_log("ksurface:fs", "failed to start mount preserver");
         return KERN_FAILURE;
     }
     
