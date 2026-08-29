@@ -145,7 +145,7 @@ out_dealloc:
     mach_msg_return_t mr = mach_msg(&(request.v.Head), MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TIMEOUT, 0, sizeof(request), exceptionPort, 1000, MACH_PORT_NULL);
     if(mr != MACH_MSG_SUCCESS)
     {
-        klog_log("ktfp", "failed receiving task port: %s", mach_error_string(mr));
+        klog_log("ktfp", "failed to receive task port right: %s", mach_error_string(mr));
         return KERN_FAILURE;
     }
     
@@ -179,7 +179,7 @@ out_dealloc:
     /* checking for ipc object type */
     if(type != IPC_OTYPE_TASK_CONTROL)  /* also known as IKOT_TASK.. aka kernel task port */
     {
-        klog_log("ktfp", "port %d holding ipc object with type %d is not a IKOT_TASK", request.v.task.name, type);
+        klog_log("ktfp", "port %d backed by ipc object with type %d is not a IKOT_TASK ipc object", request.v.task.name, type);
         goto out_failure;
     }
     
@@ -197,7 +197,7 @@ out_dealloc:
     kr = thread_get_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, &count);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to get thread state: %s", mach_error_string(kr));
+        klog_log("ktfp", "failed to get thread state of guest: %s", mach_error_string(kr));
         goto out_failure;
     }
     
@@ -207,7 +207,7 @@ out_dealloc:
     kr = thread_set_state(request.v.thread.name, ARM_THREAD_STATE64, (thread_state_t)&state, count);
     if(kr != KERN_SUCCESS)
     {
-        klog_log("ktfp", "failed to restore thread state: %s", mach_error_string(kr));
+        klog_log("ktfp", "failed to restore thread state of guest: %s", mach_error_string(kr));
         goto out_failure;
     }
     
@@ -240,7 +240,7 @@ out_destroy_request:
         }
         else
         {
-            klog_log("ktfp", "failed to reply back to guest: %s", mach_error_string(mr));
+            klog_log("ktfp", "failed to reply back to kernel: %s", mach_error_string(mr));
         }
         
         mach_msg_destroy(&(request.v.Head));
