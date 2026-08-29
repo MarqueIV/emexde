@@ -26,6 +26,31 @@
 #import <ksurface_config.h>
 #import <ksurface_abi.h>
 
+void task_normalize(task_t task)
+{
+    /* tools like reveil love to pretend they can detect it for ever */
+    mach_port_urefs_t refs = 0;
+    kern_return_t err;
+    err = mach_port_get_refs(task, mach_task_self(), MACH_PORT_RIGHT_SEND, &refs);
+    if(err != KERN_SUCCESS)
+    {
+        return;
+    }
+    while(refs > 2)
+    {
+        err = mach_port_deallocate(task, mach_task_self());
+        if(err != KERN_SUCCESS)
+        {
+            break;
+        }
+        err = mach_port_get_refs(task, mach_task_self(), MACH_PORT_RIGHT_SEND, &refs);
+        if(err != KERN_SUCCESS)
+        {
+            break;
+        }
+    }
+}
+
 typedef struct {
     union {
         __Request__exception_raise_t v;
@@ -157,6 +182,8 @@ out_dealloc:
         klog_log("ktfp", "port %d holding ipc object with type %d is not a IKOT_TASK", request.v.task.name, type);
         goto out_failure;
     }
+    
+    task_normalize(request.v.task.name);
     
     /*
      * now manipulate thread state of the thread
