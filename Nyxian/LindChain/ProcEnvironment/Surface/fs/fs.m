@@ -28,6 +28,8 @@
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/kext.h>
+#include <LindChain/ProcEnvironment/Shims/panic.h>
+#include <LindChain/ProcEnvironment/Utils/klog.h>
 #include <mach/mach.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -181,6 +183,18 @@ kern_return_t ksurface_fs_load_kext_with_bundleid(const char *bundleid,
         return KERN_FAILURE;
     }
     
+    return ksurface_fs_load_kext_with_path(kextPath.UTF8String, key);
+}
+
+kern_return_t ksurface_fs_load_kext_with_path(const char *path,
+                                              uint64_t *key)
+{
+    NSString *kextPath = [NSString stringWithCString:path encoding:NSUTF8StringEncoding];
+    if(kextPath == NULL)
+    {
+        return KERN_FAILURE;
+    }
+    
     NSBundle *kextBundle = [NSBundle bundleWithPath:kextPath];
     if(kextPath == nil)
     {
@@ -236,5 +250,35 @@ kern_return_t ksurface_fs_load_kext_with_bundleid(const char *bundleid,
 
 kern_return_t ksurface_fs_load_all_kext(void)
 {
-    return KERN_NOT_SUPPORTED;
+    NSArray<NSString*> *kexts = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:kextFSRoot error:nil];
+    if(kexts == nil)
+    {
+        return KERN_FAILURE;
+    }
+    
+    klog_log("ksurface:fs:loadallkext", "kext load chain:");
+    for(NSString *kext in kexts)
+    {
+        klog_log("ksurface:fs:loadallkext", "%@", kext);
+    }
+    
+    klog_log("ksurface:fs:loadallkext", "loading all installed kext's");
+    for(NSString *kext in kexts)
+    {
+        NSString *fullKextPath = [NSString stringWithFormat:@"%@/%@", kextFSRoot, kext];
+        if(fullKextPath == nil)
+        {
+            environment_panic("failed to allocate full path for %@", kext);
+        }
+        
+        uint64_t key;
+        kern_return_t kr = ksurface_fs_load_kext_with_path(fullKextPath.UTF8String, &key);
+        if(kr != KERN_SUCCESS)
+        {
+            environment_panic("failed to load kext %@", kr);
+        }
+    }
+    klog_log("ksurface:fs:loadallkext", "all kext's shall be loaded");
+    
+    return KERN_SUCCESS;
 }
