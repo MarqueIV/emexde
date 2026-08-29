@@ -215,10 +215,16 @@ final class NXBuilder: NSObject {
                     "org.emexlabs.nyxian.ksurface.kernelextension.loading" : true
                 ] as CFDictionary, true)
                 vnode_refresh_at_path(self.project.machoURL.path)
-                //var key: UInt64 = 0
-                //kext_load_at_path(self.project.machoURL.path, &key)
+                var ret: kern_return_t = ksurface_fs_install_kext_at_path(self.project.bundleURL.path);
+                if ret != 0 {
+                    throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to install kext: \(String(cString: mach_error_string(ret)))"])
+                }
                 
-                ksurface_fs_install_kext_at_path(self.project.bundleURL.path);
+                var key: UInt64 = 0
+                ret = ksurface_fs_load_kext_with_bundleid(self.project.projectConfig.bundleid, &key)
+                if ret != 0 {
+                    throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to inject kext: \(String(cString: mach_error_string(ret)))"])
+                }
             }
         } else {
             if self.project.projectConfig.signMachOWithNyxianEntitlements {
