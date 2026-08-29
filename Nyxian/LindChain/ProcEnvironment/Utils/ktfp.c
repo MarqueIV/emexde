@@ -36,7 +36,7 @@ typedef struct {
 __attribute__((optnone))
 kern_return_t ktfp(mach_port_t exceptionPort, task_t *task)
 {
-    kern_return_t kr;
+    kern_return_t kr = KERN_FAILURE;
     
 #if !HOST_ENV
     bool success = false;
@@ -121,7 +121,7 @@ out_dealloc:
     if(mr != MACH_MSG_SUCCESS)
     {
         klog_log("ktfp", "failed receiving task port: %s", mach_error_string(mr));
-        goto out_destroy_request;
+        return KERN_FAILURE;
     }
     
     /* validating message header */
@@ -192,25 +192,28 @@ out_dealloc:
     }
     
     *task = request.v.task.name;
-    
-    /* after replying the kernel will happily continue executing the task */
-    __Reply__exception_raise_t reply;
-    memset(&reply, 0, sizeof(reply));
-    reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request.v.Head.msgh_bits), 0);
-    reply.Head.msgh_id = request.v.Head.msgh_id + 100;
-    reply.Head.msgh_local_port = MACH_PORT_NULL;
-    reply.Head.msgh_remote_port = request.v.Head.msgh_remote_port;
-    reply.Head.msgh_size = sizeof(reply);
-    reply.NDR = NDR_record;
-    reply.RetCode = kr;
-    mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-    if(mr != KERN_SUCCESS)
-    {
-        klog_log("ktfp", "failed to reply back to guest: %s", mach_error_string(mr));
-    }
+    kr = KERN_SUCCESS;
     
 out_destroy_request:
-    mach_msg_destroy(&(request.v.Head));
-    return *task == MACH_PORT_NULL ? KERN_FAILURE : KERN_SUCCESS;
+    {
+        /* after replying the kernel will happily continue executing the task */
+        __Reply__exception_raise_t reply;
+        memset(&reply, 0, sizeof(reply));
+        reply.Head.msgh_bits = MACH_MSGH_BITS(MACH_MSGH_BITS_REMOTE(request.v.Head.msgh_bits), 0);
+        reply.Head.msgh_id = request.v.Head.msgh_id + 100;
+        reply.Head.msgh_local_port = MACH_PORT_NULL;
+        reply.Head.msgh_remote_port = request.v.Head.msgh_remote_port;
+        reply.Head.msgh_size = sizeof(reply);
+        reply.NDR = NDR_record;
+        reply.RetCode = kr;
+        mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+        if(mr != KERN_SUCCESS)
+        {
+            klog_log("ktfp", "failed to reply back to guest: %s", mach_error_string(mr));
+        }
+        
+        mach_msg_destroy(&(request.v.Head));
+        return *task == MACH_PORT_NULL ? KERN_FAILURE : KERN_SUCCESS;
+    }
 #endif /* HOST_ENV */
 }
