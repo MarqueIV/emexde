@@ -108,6 +108,9 @@ out_dealloc:
 #else
     assert(task != NULL);
     
+    /* preinitilize so the MACH_PORT_NULL sentinel always works */
+    *task = MACH_PORT_NULL;
+    
     /* will carry request buffer */
     __Request__exception_raise_large_t request;
     
