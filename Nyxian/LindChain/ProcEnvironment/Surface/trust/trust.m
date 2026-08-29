@@ -147,7 +147,6 @@ static CFDictionaryRef trust_identity_validate_entitlements(CFStringRef executab
         CFDictionarySetValue(clean, schema[i].key, val);
     }
     
-    /* grant access automatically to executable and blastbox */
     CFMutableArrayRef rwPaths;
     CFArrayRef existing = CFDictionaryGetValue(clean, kNXT2EntitlementSandboxFileReadWrite);
     if(existing)
