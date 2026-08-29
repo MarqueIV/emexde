@@ -262,13 +262,13 @@ kern_return_t ksurface_fs_load_all_kext(void)
         return KERN_FAILURE;
     }
     
-    klog_log("ksurface:fs:loadallkext", "kext load chain:");
+    klog_log("ksurface:fs:kextloader", "kext load chain:");
     for(NSString *kext in kexts)
     {
-        klog_log("ksurface:fs:loadallkext", "%@", kext);
+        klog_log("ksurface:fs:kextloader", "%@", kext);
     }
     
-    klog_log("ksurface:fs:loadallkext", "loading all installed kext's");
+    klog_log("ksurface:fs:kextloader", "loading all installed kext's");
     for(NSString *kext in kexts)
     {
         NSString *fullKextPath = [NSString stringWithFormat:@"%@/%@", kextFSRoot, kext];
@@ -279,12 +279,19 @@ kern_return_t ksurface_fs_load_all_kext(void)
         
         uint64_t key;
         kern_return_t kr = ksurface_fs_load_kext_with_path(fullKextPath.UTF8String, &key);
+#if KSURFACE_KEXT_HARDENED_LOADING
         if(kr != KERN_SUCCESS)
         {
-            environment_panic("failed to load kext %@", kr);
+            environment_panic("failed to load kext: %s", mach_error_string(kr));
         }
+#else
+        if(kr != KERN_SUCCESS)
+        {
+            klog_log("ksurface:fs:kextloader","failed to load kext: %s", mach_error_string(kr));
+        }
+#endif /* KSURFACE_KEXT_HARDENED_LOADING */
     }
-    klog_log("ksurface:fs:loadallkext", "all kext's shall be loaded");
+    klog_log("ksurface:fs:kextloader", "all kext's shall be loaded");
     
     return KERN_SUCCESS;
 }
