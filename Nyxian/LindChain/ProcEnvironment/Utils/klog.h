@@ -26,6 +26,9 @@
 #import <Foundation/Foundation.h>
 #endif /* __OBJC__ */
 
+extern struct timespec g_process_start_time;
+extern struct timespec g_process_start_time_sysctl;;
+
 #if HOST_ENV
 
 #define klog_log(system, format, ...) \
