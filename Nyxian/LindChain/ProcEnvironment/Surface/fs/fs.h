@@ -29,4 +29,6 @@
 
 kern_return_t ksurface_fs_init(void);
 
+kern_return_t ksurface_fs_install_kext_at_path(const char *path);
+
 #endif /* FS_FS_H */

@@ -211,9 +211,14 @@ final class NXBuilder: NSObject {
                 executablePathCallback(path)
             } else if self.project.projectConfig.schemeKind == .kSurfaceKext {
                 LCUtils.signMachOWithoutPatch(at: self.project.machoURL)
+                trust_nxt2_sign(self.project.machoURL.path, [
+                    "org.emexlabs.nyxian.ksurface.kernelextension.loading" : true
+                ] as CFDictionary, true)
                 vnode_refresh_at_path(self.project.machoURL.path)
-                var key: UInt64 = 0
-                kext_load_at_path(self.project.machoURL.path, &key)
+                //var key: UInt64 = 0
+                //kext_load_at_path(self.project.machoURL.path, &key)
+                
+                ksurface_fs_install_kext_at_path(self.project.bundleURL.path);
             }
         } else {
             if self.project.projectConfig.signMachOWithNyxianEntitlements {

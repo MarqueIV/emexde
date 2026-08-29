@@ -312,8 +312,12 @@ static CFArrayRef trust_identity_give_file_permissions(CFStringRef executableStr
         {
             [filePermissions addObject:bootSandboxExtension];
         }
+#if DEBUG
+        {
+#else
         if(CFDictionaryGetValue(entitlements, kNXT2EntitlementStorageKextRead) == kCFBooleanTrue)
         {
+#endif /* #if !DEBUG */
             NSData *kextSandboxExtension = [NXBootstrap issueReadOnlyUnsanitizedSandboxFileExtensionForURL:[[[NXBootstrap shared] rootURL] URLByAppendingPathComponent:@"/mntfs/kextfs"]];
             if(kextSandboxExtension != nil)
             {
