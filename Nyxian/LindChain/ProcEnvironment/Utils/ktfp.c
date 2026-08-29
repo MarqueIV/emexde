@@ -129,7 +129,7 @@ out_dealloc:
        (request.v.Head.msgh_bits & MACH_MSGH_BITS_PORTS_MASK) != MACH_MSGH_BITS(MACH_MSG_TYPE_PORT_SEND_ONCE, MACH_MSG_TYPE_PORT_SEND))
     {
         klog_log("ktfp", "malformed mach message header");
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     /* validate message descriptors */
@@ -138,7 +138,7 @@ out_dealloc:
        request.v.task.type != MACH_MSG_PORT_DESCRIPTOR)
     {
         klog_log("ktfp", "malformed mach message body");
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     /* task port validation */
@@ -148,14 +148,14 @@ out_dealloc:
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed getting the kobject type: %s", mach_error_string(kr));
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     /* checking for ipc object type */
     if(type != IPC_OTYPE_TASK_CONTROL)  /* also known as IKOT_TASK.. aka kernel task port */
     {
         klog_log("ktfp", "port %d holding ipc object with type %d is not a IKOT_TASK", request.v.task.name, type);
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     /*
@@ -171,7 +171,7 @@ out_dealloc:
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to get thread state: %s", mach_error_string(kr));
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     /* skipping over __builtin_trap */
@@ -181,14 +181,14 @@ out_dealloc:
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to restore thread state: %s", mach_error_string(kr));
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     kr = mach_port_mod_refs(mach_task_self(), request.v.task.name, MACH_PORT_RIGHT_SEND, 1);
     if(kr != KERN_SUCCESS)
     {
         klog_log("ktfp", "failed to increment task port send right: %s", mach_error_string(kr));
-        goto out_destroy_request;
+        goto out_failure;
     }
     
     *task = request.v.task.name;
@@ -207,7 +207,11 @@ out_destroy_request:
         reply.NDR = NDR_record;
         reply.RetCode = kr;
         mr = mach_msg(&reply.Head, MACH_SEND_MSG, reply.Head.msgh_size, 0, MACH_PORT_NULL, MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-        if(mr != KERN_SUCCESS)
+        if(mr == KERN_SUCCESS)
+        {
+            request.v.Head.msgh_remote_port = MACH_PORT_NULL;
+        }
+        else
         {
             klog_log("ktfp", "failed to reply back to guest: %s", mach_error_string(mr));
         }
@@ -215,5 +219,9 @@ out_destroy_request:
         mach_msg_destroy(&(request.v.Head));
         return *task == MACH_PORT_NULL ? KERN_FAILURE : KERN_SUCCESS;
     }
+out_failure:
+    /* preventing state of handoff leakage */
+    kr = KERN_FAILURE;
+    goto out_destroy_request;
 #endif /* HOST_ENV */
 }
