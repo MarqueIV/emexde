@@ -128,6 +128,10 @@ final class NXBuilder: NSObject {
             
             let infoPlistDataSerialized = try PropertyListSerialization.data(fromPropertyList: self.project.projectConfig.infoDictionary ?? [:], format: .xml, options: 0)
             FileManager.default.createFile(atPath: self.project.bundleURL.appendingPathComponent("Info.plist").path, contents: infoPlistDataSerialized)
+        } else if project.projectConfig.schemeKind == .kSurfaceKext {
+            try FileManager.default.createDirectory(at: self.project.bundleURL, withIntermediateDirectories: true)
+            let infoPlistDataSerialized = try PropertyListSerialization.data(fromPropertyList: self.project.projectConfig.infoDictionary ?? [:], format: .xml, options: 0)
+            FileManager.default.createFile(atPath: self.project.bundleURL.appendingPathComponent("Info.plist").path, contents: infoPlistDataSerialized)
         }
     }
     
