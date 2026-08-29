@@ -605,6 +605,9 @@ void klog_log_internal(const char *system, const char *format, ...)
         size_t len = strlen(utf8);
         
         /* writing */
+#if DEBUG
+        write(STDERR_FILENO, utf8, len);
+#endif /* DEBUG */
         ssize_t written = write(kfd, utf8, len);
         
         /* truncation if applicable */

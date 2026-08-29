@@ -21,6 +21,7 @@
 
 #import <LindChain/ProcEnvironment/PELaunchServiceManager.h>
 #import <LindChain/ProcEnvironment/PEBootstrapRegistry.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
 
 @implementation PELaunchServiceManager {
     os_unfair_lock _lock;
@@ -107,16 +108,46 @@
 {
     os_unfair_lock_lock(&_lock);
     [_launchServices removeAllObjects];
-    NSString *plistPath = [[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Shared"] stringByAppendingPathComponent:@"LaunchServices"];
-    NSArray<NSString*> *plists = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:plistPath error:nil];
-    for(NSString *plist in plists)
+    NSString *firmwarePlistPath = [[[[NSBundle mainBundle] bundlePath] stringByAppendingPathComponent:@"Shared"] stringByAppendingPathComponent:@"LaunchServices"];
+    NSArray<NSString*> *firmwarePlists = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:firmwarePlistPath error:nil];
+    for(NSString *plist in firmwarePlists)
     {
-        PELaunchService *launchService = [PELaunchService launchServiceWithPlistPath:[plistPath stringByAppendingPathComponent:plist]];
+        PELaunchService *launchService = [PELaunchService launchServiceWithPlistPath:[firmwarePlistPath stringByAppendingPathComponent:plist]];
         if(launchService)
         {
             [_launchServices addObject:launchService];
         }
     }
+    
+    NSString *userspacePlistPath = [[[[NXBootstrap shared] rootfsURL] URLByAppendingPathComponent:@"/System/Library/LaunchDaemons"] path];
+    NSArray<NSString*> *userspacePlists = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:userspacePlistPath error:nil];
+    for(NSString *plist in userspacePlists)
+    {
+        NSString *singleUserspacePlistPath = [userspacePlistPath stringByAppendingPathComponent:plist];
+        NSDictionary *dictionary = [NSDictionary dictionaryWithContentsOfFile:singleUserspacePlistPath];
+        if(dictionary == nil)
+     out_continue:
+        {
+            continue;
+        }
+        
+        NSString *bundleIdentifier = [dictionary objectForKey:@"PEServiceIdentifier"];
+        for(PELaunchService *item in _launchServices)
+        {
+            if([item.serviceIdentifier isEqualToString:bundleIdentifier])
+            {
+                /* collision */
+                goto out_continue;
+            }
+        }
+        
+        PELaunchService *launchService = [PELaunchService launchServiceWithPlistPath:singleUserspacePlistPath];
+        if(launchService)
+        {
+            [_launchServices addObject:launchService];
+        }
+    }
+    
     os_unfair_lock_unlock(&_lock);
 }
 

@@ -53,6 +53,8 @@ struct NXApplicationState {
     }()
     
     static var fileListRequiresToSendRequests: Bool = false;
+    
+    static var loadKernelExtensions: Bool = true;
 }
 
 func checkSigningSetup(completionHandler: @escaping (Bool) -> Void = { _ in }, showAlert: Bool = true) {
@@ -224,11 +226,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         if let item = connectionOptions.shortcutItem,
            item.type == "org.emexlabs.nyxian.noload" {
-            PEUserspaceManager.shared().boot(withKextLoadingEnabled: false)
-        } else {
-            PEUserspaceManager.shared().boot(withKextLoadingEnabled: true)
+            NXApplicationState.loadKernelExtensions = false
         }
-        
         guard let windowScene = scene as? UIWindowScene else { return }
         
         // swizzle swizzle swizzle :3
@@ -274,6 +273,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         
         self.window?.rootViewController = themedTabViewController
         self.window?.makeKeyAndVisible()
+        
+        // has to run after visible
+        DispatchQueue.global().async {
+            PEUserspaceManager.shared().boot(withKextLoadingEnabled: NXApplicationState.loadKernelExtensions)
+        }
         
         if let _: NSNumber = UserDefaults.standard.object(forKey: "NXOnboardingSentinel") as? NSNumber {
             checkSigningSetup()

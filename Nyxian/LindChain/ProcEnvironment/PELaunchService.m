@@ -21,6 +21,8 @@
 
 #import <LindChain/ProcEnvironment/PELaunchService.h>
 #import <LindChain/ProcEnvironment/PEProcessManager.h>
+#import <LindChain/IDEFoundation/NXBootstrap.h>
+#import <LindChain/IDEFoundation/NXPlist.h>
 #import <os/lock.h>
 #import <ksurface_config.h>
 
@@ -53,13 +55,34 @@
             return nil;
         }
         
+        /* expand keys and restuff */
+        NSMutableDictionary *mutableDictionary = [_dictionary mutableCopy];
+        
+        _dictionary.variables = @{
+            @"ROOTFS": NXBootstrap.shared.rootfsURL.path,
+        };
+        
+        _executablePath = [_dictionary varObjectForKey:@"PEExecutablePath"];
+        
+        if(_executablePath != nil)
+        {
+            mutableDictionary[@"PEExecutablePath"] = _executablePath;
+        }
+        _dictionary = mutableDictionary;
+        
         /* TODO: add sanitization */
-        _executablePath = _dictionary[@"PEExecutablePath"];
         _serviceIdentifier = _dictionary[@"PEServiceIdentifier"];
         _autoRestart = [((NSNumber*)[_dictionary valueForKey:@"PEShouldAutorestart"]) boolValue];
         
         if(_executablePath == NULL || _serviceIdentifier == NULL)
         {
+            return nil;
+        }
+        
+        if(![[NSFileManager defaultManager] fileExistsAtPath:_executablePath] &&
+           ![_executablePath hasPrefix:@"/usr/libexec"])
+        {
+            /* hell nah */
             return nil;
         }
         
