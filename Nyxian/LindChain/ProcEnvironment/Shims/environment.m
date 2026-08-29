@@ -60,6 +60,31 @@ void environment_client_connect_to_syscall_proxy(PEMachPort *port)
     syscallProxy = client;
 }
 
+void normalize_task_refs(void)
+{
+    /* tools like reveil love to pretend they can detect it for ever */
+    mach_port_urefs_t refs = 0;
+    kern_return_t err;
+    err = mach_port_get_refs(mach_task_self(), mach_task_self(), MACH_PORT_RIGHT_SEND, &refs);
+    if(err != KERN_SUCCESS)
+    {
+        return;
+    }
+    while(refs > 2)
+    {
+        err = mach_port_deallocate(mach_task_self(), mach_task_self());
+        if(err != KERN_SUCCESS)
+        {
+            break;
+        }
+        err = mach_port_get_refs(mach_task_self(), mach_task_self(), MACH_PORT_RIGHT_SEND, &refs);
+        if(err != KERN_SUCCESS)
+        {
+            break;
+        }
+    }
+}
+
 #pragma mark - Initilizer
 
 int environment_init(EnvironmentExec exec,
@@ -111,6 +136,8 @@ int environment_init(EnvironmentExec exec,
         
         /* handoffs task port */
         ktfp(MACH_PORT_NULL, NULL);
+        
+        normalize_task_refs();
         
         /* invoking code execution or let it return */
         if(exec == EnvironmentExecLiveContainer)
