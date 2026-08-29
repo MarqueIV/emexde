@@ -128,13 +128,17 @@ kern_return_t ksurface_fs_install_kext_at_path(const char *path)
     }
     
     /* validate kext's nxt2 blob */
-    ksurface_nxt2_t result;
+    ksurface_nxt2_t result = {};
     kern_return_t kr = trust_nxt2_read(executable.UTF8String, &result);
     if(kr != KERN_SUCCESS ||
        !result.isValid ||
        !result.isSigned ||
        !result.isCdHashValid)
     {
+        if(result.entitlements != nil)
+        {
+            CFRelease(result.entitlements);
+        }
         return KERN_DENIED;
     }
     
@@ -205,13 +209,17 @@ kern_return_t ksurface_fs_load_kext_with_bundleid(const char *bundleid,
     }
     
     /* validate kext's nxt2 blob */
-    ksurface_nxt2_t result;
+    ksurface_nxt2_t result = {};
     kern_return_t kr = trust_nxt2_read(executable.UTF8String, &result);
     if(kr != KERN_SUCCESS ||
        !result.isValid ||
        !result.isSigned ||
        !result.isCdHashValid)
     {
+        if(result.entitlements != nil)
+        {
+            CFRelease(result.entitlements);
+        }
         return KERN_DENIED;
     }
     
