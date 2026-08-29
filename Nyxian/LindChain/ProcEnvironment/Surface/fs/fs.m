@@ -30,6 +30,7 @@
 #include <LindChain/ProcEnvironment/Surface/kext.h>
 #include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
+#import <LindChain/ProcEnvironment/KextLoader/PEKext.h>
 #include <mach/mach.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -256,29 +257,29 @@ kern_return_t ksurface_fs_load_kext_with_path(const char *path,
 
 kern_return_t ksurface_fs_load_all_kext(void)
 {
-    NSArray<NSString*> *kexts = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:kextFSRoot error:nil];
-    if(kexts == nil)
+    NSArray<PEKext*> *chain = [PEKext generateLoadChainForPath:kextFSRoot];
+    if(chain == nil)
     {
         return KERN_FAILURE;
     }
     
     klog_log("ksurface:fs:kextloader", "kext load chain:");
-    for(NSString *kext in kexts)
+    for(PEKext *kext in chain)
     {
-        klog_log("ksurface:fs:kextloader", "%@", kext);
+        klog_log("ksurface:fs:kextloader", "%@", kext.bundleID);
     }
     
     klog_log("ksurface:fs:kextloader", "loading all installed kext's");
-    for(NSString *kext in kexts)
+    for(PEKext *kext in chain)
     {
-        NSString *fullKextPath = [NSString stringWithFormat:@"%@/%@", kextFSRoot, kext];
-        if(fullKextPath == nil)
+        if([kext.bundleID isEqualToString:@"ksurface"])
         {
-            environment_panic("failed to allocate full path for %@", kext);
+            /* we are ksurface lol */
+            continue;
         }
         
         uint64_t key;
-        kern_return_t kr = ksurface_fs_load_kext_with_path(fullKextPath.UTF8String, &key);
+        kern_return_t kr = ksurface_fs_load_kext_with_path(kext.bundlePath.UTF8String, &key);
 #if KSURFACE_KEXT_HARDENED_LOADING
         if(kr != KERN_SUCCESS)
         {
