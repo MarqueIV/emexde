@@ -124,6 +124,23 @@ out_dealloc:
         goto out_destroy_request;
     }
     
+    /* validating message header */
+    if((request.v.Head.msgh_bits & MACH_MSGH_BITS_COMPLEX) == 0 ||
+       (request.v.Head.msgh_bits & MACH_MSGH_BITS_PORTS_MASK) != MACH_MSGH_BITS(MACH_MSG_TYPE_PORT_SEND_ONCE, MACH_MSG_TYPE_PORT_SEND))
+    {
+        klog_log("ktfp", "malformed mach message header");
+        goto out_destroy_request;
+    }
+    
+    /* validate message descriptors */
+    if(request.v.msgh_body.msgh_descriptor_count != 2 ||
+       request.v.thread.type != MACH_MSG_PORT_DESCRIPTOR ||
+       request.v.task.type != MACH_MSG_PORT_DESCRIPTOR)
+    {
+        klog_log("ktfp", "malformed mach message body");
+        goto out_destroy_request;
+    }
+    
     /* task port validation */
     ipc_info_object_type_t type;
     mach_vm_address_t address;
