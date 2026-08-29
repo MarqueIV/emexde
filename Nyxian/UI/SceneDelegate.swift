@@ -275,7 +275,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
         self.window?.makeKeyAndVisible()
         
         // has to run after visible
-        DispatchQueue.global().async {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 1.0) {
             PEUserspaceManager.shared().boot(withKextLoadingEnabled: NXApplicationState.loadKernelExtensions)
         }
         
