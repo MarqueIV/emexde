@@ -19,14 +19,23 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef FS_MOUNT_H
-#define FS_MOUNT_H
+#ifndef KSURFACE_FS_SANDBOX_H
+#define KSURFACE_FS_SANDBOX_H
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <mach/kern_return.h>
+#include <mach/mach.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <LindChain/ProcEnvironment/Surface/fs/preserver.h>
-#include <LindChain/ProcEnvironment/Surface/fs/sandbox.h>
 
-kern_return_t ksurface_fs_mount(FSMountPermissionFlags permissions, const char *mount_dir, const char *bind_dir);
+typedef enum: UInt8 {
+    kFSMountPermissionNone      = 0,
+    kFSMountPermissionRead      = 1,
+    kFSMountPermissionReadWrite = 2,
+} FSMountPermissionFlags;
 
-#endif /* FS_MOUNT_H */
+kern_return_t ksurface_fs_registry_add(FSMountPermissionFlags permission, FSNodeType type, const char *mount_dir, const char *bind_dir);
+kern_return_t ksurface_fs_registry_seal(void);
+CFArrayRef ksurface_fs_copy_sandbox_extensions(const char *guest_path, FSMountPermissionFlags wanted);
+
+#endif /* KSURFACE_FS_SANDBOX_H */
