@@ -61,5 +61,5 @@ kern_return_t ksurface_fs_mount(FSMountPermissionFlags permissions,
         return kr;
     }
     
-    return ksurface_fs_registry_add(permissions, type, mount_dir, bind_dir);
+    return ksurface_fs_sandbox_registry_add(permissions, type, mount_dir, bind_dir);
 }
