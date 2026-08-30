@@ -57,7 +57,7 @@ kern_return_t ksurface_fs_init(void)
     ksurface_fs_mount(kFSMountPermissionNone,       [[NSString stringWithFormat:@"%s/Documents/mntfs", home] UTF8String], NULL);
     ksurface_fs_mount(kFSMountPermissionReadWrite,  [[NSString stringWithFormat:@"%s/Documents/rootfs", home] UTF8String], NULL);
     ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/devfs", home] UTF8String], NULL);
-    ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/bootfs", home] UTF8String], NULL);
+    ksurface_fs_mount(kFSMountPermissionReadWrite,  [[NSString stringWithFormat:@"%s/Documents/mntfs/bootfs", home] UTF8String], NULL);
     ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/kextfs", home] UTF8String], NULL);
     
     /* bind mounts */
@@ -66,7 +66,7 @@ kern_return_t ksurface_fs_init(void)
     ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/bootfs/headers", home] UTF8String], [[NSBundle.mainBundle.bundlePath stringByAppendingString:@"/Shared/kernel"] UTF8String]);
     ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/bootfs/kexts", home] UTF8String], [[NSString stringWithFormat:@"%s/Documents/mntfs/kextfs", home] UTF8String]);
     ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/rootfs/dev", home] UTF8String], [[NSString stringWithFormat:@"%s/Documents/mntfs/devfs", home] UTF8String]);
-    ksurface_fs_mount(kFSMountPermissionRead,       [[NSString stringWithFormat:@"%s/Documents/mntfs/rootfs/boot", home] UTF8String], [[NSString stringWithFormat:@"%s/Documents/mntfs/bootfs", home] UTF8String]);
+    ksurface_fs_mount(kFSMountPermissionReadWrite,  [[NSString stringWithFormat:@"%s/Documents/mntfs/rootfs/boot", home] UTF8String], [[NSString stringWithFormat:@"%s/Documents/mntfs/bootfs", home] UTF8String]);
     
     /* root mounts */
     ksurface_fs_mount(kFSMountPermissionReadWrite,  [[NSString stringWithFormat:@"%s/Documents/mntfs/rootfs/tmp", home] UTF8String], NULL);
@@ -93,8 +93,7 @@ kern_return_t ksurface_fs_init(void)
         return KERN_FAILURE;
     }
     
-    klog_log("ksurface:fs", "sealing mount permission registry");
-    return ksurface_fs_registry_seal();
+    return KERN_SUCCESS;
 }
 
 kern_return_t ksurface_fs_install_kext_at_path(const char *path)

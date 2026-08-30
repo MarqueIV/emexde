@@ -33,6 +33,7 @@
 #include <limits.h>
 #include <LindChain/ProcEnvironment/Surface/fs/preserver.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
+#include <LindChain/ProcEnvironment/Surface/fs/sandbox.h>
 
 #define PRES_MAX_NODES    1024
 #define PRES_DEBOUNCE_NS  (20ull * NSEC_PER_MSEC)
@@ -565,6 +566,8 @@ kern_return_t ksurface_fs_preserver_kickstart(void)
         dispatch_resume(g_timer);
         
         klog_log("ksurface:fs:preserver", "armed: %u nodes, %u watches", g_node_count, g_watch_count);
+        
+        ksurface_fs_registry_seal();
     });
     
     return kr;
