@@ -22,6 +22,7 @@
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <LindChain/ProcEnvironment/Surface/kext.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
+#include <LindChain/ProcEnvironment/Utils/dlfcn.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -319,7 +320,9 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     }
     
     /* loading kernel extension into address space */
-    loadedHandle = dlopen(path, RTLD_LAZY);
+    int fd = open(path, O_RDONLY);
+    loadedHandle = dlopen_from_fd(fd, RTLD_LAZY | RTLD_EXACT_PATH);
+    close(fd);
     if(loadedHandle == NULL)
     {
         klog_log("ksurface:kext:load", "failed to load handle: %s", dlerror());
