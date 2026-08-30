@@ -354,7 +354,6 @@
 				LiveShim/private/dyld_node_remap.h,
 				LiveShim/shims/dyld.c,
 				LiveShim/shims/dyld.h,
-				LiveShim/shims/io.c,
 				LiveShim/shims/ioctl.c,
 				LiveShim/shims/mount.c,
 				LiveShim/shims/SecItem.m,
