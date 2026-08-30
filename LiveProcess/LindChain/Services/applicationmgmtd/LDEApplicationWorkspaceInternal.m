@@ -75,7 +75,7 @@
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
-    /* just clearing the pk container  */
+    /* just clearing the pk container */
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
         NSString *docContainerPath = [NSString stringWithFormat:@"%s/Documents", dyld_get_mmap_sandbox_map_exec_allowed_path()];
         NSString *tmpContainerPath = [NSString stringWithFormat:@"%s/tmp", dyld_get_mmap_sandbox_map_exec_allowed_path()];
