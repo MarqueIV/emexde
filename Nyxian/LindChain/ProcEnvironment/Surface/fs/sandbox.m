@@ -432,7 +432,7 @@ CFArrayRef ksurface_fs_copy_sandbox_extensions(const char *path,
             continue;
         }
         
-        const char *cls = (regs[i].perm == kFSMountPermissionReadWrite) ? "com.apple.app-sandbox.read-write" : "com.apple.app-sandbox.read";
+        const char *cls = (regs[i].perm == kFSMountPermissionReadWrite) ? kFSExtClassReadWrite : kFSExtClassRead;
         char *tok = sandbox_extension_issue_file(cls, regs[i].phys, 0);
         if(tok == NULL)
         {
