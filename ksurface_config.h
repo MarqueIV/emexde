@@ -42,12 +42,12 @@
 #define KSURFACE_CS_ALLOW_NXT2                  1   /* enables compatibility with the new code signature format NXT2 (in case we have to disable this some day) */
 
 /* dyld feature configuration */
-#define KSURFACE_DYLD_HOOK_LOGGING_ENABLED      1   /* enables logging from the hooks */
+#define KSURFACE_DYLD_HOOK_LOGGING_ENABLED      0   /* enables logging from the hooks */
 #define KSURFACE_DYLD_HARDENED_CDHASH_VERIFIER  1   /* hardlocks open on failed cdhash verification (recommended to be enabled as it closes a huge security risk otherwise) */
 
 /* logging features */
-#define KSURFACE_KLOG_ENABLE_DAEMONS            1
-#define KSURFACE_KLOG_ENABLE_PROCESSES          1
+#define KSURFACE_KLOG_ENABLE_DAEMONS            0
+#define KSURFACE_KLOG_ENABLE_PROCESSES          0
 
 /* kernel extension features */
 #define KSURFACE_KEXT_HARDENED_LOADING          0   /* crash on failed loads */

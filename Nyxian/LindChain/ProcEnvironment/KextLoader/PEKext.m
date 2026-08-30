@@ -23,6 +23,7 @@
 #import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #import <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #import <LindChain/ProcEnvironment/Surface/kext.h>
+#import <LindChain/ProcEnvironment/Utils/klog.h>
 
 @implementation PEKext
 
@@ -104,7 +105,7 @@
         
         NSMutableArray<PEDependency*> *dependencies = [NSMutableArray array];
         
-        printf("%s v%u.%u.%u (abi %u, flags 0x%llx)\n", info.identifier, KMOD_VERSION_MAJOR(info.version), KMOD_VERSION_MINOR(info.version), KMOD_VERSION_PATCH(info.version), info.abi_version, (unsigned long long)info.flags);
+        klog_log("ksurface:kextloader", "%s v%u.%u.%u (abi %u, flags 0x%llx)", info.identifier, KMOD_VERSION_MAJOR(info.version), KMOD_VERSION_MINOR(info.version), KMOD_VERSION_PATCH(info.version), info.abi_version, (unsigned long long)info.flags);
         for(uint32_t i = 0; i < ndeps; i++)
         {
             PEDependency *dependency = [[PEDependency alloc] init];
@@ -118,7 +119,7 @@
                 return nil;
             }
             [dependencies addObject:dependency];
-            printf("  needs %s [%u.%u.%u .. %u.%u.%u]\n", deps[i].identifier, KMOD_VERSION_MAJOR(deps[i].min_version), KMOD_VERSION_MINOR(deps[i].min_version), KMOD_VERSION_PATCH(deps[i].min_version), KMOD_VERSION_MAJOR(deps[i].max_version), KMOD_VERSION_MINOR(deps[i].max_version), KMOD_VERSION_PATCH(deps[i].max_version));
+            klog_log("ksurface:kextloader", "  needs %s [%u.%u.%u .. %u.%u.%u]", deps[i].identifier, KMOD_VERSION_MAJOR(deps[i].min_version), KMOD_VERSION_MINOR(deps[i].min_version), KMOD_VERSION_PATCH(deps[i].min_version), KMOD_VERSION_MAJOR(deps[i].max_version), KMOD_VERSION_MINOR(deps[i].max_version), KMOD_VERSION_PATCH(deps[i].max_version));
         }
         ksurface_kext_free_deps(deps);
         
