@@ -23,6 +23,8 @@
 #include <LindChain/ProcEnvironment/Surface/kext.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
 #include <LindChain/ProcEnvironment/Utils/dlfcn.h>
+#include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -309,20 +311,64 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     kext_table_wrlock();
     klog_log("ksurface:kext:load", "path: %s", path);
     
+    /* first checking the validity of the kext */
+    LCMachO *machO = LCMapMachO(path, true);
+    if(machO == NULL)
+    {
+        klog_log("ksurface:kext:load", "failed to map MachO of kext");
+        kext_table_unlock();
+        return KERN_FAILURE;
+    }
+    
+    if(!LCCheckCodeSignature(machO))
+    {
+        klog_log("ksurface:kext:load", "MachO of kext is unsigned apple wise, cannot continue");
+        kext_table_unlock();
+        LCUnmapMachO(machO);
+        return KERN_DENIED;
+    }
+    
+    ksurface_nxt2_t nxt2 = {};
+    kern_return_t kr = trust_nxt2_read_fd(machO->fd, &nxt2);
+    if(kr != KERN_SUCCESS ||
+       !nxt2.isValid ||
+       !nxt2.isCdHashValid ||
+       !nxt2.isSigned)
+    {
+        klog_log("ksurface:kext:load", "MachO of kext is incorrectly signed, cannot continue");
+        kext_table_unlock();
+        LCUnmapMachO(machO);
+        if(nxt2.entitlements != NULL)
+        {
+            CFRelease(nxt2.entitlements);
+        }
+        return KERN_DENIED;
+    }
+    
+    Boolean hasEntitlement = CFDictionaryGetValue(nxt2.entitlements, kNXT2EntitlementKsurfaceKEXTLoading) != kCFBooleanTrue;
+    CFRelease(nxt2.entitlements);
+    if(hasEntitlement)
+    {
+        klog_log("ksurface:kext:load", "MachO of kext is incorrectly signed, cannot continue");
+        kext_table_unlock();
+        LCUnmapMachO(machO);
+        return KERN_DENIED;
+    }
+    
     /* finding out if this is already loaded */
-    void *loadedHandle = dlopen(path, RTLD_NOLOAD);
+    void *loadedHandle = dlopen_from_fd(machO->fd, RTLD_NOLOAD | RTLD_EXACT_PATH);
     if(loadedHandle != NULL)
     {
         klog_log("ksurface:kext:load", "kext %s is already loaded", path);
         dlclose(loadedHandle);  /* dropping the refcount back */
         kext_table_unlock();
+        LCUnmapMachO(machO);
         return KERN_NAME_EXISTS;
     }
     
     /* loading kernel extension into address space */
-    int fd = open(path, O_RDONLY);
-    loadedHandle = dlopen_from_fd(fd, RTLD_LAZY | RTLD_EXACT_PATH);
-    close(fd);
+    loadedHandle = dlopen_from_fd(machO->fd, RTLD_LAZY | RTLD_EXACT_PATH);
+    LCUnmapMachO(machO);
     if(loadedHandle == NULL)
     {
         klog_log("ksurface:kext:load", "failed to load handle: %s", dlerror());
@@ -347,7 +393,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     /* initializing kext object */
     if(liveMod->init)
     {
-        kern_return_t kr = liveMod->init();
+        kr = liveMod->init();
         if(kr != KERN_SUCCESS)
         {
             klog_log("ksurface:kext:load", "kext @ %s, had a failure initializing: %s", path, mach_error_string(kr));
@@ -363,7 +409,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     {
         if(liveMod->deinit)
         {
-            kern_return_t kr = liveMod->deinit();
+            kr = liveMod->deinit();
             if(kr != KERN_SUCCESS)
             {
                 environment_panic("kext @ %s failed to deinitialize: %s", path, mach_error_string(kr));
@@ -384,7 +430,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     {
         if(liveMod->deinit)
         {
-            kern_return_t kr = liveMod->deinit();
+            kr = liveMod->deinit();
             if(kr != KERN_SUCCESS)
             {
                 environment_panic("kext @ %s failed to deinitialize: %s", path, mach_error_string(kr));
@@ -405,7 +451,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
         {
             if(liveMod->deinit)
             {
-                kern_return_t kr = liveMod->deinit();
+                kr = liveMod->deinit();
                 if(kr != KERN_SUCCESS)
                 {
                     environment_panic("kext @ %s failed to deinitialize: %s", path, mach_error_string(kr));

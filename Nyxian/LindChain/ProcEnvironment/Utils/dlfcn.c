@@ -91,6 +91,10 @@ static int hook_open(const char *path,
     {
         close(fd);
         fd = dup(open_fd);
+        if(fd >= 0)
+        {
+            lseek(fd, 0, SEEK_SET);
+        }
     }
     else if(open_exact)
     {
@@ -145,19 +149,33 @@ static HWHookThreadContextRef HWHookDlopenThreadContext(void)
 void *dlopen_from_fd(int fd,
                      int mode)
 {
-    open_exact = mode & RTLD_EXACT_PATH;
-    mode &= ~RTLD_EXACT_PATH;
-    
-    if(fcntl(fd, F_GETPATH, open_fd_path) == -1)
+    if(fd < 0)
     {
+        errno = EBADF;
         return NULL;
     }
     
+    /* backup position */
+    off_t offset = lseek(fd, 0, SEEK_CUR);
+    
+    /* check extra flags */
     open_fd = fd;
+    open_exact = mode & RTLD_EXACT_PATH;
+    mode &= ~RTLD_EXACT_PATH;
+    
+    /* gathering exact path */
+    if(fcntl(fd, F_GETPATH, open_fd_path) == -1)
+    {
+        errno = ENOENT;
+        return NULL;
+    }
     
     HWHookThreadContextRef contextRef = HWHookDlopenThreadContext();
     HWHookThreadContextEnter(contextRef);
     void *handle = dlopen(open_fd_path, mode);
     HWHookThreadContextExit(contextRef);
+    
+    /* now restore offset */
+    lseek(fd, offset, SEEK_SET);
     return handle;
 }
