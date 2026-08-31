@@ -136,13 +136,6 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         return NULL;
     }
     
-    /* now resealing */
-    if(!KXResealDataConst(image_info))
-    {
-        kxdestroy_image(image_info);
-        return NULL;
-    }
-    
     /* now we gotta get kmod */
     if(!KXLocateKmod(image_info))
     {
@@ -158,6 +151,13 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     }
     
     if(!KXRegisterObjCImage(image_info))
+    {
+        kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    /* now resealing */
+    if(!KXResealDataConst(image_info))
     {
         kxdestroy_image(image_info);
         return NULL;
