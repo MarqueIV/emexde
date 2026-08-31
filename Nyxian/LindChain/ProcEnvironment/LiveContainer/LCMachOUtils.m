@@ -589,16 +589,20 @@ struct code_signature_command* findSignatureCommand(struct mach_header_64* heade
 
 bool LCCheckCodeSignature(LCMachO *machO)
 {
+    /* if it is not ARM64 then it cannot run on this device */
     if(machO->header->cputype != CPU_TYPE_ARM64)
     {
         return false;
     }
     
+    /* binary must be signed, otherwise no execution */
     struct code_signature_command* codeSignatureCommand = findSignatureCommand(machO->header);
     if(!codeSignatureCommand)
     {
         return false;
     }
+    
+    /* checking if the kernel says this is signed */
     off_t sliceOffset = (void*)machO->header - machO->map;
     fsignatures_t siginfo;
     siginfo.fs_file_start = sliceOffset;
@@ -610,12 +614,12 @@ bool LCCheckCodeSignature(LCMachO *machO)
         return false;
     }
     
+    /* checking if this can be executed by us */
     fchecklv_t checkInfo;
     checkInfo.lv_error_message_size = 0;
     checkInfo.lv_error_message = NULL;
     checkInfo.lv_file_start= sliceOffset;
     int checkLVresult = fcntl(machO->fd, F_CHECK_LV, &checkInfo);
-    
     if(checkLVresult == 0)
     {
         return true;
