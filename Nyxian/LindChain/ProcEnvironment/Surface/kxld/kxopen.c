@@ -26,6 +26,7 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/reseal.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/image.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/kmod.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/export.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <stdio.h>
@@ -183,6 +184,13 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     
     /* now we gotta get kmod */
     if(!KXLocateKmod(image_info))
+    {
+        kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    /* now the spicy port with the symbol exports */
+    if(!KXRegisterKextExports(image_info))
     {
         kxdestroy_image(image_info);
         return NULL;

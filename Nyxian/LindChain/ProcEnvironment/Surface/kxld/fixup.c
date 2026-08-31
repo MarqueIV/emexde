@@ -20,23 +20,14 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/kxld/fixup.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/resolve.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
 #include <mach-o/fixup-chains.h>
 #include <dlfcn.h>
 
-static void *KXResolve(const char *name)
-{
-    if(!name)
-    {
-        return NULL;
-    }
-    const char *lookup = (name[0] == '_') ? name + 1 : name;
-    return dlsym(RTLD_DEFAULT, lookup);
-}
-
 /* fuck this legacy iOS bullshit, bro lld emits those legacy LC_DYLD_INFO* cmd's ;-; */
-static uint64_t readULEB(const uint8_t **p,
-                         const uint8_t *end)
+uint64_t readULEB(const uint8_t **p,
+                  const uint8_t *end)
 {
     uint64_t result = 0; int shift = 0;
     while(*p < end)

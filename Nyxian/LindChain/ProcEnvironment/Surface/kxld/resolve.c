@@ -41,8 +41,9 @@ static uint64_t KXSymbolKey(const char *name)
 void KXRegisterExport(const char *name,
                       void *addr)
 {
+    const char *lookup = (name[0] == '_') ? name + 1 : name;
     os_unfair_lock_lock(&g_kext_symbol_lock);
-    uint64_t key = KXSymbolKey(name);
+    uint64_t key = KXSymbolKey(lookup);
     kx_export_t *symbol = radix_remove(&g_kext_symbol_tree, key);
     if(symbol != NULL)
     {
@@ -50,7 +51,7 @@ void KXRegisterExport(const char *name,
         free(symbol);
     }
     symbol = malloc(sizeof(*symbol));
-    symbol->name = strdup(name);
+    symbol->name = strdup(lookup);
     if(symbol->name == NULL)
     {
         os_unfair_lock_unlock(&g_kext_symbol_lock);
