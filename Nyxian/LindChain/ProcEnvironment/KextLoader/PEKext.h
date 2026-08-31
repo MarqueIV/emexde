@@ -32,6 +32,7 @@
 @property (nonatomic,copy) NSString *bundleID;
 @property (nonatomic,copy) NSString *version;
 @property (nonatomic,strong) NSArray<PEDependency*> *dependencies;
+@property (nonatomic) uint64_t flags;
 
 - (int)load;
 

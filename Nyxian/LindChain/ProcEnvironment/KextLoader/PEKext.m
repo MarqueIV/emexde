@@ -343,6 +343,8 @@ void ksurface_kext_free_deps(kmod_dependency_t *deps)
             return nil;
         }
         
+        self.flags = info.flags;
+        
         NSMutableArray<PEDependency*> *dependencies = [NSMutableArray array];
         
         klog_log("ksurface:kextloader", "%s v%u.%u.%u (abi %u, flags 0x%llx)", info.identifier, KMOD_VERSION_MAJOR(info.version), KMOD_VERSION_MINOR(info.version), KMOD_VERSION_PATCH(info.version), info.abi_version, (unsigned long long)info.flags);

@@ -22,6 +22,7 @@
 #import <LindChain/ProcEnvironment/KextLoader/PEKextLoader.h>
 #import <LindChain/ProcEnvironment/KextLoader/PEKext.h>
 #import <LindChain/ProcEnvironment/Surface/fs/fs.h>
+#import <LindChain/ProcEnvironment/Surface/kxld/image.h>
 
 static BOOL PEKextIsVersionInBetweenMinMax(NSString *version,
                                            NSString *minVersion,
@@ -46,6 +47,15 @@ static BOOL PEKextIsVersionInBetweenMinMax(NSString *version,
     }
     
     return YES;
+}
+
+static NSUInteger PEKextPriority(PEKext *kext)
+{
+    if(kext.flags & KMOD_FLAG_OVERRIDE_CORE)
+    {
+        return 0;
+    }
+    return 2;
 }
 
 BOOL PEKextLoaderLoad(NSMutableString *errorString)
@@ -175,8 +185,16 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
     NSMutableArray<PEKext *> *loadOrder = [NSMutableArray array];
     while(queue.count > 0)
     {
-        PEKext *current = queue.firstObject;
-        [queue removeObjectAtIndex:0];
+        NSUInteger bestIdx = 0;
+        for(NSUInteger i = 1; i < queue.count; i++)
+        {
+            if(PEKextPriority(queue[i]) < PEKextPriority(queue[bestIdx]))
+            {
+                bestIdx = i;
+            }
+        }
+        PEKext *current = queue[bestIdx];
+        [queue removeObjectAtIndex:bestIdx];
         [loadOrder addObject:current];
         NSArray *dependentIDs = dependents[current.bundleID];
         for(NSString *depID in dependentIDs)
