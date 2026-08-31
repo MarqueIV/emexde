@@ -87,24 +87,9 @@ bool KXApplyChainedFixups(kxld_image_info_t *image_info)
                     /* external symbol to resolve ^^ */
                     const struct dyld_chained_import *imp = &imports[b->ordinal];
                     const char *name = symbolPool + imp->name_offset;
-                    printf("trying to fixup: %s", name);
-                    void *addr = dlsym(RTLD_DEFAULT, name);
-                    if(addr != NULL)
-                    {
-                        goto fill_slot;
-                    }
-                    
-                    char buf[NAME_MAX];
-                    strlcpy(buf, name + 1, NAME_MAX);
-                    addr = dlsym(RTLD_DEFAULT, buf);
-                    
-                    /*void *addr = SomeResolverIHaveToWriteSomeDayTMlol(name, imp->lib_ordinal, imp->weak_import);
-                    if(!addr && !imp->weak_import)
-                    {
-                    }
-                    *slot = (uint64_t)addr + b->addend;*/
-                fill_slot:
-                    printf(" with addr 0x%lx\n", (uintptr_t)addr);
+                    printf("trying to fixup: %s,", name);
+                    void *addr = dlsym(RTLD_DEFAULT, name + 1);
+                    printf(" resolved with with addr 0x%lx\n", (uintptr_t)addr);
                     *slot = (uintptr_t)addr + b->addend;
                 }
                 else
