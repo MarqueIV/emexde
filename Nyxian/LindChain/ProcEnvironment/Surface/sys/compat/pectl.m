@@ -30,7 +30,7 @@
 #import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
 #include <LindChain/ProcEnvironment/Utils/vnode.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
-#include <LindChain/ProcEnvironment/Surface/kext.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>
 #import <ksurface_config.h>
 #import <ksurface_abi.h>
 #include <dlfcn.h>
@@ -300,14 +300,12 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
             
             /* spinning the extension up~ */
             uint64_t key;
-            kern_return_t kr = ksurface_kext_load_at_path(extensionPath, &key);
-            switch(kr)
+            void *image = kxopen(extensionPath, 0);
+            if(image == NULL)
             {
-                case KERN_SUCCESS: return (int64_t)key;
-                case KERN_NAME_EXISTS: sys_return_failure_with_errno(EEXIST);
-                case KERN_NO_SPACE: sys_return_failure_with_errno(ENOMEM);
-                default: sys_return_failure_with_errno(ENOEXEC);
+                sys_return_failure_with_errno(errno);
             }
+            sys_return;
         }
         case kPECTLCodeSigningUnloadKernelExtension:
         {
@@ -316,15 +314,9 @@ DEFINE_SYSCALL_HANDLER(pectl_codesigning)
                 sys_return_failure_with_errno(EPERM);
             }
             
-            uint64_t key = (uint64_t)args[2];
-            kern_return_t kr = ksurface_kext_unload_with_key(key);
-            switch(kr)
-            {
-                case KERN_SUCCESS: return (int64_t)key;
-                case KERN_NAME_EXISTS: sys_return_failure_with_errno(EEXIST);
-                case KERN_NO_SPACE: sys_return_failure_with_errno(ENOMEM);
-                default: sys_return_failure_with_errno(EACCES);
-            }
+            void *image = (void*)args[2];
+            kxclose(image);
+            sys_return;
         }
         default:
             sys_return_failure_with_errno(ENOSYS);

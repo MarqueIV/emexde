@@ -27,7 +27,7 @@
 #include <LindChain/ProcEnvironment/Surface/fs/preserver.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
-#include <LindChain/ProcEnvironment/Surface/kext.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>
 #include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/KextLoader/PEKext.h>
@@ -358,6 +358,6 @@ kern_return_t ksurface_fs_load_kext_with_path(const char *path,
         return KERN_DENIED;
     }
     
-    return ksurface_kext_load_at_path(executable.UTF8String, key);
+    return kxopen(executable.UTF8String, 0);
 }
 

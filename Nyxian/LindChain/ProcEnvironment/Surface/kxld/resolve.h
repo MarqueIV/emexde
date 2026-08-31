@@ -41,4 +41,7 @@ typedef struct {
 void KXRegisterExport(const char *name, void *addr);
 void *KXResolve(const char *name);
 
+void KXRegisterKext(kxld_image_info_t *image_info);
+void KXUnregisterKext(kxld_image_info_t *image_info);
+
 #endif /* KXLD_RESOLVE_H */
