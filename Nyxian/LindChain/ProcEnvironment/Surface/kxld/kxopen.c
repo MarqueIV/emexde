@@ -80,19 +80,10 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     }
     
     /* validating header of kext */
-    if(machO->header->filetype != MH_BUNDLE ||
+    if(machO->header->filetype != MH_KEXT_BUNDLE ||
        machO->header->cputype != CPU_TYPE_ARM64)
     {
         errno = ENOEXEC;
-        LCUnmapMachO(machO);
-        return NULL;
-    }
-    
-    /* binary must be signed, otherwise no execution */
-    struct code_signature_command* codeSignatureCommand = findSignatureCommand(machO->header);
-    if(!codeSignatureCommand)
-    {
-        errno = EPERM;
         LCUnmapMachO(machO);
         return NULL;
     }

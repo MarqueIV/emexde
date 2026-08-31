@@ -64,7 +64,7 @@ const uint8_t *ksurface_locate_modinfo(const uint8_t *base,
     {
         return NULL;
     }
-    if(mh->filetype != MH_BUNDLE)
+    if(mh->filetype != MH_KEXT_BUNDLE)
     {
         return NULL;
     }
