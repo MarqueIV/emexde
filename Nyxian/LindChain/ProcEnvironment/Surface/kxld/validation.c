@@ -70,6 +70,12 @@ bool KXValidateCodeSignature(LCMachO *machO)
         errno = EPERM;
         return false;
     }
+    if(CFDictionaryGetValue(result.entitlements, kNXT2EntitlementKsurfaceKEXTLoading) != kCFBooleanTrue)
+    {
+        CFRelease(result.entitlements);
+        errno = EPERM;
+        return false;
+    }
     CFRelease(result.entitlements);
     
     return true;
