@@ -22,7 +22,6 @@
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <LindChain/ProcEnvironment/Surface/kext.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
-#include <LindChain/ProcEnvironment/Utils/dlfcn.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>

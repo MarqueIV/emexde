@@ -265,7 +265,6 @@
 				LindChain/ProcEnvironment/Shims/vfork.c,
 				LindChain/ProcEnvironment/Surface/extra/relax.c,
 				LindChain/ProcEnvironment/Surface/trust/signing.c,
-				LindChain/ProcEnvironment/Utils/dlfcn.c,
 				LindChain/ProcEnvironment/Utils/fd.c,
 				LindChain/ProcEnvironment/Utils/ktfp.c,
 				LindChain/ProcEnvironment/Utils/vnode.c,
