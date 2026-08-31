@@ -133,9 +133,8 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
             @"$(SDKROOT)",
             @"-resource-dir",
             @"$(BSROOT)/Include",
-            @"-L$(BSROOT)/lib",
             @"-I$(SHDROOT)/kernel",
-            @"-DHOST_ENV",  /* kext becomes Nyxian */
+            @"-DHOST_ENV",              /* kext becomes Nyxian */
             
             /* main kext flags */
             @"-bundle",
