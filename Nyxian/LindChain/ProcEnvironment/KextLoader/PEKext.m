@@ -27,6 +27,11 @@
 
 @implementation PEKext
 
+- (BOOL)load
+{
+    return ksurface_kext_load_at_path(self.executablePath.UTF8String, NULL) == KERN_SUCCESS;
+}
+
 - (instancetype)initWithPath:(NSString*)path
 {
     self = [super init];
@@ -144,147 +149,6 @@
     kext.bundleID = @"ksurface";
     kext.version = @"0.11.4";
     return kext;
-}
-
-+ (BOOL)isVersion:(NSString *)version
-       betweenMin:(NSString *)minVersion
-              max:(NSString *)maxVersion
-{
-    if(minVersion)
-    {
-        NSComparisonResult minCheck = [version compare:minVersion options:NSNumericSearch];
-        if(minCheck == NSOrderedAscending)
-        {
-            return NO;
-        }
-    }
-    
-    if(maxVersion)
-    {
-        NSComparisonResult maxCheck = [version compare:maxVersion options:NSNumericSearch];
-        if(maxCheck == NSOrderedDescending)
-        {
-            return NO;
-        }
-    }
-    
-    return YES;
-}
-
-+ (NSArray<PEKext*>*)generateLoadChainForPath:(NSString*)path
-{
-    NSArray<NSString*> *kextPaths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:path error:nil];
-    if(kextPaths == nil)
-    {
-        return nil;
-    }
-    
-    /* getting kexts initially */
-    NSMutableArray<PEKext*> *allKexts = [NSMutableArray array];
-    [allKexts addObject:[PEKext ksurfaceMainKext]];
-    for(NSString *kextPath in kextPaths)
-    {
-        PEKext *kext = [[PEKext alloc] initWithPath:[path stringByAppendingPathComponent:kextPath]];
-        if(kext == nil)
-        {
-            continue;
-        }
-        [allKexts addObject:kext];
-    }
-    
-    /* intiliting map */
-    NSMutableDictionary<NSString *, PEKext *> *kextMap = [NSMutableDictionary dictionary];
-    for(PEKext *kext in allKexts)
-    {
-        kextMap[kext.bundleID] = kext;
-    }
-    
-    BOOL removedAny;
-    do
-    {
-        removedAny = NO;
-        NSArray *currentBundleIDs = [kextMap.allKeys copy];
-        
-        for(NSString *bundleID in currentBundleIDs)
-        {
-            PEKext *kext = kextMap[bundleID];
-            BOOL dependenciesSatisfied = YES;
-            
-            for(PEDependency *dep in kext.dependencies)
-            {
-                PEKext *resolvedDep = kextMap[dep.bundleID];
-                if(!resolvedDep)
-                {
-                    dependenciesSatisfied = NO;
-                    break;
-                }
-                
-                if(![self isVersion:resolvedDep.version betweenMin:dep.minVersion max:dep.maxVersion])
-                {
-                    dependenciesSatisfied = NO;
-                    break;
-                }
-            }
-            
-            if(!dependenciesSatisfied)
-            {
-                [kextMap removeObjectForKey:bundleID];
-                removedAny = YES;
-            }
-        }
-    } while(removedAny);
-    
-    NSMutableDictionary<NSString*,NSNumber*> *inDegree = [NSMutableDictionary dictionary];
-    NSMutableDictionary<NSString*,NSMutableArray<NSString*>*> *dependents = [NSMutableDictionary dictionary];
-    
-    for(PEKext *kext in kextMap.allValues)
-    {
-        inDegree[kext.bundleID] = @(kext.dependencies.count);
-        for(PEDependency *dep in kext.dependencies)
-        {
-            if(!dependents[dep.bundleID])
-            {
-                dependents[dep.bundleID] = [NSMutableArray array];
-            }
-            [dependents[dep.bundleID] addObject:kext.bundleID];
-        }
-    }
-    
-    /* kexts without dependencies shall load first */
-    NSMutableArray<PEKext *> *queue = [NSMutableArray array];
-    for(NSString *bundleID in inDegree)
-    {
-        if([inDegree[bundleID] integerValue] == 0)
-        {
-            [queue addObject:kextMap[bundleID]];
-        }
-    }
-    
-    /* the final load order */
-    NSMutableArray<PEKext *> *loadOrder = [NSMutableArray array];
-    while(queue.count > 0)
-    {
-        PEKext *current = queue.firstObject;
-        [queue removeObjectAtIndex:0];
-        [loadOrder addObject:current];
-        NSArray *dependentIDs = dependents[current.bundleID];
-        for(NSString *depID in dependentIDs)
-        {
-            NSInteger count = [inDegree[depID] integerValue] - 1;
-            inDegree[depID] = @(count);
-            if(count == 0)
-            {
-                [queue addObject:kextMap[depID]];
-            }
-        }
-    }
-    
-    if(loadOrder.count != kextMap.count)
-    {
-        return nil;
-    }
-    
-    return loadOrder;
 }
 
 @end

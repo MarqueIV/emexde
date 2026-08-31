@@ -220,10 +220,9 @@ final class NXBuilder: NSObject {
                     throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to install kext: \(String(cString: mach_error_string(ret)))"])
                 }
                 
-                var key: UInt64 = 0
-                ret = ksurface_fs_load_kext_with_bundleid(self.project.projectConfig.bundleid, &key)
-                if ret != 0 {
-                    throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to inject kext: \(String(cString: mach_error_string(ret)))"])
+                let kext: PEKext = PEKext(path: self.project.bundleURL.path)
+                if kext.load() {
+                    throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to inject kext: unknown"])
                 }
             }
         } else {

@@ -303,7 +303,7 @@ void *ksurface_kext_thread(void *obj)
 kern_return_t ksurface_kext_load_at_path(const char *path,
                                          uint64_t *key)
 {
-    assert(path != NULL && key != NULL);
+    assert(path != NULL);
     
     uint64_t randomKey;
     arc4random_buf(&randomKey, sizeof(randomKey));
@@ -470,7 +470,10 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     
     /* done =3 */
     klog_log("ksurface:kext:load", "successfully initialized kext of %s @ %p", path, loadedHandle);
-    *key = randomKey;
+    if(key)
+    {
+        *key = randomKey;
+    }
     return KERN_SUCCESS;
 }
 

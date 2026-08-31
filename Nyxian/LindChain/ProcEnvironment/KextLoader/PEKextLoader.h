@@ -19,26 +19,12 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PEKEXT_H
-#define PEKEXT_H
+#ifndef PEKEXTLOADER_H
+#define PEKEXTLOADER_H
 
 #import <Foundation/Foundation.h>
-#import <LindChain/ProcEnvironment/KextLoader/PEDependency.h>
+#import <mach/mach.h>
 
-@interface PEKext : NSObject
+BOOL PEKextLoaderLoad(NSMutableString *errorString);
 
-@property (nonatomic,copy) NSString *executablePath;
-@property (nonatomic,copy) NSString *bundlePath;
-@property (nonatomic,copy) NSString *bundleID;
-@property (nonatomic,copy) NSString *version;
-@property (nonatomic,strong) NSArray<PEDependency*> *dependencies;
-
-- (BOOL)load;
-
-- (instancetype)initWithPath:(NSString*)path;
-
-+ (instancetype)ksurfaceMainKext;
-
-@end
-
-#endif /* PEKEXT_H */
+#endif /* PEKEXTLOADER_H */
