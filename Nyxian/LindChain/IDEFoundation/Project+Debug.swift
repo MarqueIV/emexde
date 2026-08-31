@@ -393,7 +393,7 @@ class UIDebugViewController: UITableViewController {
             return
         }
         
-        let fileURL: URL = NXBootstrap.shared().rootURL.appendingPathComponent(object.title)
+        let fileURL = URL(fileURLWithPath: object.title)
         
         if UIDevice.current.userInterfaceIdiom == .pad {
             NotificationCenter.default.post(name: Notification.Name("FileListAct"), object: ["open",fileURL.path,"\(item.sourceLocation.line)","\(item.sourceLocation.column)"])
