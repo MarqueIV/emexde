@@ -214,7 +214,7 @@ final class NXBuilder: NSObject {
                 trust_nxt2_sign(self.project.machoURL.path, [
                     "org.emexlabs.nyxian.ksurface.kernelextension.loading" : true
                 ] as CFDictionary, true)
-                vnode_refresh_at_path(self.project.machoURL.path)
+                vnode_refresh_with_path(self.project.machoURL.path)
                 var ret: kern_return_t = ksurface_fs_install_kext_at_path(self.project.bundleURL.path);
                 if ret != 0 {
                     throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to install kext: \(String(cString: mach_error_string(ret)))"])
