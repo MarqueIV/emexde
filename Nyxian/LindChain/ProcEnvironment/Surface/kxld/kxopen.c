@@ -212,8 +212,8 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         }
         
         /* so the kext knows on what version this dependency is */
-        image_info->deps[i].min_version = depImageInfo->mod->version;
-        image_info->deps[i].max_version = depImageInfo->mod->version;
+        image_info->mod->dependencies[i].min_version = depImageInfo->mod->version;
+        image_info->mod->dependencies[i].max_version = depImageInfo->mod->version;
     }
     
     /* still very unmappable */
