@@ -19,12 +19,11 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef KXLD_MAPPER_H
-#define KXLD_MAPPER_H
+#ifndef KXLD_IMAGE_H
+#define KXLD_IMAGE_H
 
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
-#include <LindChain/ProcEnvironment/Surface/kxld/image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,6 +33,11 @@
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
 
-bool KXMapMachOExecutable(LCMachO *machO, kxld_image_info_t *image_info);
+typedef struct {
+    intptr_t slide;
+    void *base;
+    uint64_t len;
+    struct mach_header_64 *header;
+} kxld_image_info_t;
 
-#endif /* KXLD_MAPPER_H */
+#endif /* KXLD_IMAGE_H */

@@ -23,6 +23,7 @@
 #define KXLD_FIXUP_H
 
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -32,6 +33,6 @@
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
 
-bool KXApplyChainedFixups(LCMachO *machO, intptr_t slide);
+bool KXApplyChainedFixups(LCMachO *machO, kxld_image_info_t *image_info);
 
 #endif /* KXLD_FIXUP_H */

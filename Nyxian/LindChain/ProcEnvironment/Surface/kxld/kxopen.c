@@ -23,6 +23,7 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/validation.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/mapper.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/fixup.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/image.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <stdio.h>
@@ -82,6 +83,15 @@ struct dyld_chained_ptr_64_bind {
     uint64_t bind     :  1;
 };
 
+static void kxdestroy_image(kxld_image_info_t *image_info)
+{
+    if(image_info->base != NULL)
+    {
+        munmap(image_info->base, image_info->len);
+    }
+    free(image_info);
+}
+
 void *kxopen(const char *path,
              int mode)
 {
@@ -138,23 +148,33 @@ void *kxopen_with_fd(int fd,
         return NULL;
     }
     
-    intptr_t kext_slide;
-    if(!KXMapMachOExecutable(machO, &kext_slide))
+    kxld_image_info_t *image_info = calloc(1, sizeof(kxld_image_info_t));
+    if(image_info == NULL)
+    {
+        errno = ENOMEM;
+        LCUnmapMachO(machO);
+        return NULL;
+    }
+    
+    bool success = KXMapMachOExecutable(machO, image_info);
+    LCUnmapMachO(machO);
+    if(!success)
     {
         /* sets errno */
-        LCUnmapMachO(machO);
+        kxdestroy_image(image_info);
         return NULL;
     }
     
     /* now let the fixup */
-    if(!KXApplyChainedFixups(machO, kext_slide))
+    if(!KXApplyChainedFixups(machO, image_info))
     {
         /* sets errno */
-        LCUnmapMachO(machO);
+        kxdestroy_image(image_info);
         return NULL;
     }
     
     /* own linker is WIP */
+    kxdestroy_image(image_info);
     errno = ENOTSUP;
     return NULL;
 }

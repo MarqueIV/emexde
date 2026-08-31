@@ -22,7 +22,7 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/fixup.h>
 
 bool KXApplyChainedFixups(LCMachO *machO,
-                          intptr_t slide)
+                          kxld_image_info_t *image_info)
 {
     return true;
 }

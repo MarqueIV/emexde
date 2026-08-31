@@ -22,7 +22,7 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/mapper.h>
 
 bool KXMapMachOExecutable(LCMachO *machO,
-                          intptr_t *slide)
+                          kxld_image_info_t *image_info)
 {
     /* how much memory does this kext need? */
     uintptr_t vmStart = UINT64_MAX;
@@ -43,18 +43,18 @@ bool KXMapMachOExecutable(LCMachO *machO,
         }
         ptr += sc->cmdsize;
     }
-    size_t totalSize = vmEnd - vmStart;
     
     /* allocating the memory needed by the segments of the kext (aka address space reservation) */
-    void *base = mmap(NULL, totalSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
-    if(base == MAP_FAILED)
+    image_info->len = vmEnd - vmStart;
+    image_info->base = mmap(NULL, image_info->len, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    if(image_info->base == MAP_FAILED)
     {
         LCUnmapMachO(machO);
-        return NULL;
+        return false;
     }
     
     /* calculating slide of kext */
-    intptr_t kext_slide = (intptr_t)base - (intptr_t)vmStart;
+    image_info->slide = (intptr_t)image_info->base - (intptr_t)vmStart;
     
     /* now mapping executable memory on iOS the valid way */
     off_t sliceOffset = (void*)machO->header - machO->map;
@@ -70,7 +70,7 @@ bool KXMapMachOExecutable(LCMachO *machO,
             }
             
             /* now a lot of math ^^ */
-            void *addr = (void *)(sc->vmaddr + kext_slide);
+            void *addr = (void *)(sc->vmaddr + image_info->slide);
             off_t fileOff = sliceOffset + sc->fileoff;
             int prot = 0;
             if(sc->initprot & VM_PROT_READ)
@@ -120,6 +120,8 @@ bool KXMapMachOExecutable(LCMachO *machO,
         }
         ptr += sc->cmdsize;
     }
+    
+    image_info->header = image_info->base;
     
     return true;
 }

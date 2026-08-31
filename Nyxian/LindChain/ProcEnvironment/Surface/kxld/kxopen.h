@@ -19,12 +19,12 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef KXOPEN_H
-#define KXOPEN_H
+#ifndef KXLD_KXOPEN_H
+#define KXLD_KXOPEN_H
 
 #include <stdio.h>
 
 void *kxopen(const char *path, int mode);
 void *kxopen_with_fd(int fd, int mode);
 
-#endif /* KXOPEN_H */
+#endif /* KXLD_KXOPEN_H */
