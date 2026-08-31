@@ -27,7 +27,8 @@ BOOL NXCodeTemplateMakeProjectStructure(NXProjectScheme scheme,
                                         NXProjectLanguage language,
                                         NXProjectInterface interface,
                                         NSString *projectName,
-                                        NSURL *projectURL)
+                                        NSURL *projectURL,
+                                        NSString *bundleIdentifier)
 {
     assert(scheme != nil && language != nil);
     
@@ -47,7 +48,8 @@ BOOL NXCodeTemplateMakeProjectStructure(NXProjectScheme scheme,
     }
     
     NSDictionary<NSString*,NSString*> *variables = @{
-        @"LDEDisplayName": projectName
+        @"LDEDisplayName": projectName,
+        @"NXBundleIdentifier": bundleIdentifier,
     };
     
     for(NSURL *srcURL in folderEntries)
