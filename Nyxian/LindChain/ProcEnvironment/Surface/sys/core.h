@@ -24,15 +24,26 @@
 #define SYS_CORE_H
 
 #include <LindChain/ProcEnvironment/Surface/sys/worker.h>
+#include <os/lock.h>
 
 #define SYSCALL_QUEUE_LIMIT     32
 #define SYSCALL_HANDLERS_LIMIT  1024
 
-typedef struct syscall_server syscall_server_t;
+struct syscall_server {
+    mach_port_t port;
+    pthread_t *threads;
+    int threads_cnt;
+    atomic_flag init_once;
+    os_unfair_lock lock;
+    syscall_handler_t handlers[SYSCALL_HANDLERS_LIMIT];
+};
 
 syscall_server_t *syscall_server_create(void);
 int syscall_server_start(syscall_server_t *server);
-mach_port_t syscall_server_get_port(syscall_server_t *server);
+
 void syscall_server_register(syscall_server_t *server, uint32_t syscall_num, syscall_handler_t handler);
+syscall_handler_t syscall_server_get_handler(syscall_server_t *server, uint32_t syscall_num);
+
+mach_port_t syscall_server_get_port(syscall_server_t *server);
 
 #endif /* SYS_CORE_H */

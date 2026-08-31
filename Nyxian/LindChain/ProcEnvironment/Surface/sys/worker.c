@@ -21,6 +21,7 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/sys/worker.h>
+#include <LindChain/ProcEnvironment/Surface/sys/core.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #include <LindChain/ProcEnvironment/Shims/panic.h>
 #include <pthread.h>
@@ -29,15 +30,6 @@
 #include <stdio.h>
 #include <errno.h>
 #include <assert.h>
-
-#define MAX_SYSCALLS 1024
-
-struct syscall_server {
-    mach_port_t port;
-    pthread_t *threads;
-    int threads_cnt;
-    syscall_handler_t handlers[MAX_SYSCALLS];
-};
 
 /*
  * To ensure safety in nyxian we rely on the XNU kernel,
@@ -255,10 +247,12 @@ void* syscall_worker(void *ctx)
         syscall_handler_t handler = NULL;
         
         /* checking syscall bounds */
-        if(req->syscall_num < MAX_SYSCALLS)
+        os_unfair_lock_lock(&server->lock);
+        if(req->syscall_num < SYSCALL_HANDLERS_LIMIT)
         {
             handler = server->handlers[req->syscall_num];
         }
+        os_unfair_lock_unlock(&server->lock);
         
         /* checking if the handler was set by the kernel virtualisation layer */
         if(!handler)

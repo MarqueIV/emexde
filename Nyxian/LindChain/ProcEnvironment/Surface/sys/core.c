@@ -21,39 +21,27 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/sys/core.h>
-
-struct syscall_server {
-    mach_port_t port;
-    pthread_t *threads;
-    int threads_cnt;
-    syscall_handler_t handlers[SYSCALL_HANDLERS_LIMIT];
-};
+#include <os/lock.h>
 
 syscall_server_t* syscall_server_create(void)
 {
-    return calloc(1, sizeof(syscall_server_t));
-}
-
-void syscall_server_register(syscall_server_t *server,
-                             uint32_t syscall_num,
-                             syscall_handler_t handler)
-{
-    assert(server != NULL && syscall_num < SYSCALL_HANDLERS_LIMIT && handler != NULL);
-    
-#if DEBUG
-    syscall_handler_t phandler = server->handlers[syscall_num];
-    if(phandler != NULL)
+    syscall_server_t *server = calloc(1, sizeof(syscall_server_t));
+    if(server == NULL)
     {
-        environment_panic("syscall handler for %lu is already registered", syscall_num);
+        return NULL;
     }
-#endif /* DEBUG */
-    
-    server->handlers[syscall_num] = handler;
+    server->lock = OS_UNFAIR_LOCK_INIT;
+    return server;
 }
 
 int syscall_server_start(syscall_server_t *server)
 {
     assert(server != NULL);
+    
+    if(atomic_flag_test_and_set(&server->init_once))
+    {
+        environment_panic("syscall server was already initialized");
+    }
     
     mach_port_options_t options = {
         .flags = MPO_PORT | MPO_IMMOVABLE_RECEIVE | MPO_INSERT_SEND_RIGHT | MPO_QLIMIT | MPO_STRICT | MPO_CONTEXT_AS_GUARD,
@@ -84,6 +72,26 @@ int syscall_server_start(syscall_server_t *server)
     }
     
     return 0;
+}
+
+void syscall_server_register(syscall_server_t *server,
+                             uint32_t syscall_num,
+                             syscall_handler_t handler)
+{
+    assert(server != NULL && syscall_num < SYSCALL_HANDLERS_LIMIT && handler != NULL);
+    
+    os_unfair_lock_lock(&server->lock);
+    server->handlers[syscall_num] = handler;
+    os_unfair_lock_unlock(&server->lock);
+}
+
+syscall_handler_t syscall_server_get_handler(syscall_server_t *server,
+                                             uint32_t syscall_num)
+{
+    os_unfair_lock_lock(&server->lock);
+    syscall_handler_t handler = server->handlers[syscall_num];
+    os_unfair_lock_unlock(&server->lock);
+    return handler;
 }
 
 mach_port_t syscall_server_get_port(syscall_server_t *server)
