@@ -1,0 +1,81 @@
+/*
+ SPDX-License-Identifier: AGPL-3.0-or-later
+
+ Copyright (C) 2025 - 2026 emexlab
+
+ This file is part of Nyxian.
+
+ Nyxian is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Nyxian is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include <LindChain/ProcEnvironment/Surface/kxld/resolve.h>
+#include <LindChain/ProcEnvironment/Surface/radix/radix.h>
+#include <dlfcn.h>
+#include <os/lock.h>
+
+static radix_tree_t g_kext_symbol_tree = { 0 };
+static os_unfair_lock g_kext_symbol_lock = OS_UNFAIR_LOCK_INIT;
+
+static uint64_t KXSymbolKey(const char *name)
+{
+    uint64_t h = 1469598103934665603ULL;
+    for(const uint8_t *p = (const uint8_t *)name; *p; p++)
+    {
+        h ^= *p;
+        h *= 1099511628203ULL;
+    }
+    return h;
+}
+
+void KXRegisterExport(const char *name,
+                      void *addr)
+{
+    os_unfair_lock_lock(&g_kext_symbol_lock);
+    uint64_t key = KXSymbolKey(name);
+    kx_export_t *symbol = radix_remove(&g_kext_symbol_tree, key);
+    if(symbol != NULL)
+    {
+        free(symbol->name);
+        free(symbol);
+    }
+    symbol = malloc(sizeof(*symbol));
+    symbol->name = strdup(name);
+    if(symbol->name == NULL)
+    {
+        os_unfair_lock_unlock(&g_kext_symbol_lock);
+        return;
+    }
+    symbol->addr = addr;
+    radix_insert(&g_kext_symbol_tree, key, symbol);
+    os_unfair_lock_unlock(&g_kext_symbol_lock);
+}
+
+void *KXResolve(const char *name)
+{
+    os_unfair_lock_lock(&g_kext_symbol_lock);
+    if(!name)
+    {
+        os_unfair_lock_unlock(&g_kext_symbol_lock);
+        return NULL;
+    }
+    const char *lookup = (name[0] == '_') ? name + 1 : name;
+    kx_export_t *e = radix_lookup(&g_kext_symbol_tree, KXSymbolKey(lookup));
+    if(e && strcmp(e->name, lookup) == 0)
+    {
+        os_unfair_lock_unlock(&g_kext_symbol_lock);
+        return e->addr;
+    }
+    os_unfair_lock_unlock(&g_kext_symbol_lock);
+    return dlsym(RTLD_DEFAULT, lookup);
+}
