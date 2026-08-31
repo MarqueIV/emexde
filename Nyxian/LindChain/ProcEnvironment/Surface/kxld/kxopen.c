@@ -20,6 +20,9 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/validation.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/mapper.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/fixup.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <stdio.h>
@@ -31,32 +34,52 @@
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
 
-extern struct code_signature_command* findSignatureCommand(struct mach_header_64* header);
-
-struct code_signature_command {
-    uint32_t    cmd;
-    uint32_t    cmdsize;
-    uint32_t    dataoff;
-    uint32_t    datasize;
+struct dyld_chained_fixups_header {
+    uint32_t fixups_version;   // 0
+    uint32_t starts_offset;    // → dyld_chained_starts_in_image
+    uint32_t imports_offset;   // → imports table
+    uint32_t symbols_offset;   // → symbol string pool
+    uint32_t imports_count;
+    uint32_t imports_format;   // DYLD_CHAINED_IMPORT (1) usually
+    uint32_t symbols_format;   // 0 = uncompressed
 };
 
-// from zsign
-struct ui_CS_BlobIndex {
-    uint32_t type;                    /* type of entry */
-    uint32_t offset;                /* offset of entry */
+/*
+struct dyld_chained_starts_in_image {
+    uint32_t seg_count;
+    uint32_t seg_info_offset[/* seg_count *///];  // per-segment; 0 = no fixups
+/*};
+
+struct dyld_chained_starts_in_segment {
+    uint32_t size;
+    uint16_t page_size;         // 0x4000 on iOS
+    uint16_t pointer_format;    // DYLD_CHAINED_PTR_64 == 2 for you
+    uint64_t segment_offset;    // seg's file offset, relative to image base
+    uint32_t max_valid_pointer;
+    uint16_t page_count;
+    uint16_t page_start[/* page_count *//*];  // first fixup offset in each page
+};*/
+
+struct dyld_chained_import {
+    uint32_t lib_ordinal :  8;
+    uint32_t weak_import :  1;
+    uint32_t name_offset : 23;
 };
 
-struct ui_CS_SuperBlob {
-    uint32_t magic;                    /* magic number */
-    uint32_t length;                /* total length of SuperBlob */
-    uint32_t count;                    /* number of index entries following */
-    //CS_BlobIndex index[];            /* (count) entries */
-    /* followed by Blobs in no particular order as indicated by offsets in index */
+struct dyld_chained_ptr_64_rebase {
+    uint64_t target   : 36;
+    uint64_t high8    :  8;
+    uint64_t reserved :  7;
+    uint64_t next     : 12;
+    uint64_t bind     :  1;
 };
 
-struct ui_CS_blob {
-    uint32_t magic;
-    uint32_t length;
+struct dyld_chained_ptr_64_bind {
+    uint64_t ordinal  : 24;
+    uint64_t addend   :  8;
+    uint64_t reserved : 19;
+    uint64_t next     : 12;
+    uint64_t bind     :  1;
 };
 
 void *kxopen(const char *path,
@@ -89,15 +112,9 @@ void *kxopen_with_fd(int fd,
         return NULL;
     }
     
-    if(machO->header->filetype != MH_BUNDLE)
-    {
-        errno = ENOEXEC;
-        LCUnmapMachO(machO);
-        return NULL;
-    }
-    
-    /* XNU code signature validation (does the kernel like us ^^) */
-    if(machO->header->cputype != CPU_TYPE_ARM64)
+    /* validating header of kext */
+    if(machO->header->filetype != MH_BUNDLE ||
+       machO->header->cputype != CPU_TYPE_ARM64)
     {
         errno = ENOEXEC;
         LCUnmapMachO(machO);
@@ -113,129 +130,28 @@ void *kxopen_with_fd(int fd,
         return NULL;
     }
     
-    /* checking if the kernel says this is signed */
-    off_t sliceOffset = (void*)machO->header - machO->map;
-    fsignatures_t siginfo;
-    siginfo.fs_file_start = sliceOffset;
-    siginfo.fs_blob_start = (void*)(long)(codeSignatureCommand->dataoff);
-    siginfo.fs_blob_size = codeSignatureCommand->datasize;
-    int addFileSigsReault = fcntl(machO->fd, F_ADDFILESIGS_RETURN, &siginfo);
-    if(addFileSigsReault == -1)
+    /* checking if the kernel says(double meaning x3) this is signed */
+    if(!KXValidateCodeSignature(machO))
     {
-        errno = EPERM;
+        /* sets errno */
         LCUnmapMachO(machO);
         return NULL;
     }
     
-    /* checking if this can be executed by us */
-    fchecklv_t checkInfo;
-    checkInfo.lv_error_message_size = 0;
-    checkInfo.lv_error_message = NULL;
-    checkInfo.lv_file_start= sliceOffset;
-    int checkLVresult = fcntl(machO->fd, F_CHECK_LV, &checkInfo);
-    if(checkLVresult != 0)
+    intptr_t kext_slide;
+    if(!KXMapMachOExecutable(machO, &kext_slide))
     {
-        errno = EPERM;
+        /* sets errno */
         LCUnmapMachO(machO);
         return NULL;
     }
     
-    /* how much memory does this kext need? */
-    uintptr_t vmStart = UINT64_MAX;
-    uintptr_t vmEnd = 0;
-    const uint8_t *ptr = ((const uint8_t *)machO->header) + sizeof(struct mach_header_64);
-    uint64_t ncmds = machO->header->ncmds;
-    for(uint32_t i = 0; i < ncmds; i++)
+    /* now let the fixup */
+    if(!KXApplyChainedFixups(machO, kext_slide))
     {
-        const struct segment_command_64 *sc = (const struct segment_command_64 *)ptr;
-        if(sc->cmd == LC_SEGMENT_64)
-        {
-            if(sc->vmsize == 0)
-            {
-                continue;
-            }
-            vmStart = MIN(vmStart, sc->vmaddr);
-            vmEnd = MAX(vmEnd, sc->vmaddr + sc->vmsize);
-        }
-        ptr += sc->cmdsize;
-    }
-    size_t totalSize = vmEnd - vmStart;
-    
-    /* allocating the memory needed by the segments of the kext (aka address space reservation) */
-    void *base = mmap(NULL, totalSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0);
-    if(base == MAP_FAILED)
-    {
+        /* sets errno */
         LCUnmapMachO(machO);
         return NULL;
-    }
-    
-    /* calculating slide of kext */
-    intptr_t kext_slide = (intptr_t)base - (intptr_t)vmStart;
-    
-    /* now mapping executable memory on iOS the valid way */
-    ptr = ((const uint8_t *)machO->header) + sizeof(struct mach_header_64);
-    for(uint32_t i = 0; i < ncmds; i++)
-    {
-        const struct segment_command_64 *sc = (const struct segment_command_64 *)ptr;
-        if(sc->cmd == LC_SEGMENT_64)
-        {
-            if(sc->vmsize == 0)
-            {
-                continue;
-            }
-            
-            /* now a lot of math ^^ */
-            void *addr = (void *)(sc->vmaddr + kext_slide);
-            off_t fileOff = sliceOffset + sc->fileoff;
-            int prot = 0;
-            if(sc->initprot & VM_PROT_READ)
-            {
-                prot |= PROT_READ;
-            }
-            if(sc->initprot & VM_PROT_WRITE)
-            {
-                prot |= PROT_WRITE;
-            }
-            if(sc->initprot & VM_PROT_EXECUTE)
-            {
-                prot |= PROT_EXEC;
-            }
-            
-            int flags = (sc->initprot & VM_PROT_WRITE) ? (MAP_PRIVATE | MAP_FIXED) : (MAP_SHARED  | MAP_FIXED);
-            
-            /* the everything part */
-            if(sc->filesize > 0)
-            {
-                void *r = mmap(addr, sc->filesize, prot, flags, machO->fd, fileOff);
-                if(r == MAP_FAILED)
-                {
-                    LCUnmapMachO(machO);
-                    return NULL;
-                }
-            }
-            
-            /* the bss part */
-            size_t pageSize = vm_page_size;
-            if(sc->vmsize > sc->filesize)
-            {
-                /* I love tails >~< */
-                uintptr_t fileEnd = (uintptr_t)addr + sc->filesize;
-                uintptr_t bssStart = (fileEnd + pageSize - 1) & ~(pageSize - 1);
-                uintptr_t bssEnd = (uintptr_t)addr + sc->vmsize;
-                bssEnd = (bssEnd + pageSize - 1) & ~(pageSize - 1);
-                
-                if(bssEnd > bssStart)
-                {
-                    void *r = mmap((void *)bssStart, bssEnd - bssStart, prot, MAP_PRIVATE | MAP_FIXED | MAP_ANON, -1, 0);
-                    if(r == MAP_FAILED)
-                    {
-                        LCUnmapMachO(machO);
-                        return NULL;
-                    }
-                }
-            }
-        }
-        ptr += sc->cmdsize;
     }
     
     /* own linker is WIP */
