@@ -195,6 +195,7 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
         return nil;
     }
     
+    NSMutableSet<NSString *> *failed = [NSMutableSet set];
     for(PEKext *kext in loadOrder)
     {
         if([kext.bundleID isEqualToString:@"ksurface"])
@@ -202,8 +203,34 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
             /* we are ksurface */
             continue;
         }
+        
+        NSString *blockedBy = nil;
+        for(PEDependency *dep in kext.dependencies)
+        {
+            if([failed containsObject:dep.bundleID])
+            {
+                blockedBy = dep.bundleID;
+                break;
+            }
+        }
+        
+        if(blockedBy)
+        {
+            [failed addObject:kext.bundleID];
+            if(errorString)
+            {
+                if(errorString.length > 0)
+                {
+                    [errorString appendString:@"\n\n"];
+                }
+                [errorString appendFormat:@"Kext '%@' was not loaded because its dependency '%@' failed to load.", kext.bundleID, blockedBy];
+            }
+            continue;
+        }
+        
         if(![kext load])
         {
+            [failed addObject:kext.bundleID];
             if(errorString)
             {
                 if(errorString.length > 0)
