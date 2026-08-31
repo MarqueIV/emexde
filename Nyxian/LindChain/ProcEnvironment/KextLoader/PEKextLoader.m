@@ -228,7 +228,8 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
             continue;
         }
         
-        if(![kext load])
+        kern_return_t kr = [kext load];
+        if(kr != KERN_SUCCESS)
         {
             [failed addObject:kext.bundleID];
             if(errorString)
@@ -237,7 +238,7 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
                 {
                     [errorString appendString:@"\n\n"];
                 }
-                [errorString appendFormat:@"Kext '%@' failed to load.", kext.bundleID];
+                [errorString appendFormat:@"Kext '%@' failed to load: %s.", kext.bundleID, mach_error_string(kr)];
             }
         }
     }

@@ -27,9 +27,9 @@
 
 @implementation PEKext
 
-- (BOOL)load
+- (kern_return_t)load
 {
-    return ksurface_kext_load_at_path(self.executablePath.UTF8String, NULL) == KERN_SUCCESS;
+    return ksurface_kext_load_at_path(self.executablePath.UTF8String, NULL);
 }
 
 - (instancetype)initWithPath:(NSString*)path

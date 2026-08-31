@@ -33,7 +33,7 @@
 @property (nonatomic,copy) NSString *version;
 @property (nonatomic,strong) NSArray<PEDependency*> *dependencies;
 
-- (BOOL)load;
+- (kern_return_t)load;
 
 - (instancetype)initWithPath:(NSString*)path;
 

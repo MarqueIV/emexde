@@ -221,8 +221,9 @@ final class NXBuilder: NSObject {
                 }
                 
                 let kext: PEKext = PEKext(path: self.project.bundleURL.path)
-                if kext.load() {
-                    throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to inject kext: unknown"])
+                ret = kext.load()
+                if ret != 0 {
+                    throw NSError(domain: "com.cr4zy.nyxian.builder.install", code: 1, userInfo: [NSLocalizedDescriptionKey:"Failed to inject kext: \(String(cString: mach_error_string(ret)))"])
                 }
             }
         } else {
