@@ -72,7 +72,7 @@
          <EnvironmentVariable
             key = "FORCE_DISABLE_KEXT_LOADING"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>

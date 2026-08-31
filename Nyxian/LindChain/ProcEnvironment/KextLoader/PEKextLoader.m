@@ -58,7 +58,7 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
         {
             if(errorString.length > 0)
             {
-                [errorString appendString:@"\n"];
+                [errorString appendString:@"\n\n"];
             }
             [errorString appendFormat:@"Couldn't find kexts in kextfs: \"%@\".", error.localizedDescription];
         }
@@ -78,7 +78,7 @@ BOOL PEKextLoaderLoad(NSMutableString *errorString)
             {
                 if(errorString.length > 0)
                 {
-                    [errorString appendString:@"\n"];
+                    [errorString appendString:@"\n\n"];
                 }
                 [errorString appendFormat:@"Failed to parse kext for path: %@.", fullKextPath];
             }

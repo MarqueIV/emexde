@@ -138,7 +138,7 @@ NSArray<NSString*> *NXCompilerFlagsForCodeTemplateLanguage(NXProjectSchemeKind s
             @"-DHOST_ENV",  /* kext becomes Nyxian */
             
             /* main kext flags */
-            @"-shared",
+            @"-bundle",
             @"-ffreestanding",
             @"-fno-builtin",
             @"-fno-common",
