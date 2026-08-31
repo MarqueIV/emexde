@@ -1,0 +1,92 @@
+/*
+ SPDX-License-Identifier: AGPL-3.0-or-later
+
+ Copyright (C) 2025 - 2026 emexlab
+ Copyright (C) 2026 semvis123
+
+ This file is part of Nyxian.
+
+ Nyxian is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ Nyxian is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+#include <LindChain/ProcEnvironment/Surface/sys/core.h>
+
+struct syscall_server {
+    mach_port_t port;
+    pthread_t *threads;
+    int threads_cnt;
+    syscall_handler_t handlers[SYSCALL_HANDLERS_LIMIT];
+};
+
+syscall_server_t* syscall_server_create(void)
+{
+    return calloc(1, sizeof(syscall_server_t));
+}
+
+void syscall_server_register(syscall_server_t *server,
+                             uint32_t syscall_num,
+                             syscall_handler_t handler)
+{
+    assert(server != NULL && syscall_num < SYSCALL_HANDLERS_LIMIT && handler != NULL);
+    
+#if DEBUG
+    syscall_handler_t phandler = server->handlers[syscall_num];
+    if(phandler != NULL)
+    {
+        environment_panic("syscall handler for %lu is already registered", syscall_num);
+    }
+#endif /* DEBUG */
+    
+    server->handlers[syscall_num] = handler;
+}
+
+int syscall_server_start(syscall_server_t *server)
+{
+    assert(server != NULL);
+    
+    mach_port_options_t options = {
+        .flags = MPO_PORT | MPO_IMMOVABLE_RECEIVE | MPO_INSERT_SEND_RIGHT | MPO_QLIMIT | MPO_STRICT | MPO_CONTEXT_AS_GUARD,
+        .mpl = SYSCALL_QUEUE_LIMIT,
+    };
+    
+    uint64_t guard_value;
+    arc4random_buf(&guard_value, sizeof(guard_value));
+    kern_return_t kr = mach_port_construct(mach_task_self(), &options, guard_value, &server->port);
+    guard_value = 0;    /* destroyed so nobody can even find it on the stack ever */
+    if(kr != KERN_SUCCESS)
+    {
+        mach_port_deallocate(mach_task_self(), server->port);
+        return -1;
+    }
+    
+    extern int CCGetMaximumPerformanceCores(void);
+    server->threads_cnt = (int)CCGetMaximumPerformanceCores();
+    if(server->threads_cnt == 0)
+    {
+        environment_panic("got 0 return from CCGetMaximumPerformanceCores()");
+    }
+    server->threads = calloc(server->threads_cnt, sizeof(pthread_t));
+    
+    for(int i = 0; i < server->threads_cnt; i++)
+    {
+        pthread_create(&server->threads[i], NULL, syscall_worker, server);
+    }
+    
+    return 0;
+}
+
+mach_port_t syscall_server_get_port(syscall_server_t *server)
+{
+    return server->port;
+}

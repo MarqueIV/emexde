@@ -2,6 +2,7 @@
  SPDX-License-Identifier: AGPL-3.0-or-later
 
  Copyright (C) 2025 - 2026 emexlab
+ Copyright (C) 2026 semvis123
 
  This file is part of Nyxian.
 
@@ -19,21 +20,19 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef PAYLOAD_H
-#define PAYLOAD_H
+#ifndef SYS_CORE_H
+#define SYS_CORE_H
 
-#include <mach/mach.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include <LindChain/ProcEnvironment/Surface/sys/worker.h>
 
-typedef void* userspace_pointer_t;
-typedef void* kernelspace_pointer_t;
+#define SYSCALL_QUEUE_LIMIT     32
+#define SYSCALL_HANDLERS_LIMIT  1024
 
-kern_return_t mach_syscall_payload_create(void *ptr, size_t size, vm_address_t *vm_address);
+typedef struct syscall_server syscall_server_t;
 
-bool mach_syscall_copy_in(task_t task, size_t size, kernelspace_pointer_t kptr, userspace_pointer_t src);
-kernelspace_pointer_t mach_syscall_alloc_in(task_t task, size_t size, userspace_pointer_t src);
-bool mach_syscall_copy_out(task_t task, size_t size, kernelspace_pointer_t kptr, userspace_pointer_t dst);
-char *mach_syscall_copy_str_in(task_t task, userspace_pointer_t src, size_t len);
+syscall_server_t *syscall_server_create(void);
+int syscall_server_start(syscall_server_t *server);
+mach_port_t syscall_server_get_port(syscall_server_t *server);
+void syscall_server_register(syscall_server_t *server, uint32_t syscall_num, syscall_handler_t handler);
 
-#endif /* PAYLOAD_H */
+#endif /* SYS_CORE_H */
