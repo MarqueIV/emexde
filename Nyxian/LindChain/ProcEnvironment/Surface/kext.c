@@ -25,6 +25,7 @@
 #include <LindChain/ProcEnvironment/Utils/dlfcn.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <stdlib.h>
@@ -49,9 +50,9 @@ static bool range_ok(uint64_t off,
     return len <= total && off <= total - len;
 }
 
-static const uint8_t *ksurface_locate_modinfo(const uint8_t *base,
-                                              size_t size,
-                                              uint64_t *out_len)
+const uint8_t *ksurface_locate_modinfo(const uint8_t *base,
+                                       size_t size,
+                                       uint64_t *out_len)
 {
     if(size < sizeof(struct mach_header_64))
     {
@@ -63,7 +64,7 @@ static const uint8_t *ksurface_locate_modinfo(const uint8_t *base,
     {
         return NULL;
     }
-    if(mh->filetype != MH_DYLIB && mh->filetype != MH_BUNDLE)
+    if(mh->filetype != MH_BUNDLE)
     {
         return NULL;
     }
@@ -260,7 +261,7 @@ void ksurface_kext_free_deps(kmod_dependency_t *deps)
 
 typedef struct {
     uint64_t key;
-    void *handle;
+    kxld_image_info_t *image_info;
     const kinfo_mod_t *mod;
 } kext_object_t;
 
@@ -269,7 +270,7 @@ void *ksurface_kext_thread(void *obj)
     kext_object_t *kext_object = (kext_object_t*)obj;
     
     /* invoking kextension start */
-    klog_log("ksurface:kext:thread", "[%p] spinning up kext", kext_object->handle);
+    klog_log("ksurface:kext:thread", "[%p] spinning up kext", kext_object->image_info);
     kext_object->mod->start();
     if(!(kext_object->mod->flags & KMOD_FLAG_PERSISTENT))
     {
@@ -282,7 +283,7 @@ void *ksurface_kext_thread(void *obj)
             /* kext was already removed */
             return NULL;
         }
-        klog_log("ksurface:kext:thread", "[%p] removing kext", kext_object->handle);
+        klog_log("ksurface:kext:thread", "[%p] removing kext", kext_object->image_info);
         
         kext_object->mod->stop();
         if(kext_object->mod->deinit)
@@ -293,7 +294,7 @@ void *ksurface_kext_thread(void *obj)
                 environment_panic("kext with key %llu failed to deinitialize: %s", kext_object->key, mach_error_string(kr));
             }
         }
-        dlclose(kext_object->handle);
+        kxclose(kext_object->image_info);
         free(kext_object);
     }
     
@@ -355,37 +356,23 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
         return KERN_DENIED;
     }
     
-    /* finding out if this is already loaded */
-    void *loadedHandle = dlopen_from_fd(machO->fd, RTLD_NOLOAD | RTLD_EXACT_PATH);
-    if(loadedHandle != NULL)
+    /* loading kernel extension into address space */
+    kxld_image_info_t *image_info = kxopen_with_fd(machO->fd, 0);
+    if(image_info == NULL)
     {
-        klog_log("ksurface:kext:load", "kext %s is already loaded", path);
-        dlclose(loadedHandle);  /* dropping the refcount back */
+        klog_log("ksurface:kext:load", "kext %s couldn't be loaded", path);
+        kxclose(image_info);
         kext_table_unlock();
         LCUnmapMachO(machO);
         return KERN_NAME_EXISTS;
     }
     
-    /* loading kernel extension into address space */
-    loadedHandle = dlopen_from_fd(machO->fd, RTLD_LAZY | RTLD_EXACT_PATH);
-    LCUnmapMachO(machO);
-    if(loadedHandle == NULL)
-    {
-        klog_log("ksurface:kext:load", "failed to load handle: %s", dlerror());
-        kext_table_unlock();
-        return KERN_INVALID_ARGUMENT;
-    }
-    else
-    {
-        klog_log("ksurface:kext:load", "got handle for kext @ %p", loadedHandle);
-    }
-    
     /* checking if extension has what is necessary */
-    const kinfo_mod_t *liveMod = dlsym(loadedHandle, "ksurface_kext_info");
+    const kinfo_mod_t *liveMod = &image_info->mod;
     if(liveMod == NULL)
     {
         klog_log("ksurface:kext:load", "start or exit symbols are missing in kext, cannot continue loading");
-        dlclose(loadedHandle);
+        kxclose(image_info);
         kext_table_unlock();
         return KERN_INVALID_OBJECT;
     }
@@ -397,7 +384,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
         if(kr != KERN_SUCCESS)
         {
             klog_log("ksurface:kext:load", "kext @ %s, had a failure initializing: %s", path, mach_error_string(kr));
-            dlclose(loadedHandle);
+            kxclose(image_info);
             kext_table_unlock();
             return kr;
         }
@@ -416,13 +403,13 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
             }
         }
         klog_log("ksurface:kext:load", "failed to allocate kext object");
-        dlclose(loadedHandle);
+        kxclose(image_info);
         kext_table_unlock();
         return KERN_NO_SPACE;
     }
     
     object->key = randomKey;
-    object->handle = loadedHandle;
+    object->image_info = image_info;
     object->mod = liveMod;
     
     /* inserting kext object */
@@ -438,7 +425,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
         }
         klog_log("ksurface:kext:load", "failed to insert kext object into radix tree");
         free(object);
-        dlclose(loadedHandle);
+        kxclose(image_info);
         kext_table_unlock();
         return KERN_FAILURE;
     }
@@ -460,7 +447,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
             radix_remove(&(ksurface->kext_info.kexts), *key);
             klog_log("ksurface:kext:load", "failed start thread for kext object");
             free(object);
-            dlclose(loadedHandle);
+            kxclose(image_info);
             kext_table_unlock();
             return KERN_FAILURE;
         }
@@ -469,7 +456,7 @@ kern_return_t ksurface_kext_load_at_path(const char *path,
     kext_table_unlock();
     
     /* done =3 */
-    klog_log("ksurface:kext:load", "successfully initialized kext of %s @ %p", path, loadedHandle);
+    klog_log("ksurface:kext:load", "successfully initialized kext of %s @ %p", path, image_info);
     if(key)
     {
         *key = randomKey;
@@ -493,7 +480,7 @@ kern_return_t ksurface_kext_unload_with_key(uint64_t key)
     }
     else
     {
-        klog_log("ksurface:kext:unload", "found kext object with handle @ %p", found->handle);
+        klog_log("ksurface:kext:unload", "found kext object with handle @ %p", found->image_info);
     }
     
     if(!(found->mod->flags & KMOD_FLAG_PERSISTENT))
@@ -517,7 +504,7 @@ kern_return_t ksurface_kext_unload_with_key(uint64_t key)
                 environment_panic("kext with key %llu failed to deinitialize: %s", found->key, mach_error_string(kr));
             }
         }
-        dlclose(found->handle);
+        kxclose(found->image_info);
         free(found);
         return KERN_SUCCESS;
     }
@@ -528,6 +515,6 @@ kern_return_t ksurface_kext_unload_with_key(uint64_t key)
     }
     
     
-    klog_log("ksurface:kext:unload", "successfully unloaded kext obect handle @ %p", found->handle);
+    klog_log("ksurface:kext:unload", "successfully unloaded kext obect handle @ %p", found->image_info);
     return KERN_NOT_FOUND;
 }

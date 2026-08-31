@@ -31,17 +31,19 @@ bool KXMapMachOExecutable(LCMachO *machO,
     uint64_t ncmds = machO->header->ncmds;
     for(uint32_t i = 0; i < ncmds; i++)
     {
-        const struct segment_command_64 *sc = (const struct segment_command_64 *)ptr;
-        if(sc->cmd == LC_SEGMENT_64)
+        const struct load_command *lc = (const struct load_command *)ptr;
+        if(lc->cmd == LC_SEGMENT_64)
         {
+            const struct segment_command_64 *sc = (const struct segment_command_64 *)ptr;
             if(sc->vmsize == 0)
             {
+                ptr += lc->cmdsize;
                 continue;
             }
             vmStart = MIN(vmStart, sc->vmaddr);
             vmEnd = MAX(vmEnd, sc->vmaddr + sc->vmsize);
         }
-        ptr += sc->cmdsize;
+        ptr += lc->cmdsize;
     }
     
     /* allocating the memory needed by the segments of the kext (aka address space reservation) */
@@ -61,11 +63,13 @@ bool KXMapMachOExecutable(LCMachO *machO,
     ptr = ((const uint8_t *)machO->header) + sizeof(struct mach_header_64);
     for(uint32_t i = 0; i < ncmds; i++)
     {
-        const struct segment_command_64 *sc = (const struct segment_command_64 *)ptr;
-        if(sc->cmd == LC_SEGMENT_64)
+        const struct load_command *lc = (const struct load_command *)ptr;
+        if(lc->cmd == LC_SEGMENT_64)
         {
+            const struct segment_command_64 *sc = (const struct segment_command_64 *)ptr;
             if(sc->vmsize == 0)
             {
+                ptr += lc->cmdsize;
                 continue;
             }
             
@@ -118,7 +122,7 @@ bool KXMapMachOExecutable(LCMachO *machO,
                 }
             }
         }
-        ptr += sc->cmdsize;
+        ptr += lc->cmdsize;
     }
     
     image_info->header = image_info->base;

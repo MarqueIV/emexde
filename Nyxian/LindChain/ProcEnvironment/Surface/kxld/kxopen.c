@@ -23,7 +23,9 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/validation.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/mapper.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/fixup.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/reseal.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/image.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/kmod.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <stdio.h>
@@ -92,8 +94,8 @@ static void kxdestroy_image(kxld_image_info_t *image_info)
     free(image_info);
 }
 
-void *kxopen(const char *path,
-             int mode)
+kxld_image_info_t *kxopen(const char *path,
+                          int mode)
 {
     int fd = open(path, O_RDWR);
     if(fd < 0)
@@ -101,13 +103,13 @@ void *kxopen(const char *path,
         return NULL;
     }
     
-    void *handle = kxopen_with_fd(fd, mode);
+    kxld_image_info_t *image_info = kxopen_with_fd(fd, mode);
     close(fd);
-    return handle;
+    return image_info;
 }
 
-void *kxopen_with_fd(int fd,
-                     int mode)
+kxld_image_info_t *kxopen_with_fd(int fd,
+                                  int mode)
 {
     if(fd < 0)
     {
@@ -166,15 +168,30 @@ void *kxopen_with_fd(int fd,
     }
     
     /* now let the fixup */
-    if(!KXApplyChainedFixups(image_info))
+    if(!KXApplyFixups(image_info))
     {
-        /* sets errno */
         kxdestroy_image(image_info);
         return NULL;
     }
     
-    /* own linker is WIP */
+    /* now resealing */
+    if(!KXResealDataConst(image_info))
+    {
+        kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    /* now we gotta get kmod */
+    if(!KXLocateKmod(image_info))
+    {
+        kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    return image_info;
+}
+
+void kxclose(kxld_image_info_t *image_info)
+{
     kxdestroy_image(image_info);
-    errno = ENOTSUP;
-    return NULL;
 }

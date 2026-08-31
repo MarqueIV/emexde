@@ -19,12 +19,10 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef KXLD_IMAGE_H
-#define KXLD_IMAGE_H
+#ifndef KXLD_KMOD_H
+#define KXLD_KMOD_H
 
-#include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
-#include <LindChain/ProcEnvironment/Surface/trust/signing.h>
-#include <LindChain/ProcEnvironment/Surface/kext.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/image.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,15 +32,6 @@
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
 
-typedef struct {
-    intptr_t slide;
-    off_t sliceOffset;
-    void *base;
-    uint64_t len;
-    struct mach_header_64 *header;
-    kmod_dependency_t *deps;
-    uint32_t ndeps;
-    kinfo_mod_t mod;
-} kxld_image_info_t;
+bool KXLocateKmod(kxld_image_info_t *image_info);
 
-#endif /* KXLD_IMAGE_H */
+#endif /* KXLD_KMOD_H */
