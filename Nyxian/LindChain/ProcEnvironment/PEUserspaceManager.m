@@ -104,7 +104,7 @@
     /* now we can spin up that baby (micro kernel) =3 */
     ksurface_kinit();
     
-    if(enabled)
+    if(enabled && strcmp(getenv("FORCE_DISABLE_KEXT_LOADING") ?: "0", "1") != 0)
     {
         klog_log(domain, "loading kexts into address space");
         kern_return_t kr = ksurface_fs_load_all_kext();
