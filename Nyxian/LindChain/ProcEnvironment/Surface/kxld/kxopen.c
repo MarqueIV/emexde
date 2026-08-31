@@ -166,7 +166,7 @@ void *kxopen_with_fd(int fd,
     }
     
     /* now let the fixup */
-    if(!KXApplyChainedFixups(machO, image_info))
+    if(!KXApplyChainedFixups(image_info))
     {
         /* sets errno */
         kxdestroy_image(image_info);

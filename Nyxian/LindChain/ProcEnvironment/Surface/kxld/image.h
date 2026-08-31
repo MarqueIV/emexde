@@ -35,6 +35,7 @@
 
 typedef struct {
     intptr_t slide;
+    off_t sliceOffset;
     void *base;
     uint64_t len;
     struct mach_header_64 *header;

@@ -33,6 +33,6 @@
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
 
-bool KXApplyChainedFixups(LCMachO *machO, kxld_image_info_t *image_info);
+bool KXApplyChainedFixups(kxld_image_info_t *image_info);
 
 #endif /* KXLD_FIXUP_H */

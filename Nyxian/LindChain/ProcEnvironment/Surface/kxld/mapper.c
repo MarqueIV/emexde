@@ -57,7 +57,7 @@ bool KXMapMachOExecutable(LCMachO *machO,
     image_info->slide = (intptr_t)image_info->base - (intptr_t)vmStart;
     
     /* now mapping executable memory on iOS the valid way */
-    off_t sliceOffset = (void*)machO->header - machO->map;
+    image_info->sliceOffset = (void*)machO->header - machO->map;
     ptr = ((const uint8_t *)machO->header) + sizeof(struct mach_header_64);
     for(uint32_t i = 0; i < ncmds; i++)
     {
@@ -71,7 +71,7 @@ bool KXMapMachOExecutable(LCMachO *machO,
             
             /* now a lot of math ^^ */
             void *addr = (void *)(sc->vmaddr + image_info->slide);
-            off_t fileOff = sliceOffset + sc->fileoff;
+            off_t fileOff = image_info->sliceOffset + sc->fileoff;
             int prot = 0;
             if(sc->initprot & VM_PROT_READ)
             {
