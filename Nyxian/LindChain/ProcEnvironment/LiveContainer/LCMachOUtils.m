@@ -603,7 +603,7 @@ bool LCCheckCodeSignature(LCMachO *machO)
     }
     
     /* checking if the kernel says this is signed */
-    off_t sliceOffset = (void*)machO->header - machO->map;
+    off_t sliceOffset = (uint8_t*)machO->header - (uint8_t*)machO->map;
     fsignatures_t siginfo;
     siginfo.fs_file_start = sliceOffset;
     siginfo.fs_blob_start = (void*)(long)(codeSignatureCommand->dataoff);
