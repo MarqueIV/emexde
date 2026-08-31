@@ -43,21 +43,27 @@ int syscall_server_start(syscall_server_t *server)
         environment_panic("syscall server was already initialized");
     }
     
+    /*
+     * we need a very special secure port that is
+     * guarded, because this receive right shall never
+     * be snatched by a attacker.
+     */
     mach_port_options_t options = {
         .flags = MPO_PORT | MPO_IMMOVABLE_RECEIVE | MPO_INSERT_SEND_RIGHT | MPO_QLIMIT | MPO_STRICT | MPO_CONTEXT_AS_GUARD,
         .mpl = SYSCALL_QUEUE_LIMIT,
     };
     
     uint64_t guard_value;
-    arc4random_buf(&guard_value, sizeof(guard_value));
+    arc4random_buf(&guard_value, sizeof(guard_value));  /* random guard value because this secures the MPO_PORT even more */
     kern_return_t kr = mach_port_construct(mach_task_self(), &options, guard_value, &server->port);
-    guard_value = 0;    /* destroyed so nobody can even find it on the stack ever */
+    guard_value = 0;    /* from now on, not even ksurface can unguard it */
     if(kr != KERN_SUCCESS)
     {
         mach_port_deallocate(mach_task_self(), server->port);
         return -1;
     }
     
+    /* now we spin the workers up (not AI lol) */
     extern int CCGetMaximumPerformanceCores(void);
     server->threads_cnt = (int)CCGetMaximumPerformanceCores();
     if(server->threads_cnt == 0)
