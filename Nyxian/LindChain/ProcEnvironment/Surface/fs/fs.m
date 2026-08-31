@@ -275,3 +275,89 @@ kern_return_t ksurface_fs_install_kext_at_path(const char *path)
     
     return KERN_SUCCESS;
 }
+
+kern_return_t ksurface_fs_load_kext_with_bundleid(const char *bundleid,
+                                                  uint64_t *key)
+{
+    if(bundleid == NULL)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    NSString *nsBundleIdentifier = [NSString stringWithCString:bundleid encoding:NSUTF8StringEncoding];
+    if(nsBundleIdentifier == nil)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    NSString *kextPath = [kextFSRoot stringByAppendingFormat:@"/%@.kext", nsBundleIdentifier];
+    if(kextPath == NULL)
+    {
+        return KERN_FAILURE;
+    }
+    
+    return ksurface_fs_load_kext_with_path(kextPath.UTF8String, key);
+}
+
+kern_return_t ksurface_fs_load_kext_with_path(const char *path,
+                                              uint64_t *key)
+{
+    NSString *kextPath = [NSString stringWithCString:path encoding:NSUTF8StringEncoding];
+    if(kextPath == NULL)
+    {
+        return KERN_FAILURE;
+    }
+    
+    NSBundle *kextBundle = [NSBundle bundleWithPath:kextPath];
+    if(kextPath == nil)
+    {
+        return KERN_NOT_FOUND;
+    }
+    
+    /* integrity check */
+    NSString *executable = kextBundle.executablePath;
+    if(executable == nil)
+    {
+        return KERN_DENIED;
+    }
+    
+    /* validate apple signature */
+    LCMachO *machO = LCMapMachO(executable.UTF8String, true);
+    if(machO == NULL)
+    {
+        return KERN_DENIED;
+    }
+    
+    bool isAppleSigned = LCCheckCodeSignature(machO);
+    LCUnmapMachO(machO);
+    if(!isAppleSigned)
+    {
+        return KERN_DENIED;
+    }
+    
+    /* validate kext's nxt2 blob */
+    ksurface_nxt2_t result = {};
+    kern_return_t kr = trust_nxt2_read(executable.UTF8String, &result);
+    if(kr != KERN_SUCCESS ||
+       !result.isValid ||
+       !result.isSigned ||
+       !result.isCdHashValid)
+    {
+        if(result.entitlements != nil)
+        {
+            CFRelease(result.entitlements);
+        }
+        return KERN_DENIED;
+    }
+    
+    /* check entitlements */
+    bool hasEntitlement = CFDictionaryGetValue(result.entitlements, kNXT2EntitlementKsurfaceKEXTLoading) == kCFBooleanTrue;
+    CFRelease(result.entitlements);
+    if(!hasEntitlement)
+    {
+        return KERN_DENIED;
+    }
+    
+    return ksurface_kext_load_at_path(executable.UTF8String, key);
+}
+
