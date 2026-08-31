@@ -90,7 +90,7 @@ typedef struct kinfo_mod {
 } kinfo_mod_t;
 
 typedef struct {
-    char path[PATH_MAX];
+    char path[MAXPATHLEN];
     intptr_t slide;
     off_t sliceOffset;
     void *base;

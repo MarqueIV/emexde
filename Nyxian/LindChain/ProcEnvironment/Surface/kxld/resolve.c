@@ -96,3 +96,41 @@ kern_return_t KXRegisterKext(kxld_image_info_t *image_info)
     os_unfair_lock_unlock(&g_kext_symbol_lock);
     return KERN_SUCCESS;
 }
+
+kern_return_t KXGetRegisteredKextForIdentifier(const char *identifier,
+                                               kxld_image_info_t **image_info)
+{
+    os_unfair_lock_lock(&g_kext_symbol_lock);
+    uint64_t key = KXSymbolKey(identifier);
+    kxld_image_info_t *found = radix_lookup(&g_kext_identity_tree, key);
+    if(found)
+    {
+        *image_info = found;
+        os_unfair_lock_unlock(&g_kext_symbol_lock);
+        return KERN_SUCCESS;
+    }
+    os_unfair_lock_unlock(&g_kext_symbol_lock);
+    return KERN_NOT_FOUND;
+}
+
+EXPORT_KSURFACE_MODULE({
+    .magic = KSURFACE_KMOD_MAGIC,
+    .abi_version = KSURFACE_KMOD_ABI_VERSION,
+    .identifier = "ksurface",
+    .version = KMOD_VERSION(0, 11, 4),
+    .flags = KMOD_FLAG_PERSISTENT,
+    .dependency_count = 0,
+    .init = NULL,
+    .deinit = NULL,
+    .start = NULL,
+    .stop = NULL,
+});
+
+__attribute__((constructor))
+static void register_nximage(void)
+{
+    /* pre-register ksurface */
+    kxld_image_info_t *image_info = calloc(1, sizeof(kxld_image_info_t));
+    memcpy(&image_info->mod, &ksurface_kext_info, sizeof(ksurface_kext_info));
+    KXRegisterKext(image_info);
+}

@@ -189,6 +189,29 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         return NULL;
     }
     
+    /* resolve dependencies versions */
+    for(uint32_t i = 0; i < image_info->ndeps; i++)
+    {
+        kxld_image_info_t *depImageInfo;
+        kern_return_t kr = KXGetRegisteredKextForIdentifier(image_info->deps[i].identifier, &depImageInfo);
+        if(kr != KERN_SUCCESS)
+        {
+            os_unfair_lock_unlock(&g_kxld_lock);
+            kxdestroy_image(image_info);
+            errno = EACCES;
+            return NULL;
+        }
+        
+        if(depImageInfo->mod.version < image_info->deps[i].min_version ||
+           depImageInfo->mod.version > image_info->deps[i].max_version)
+        {
+            os_unfair_lock_unlock(&g_kxld_lock);
+            kxdestroy_image(image_info);
+            errno = EACCES;
+            return NULL;
+        }
+    }
+    
     /* still very unmappable */
     if(KXRegisterKext(image_info) != KERN_SUCCESS)
     {
