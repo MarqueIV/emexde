@@ -25,6 +25,7 @@
 #include <os/lock.h>
 
 static radix_tree_t g_kext_symbol_tree = { 0 };
+static radix_tree_t g_kext_identity_tree = { 0 };
 static os_unfair_lock g_kext_symbol_lock = OS_UNFAIR_LOCK_INIT;
 
 static uint64_t KXSymbolKey(const char *name)
@@ -79,4 +80,19 @@ void *KXResolve(const char *name)
     }
     os_unfair_lock_unlock(&g_kext_symbol_lock);
     return dlsym(RTLD_DEFAULT, lookup);
+}
+
+kern_return_t KXRegisterKext(kxld_image_info_t *image_info)
+{
+    os_unfair_lock_lock(&g_kext_symbol_lock);
+    uint64_t key = KXSymbolKey(image_info->mod.identifier);
+    kxld_image_info_t *found = radix_lookup(&g_kext_identity_tree, key);
+    if(found != NULL)
+    {
+        os_unfair_lock_unlock(&g_kext_symbol_lock);
+        return KERN_NAME_EXISTS;
+    }
+    radix_insert(&g_kext_identity_tree, key, image_info);
+    os_unfair_lock_unlock(&g_kext_symbol_lock);
+    return KERN_SUCCESS;
 }

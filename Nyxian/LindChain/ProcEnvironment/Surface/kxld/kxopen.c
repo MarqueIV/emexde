@@ -30,6 +30,7 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/export.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/init.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/objc.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/resolve.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Shims/panic.h>
@@ -185,6 +186,15 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     {
         os_unfair_lock_unlock(&g_kxld_lock);
         kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    /* still very unmappable */
+    if(KXRegisterKext(image_info) != KERN_SUCCESS)
+    {
+        os_unfair_lock_unlock(&g_kxld_lock);
+        kxdestroy_image(image_info);
+        errno = EEXIST;
         return NULL;
     }
     
