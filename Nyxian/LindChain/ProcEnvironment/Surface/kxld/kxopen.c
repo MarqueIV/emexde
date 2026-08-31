@@ -27,6 +27,8 @@
 #include <LindChain/ProcEnvironment/Surface/kxld/image.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/kmod.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/export.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/init.h>
+#include <LindChain/ProcEnvironment/Surface/kxld/objc.h>
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <stdio.h>
@@ -37,54 +39,6 @@
 #include <sys/param.h>
 #include <mach-o/loader.h>
 #include <mach-o/ldsyms.h>
-
-struct dyld_chained_fixups_header {
-    uint32_t fixups_version;   // 0
-    uint32_t starts_offset;    // → dyld_chained_starts_in_image
-    uint32_t imports_offset;   // → imports table
-    uint32_t symbols_offset;   // → symbol string pool
-    uint32_t imports_count;
-    uint32_t imports_format;   // DYLD_CHAINED_IMPORT (1) usually
-    uint32_t symbols_format;   // 0 = uncompressed
-};
-
-/*
-struct dyld_chained_starts_in_image {
-    uint32_t seg_count;
-    uint32_t seg_info_offset[/* seg_count *///];  // per-segment; 0 = no fixups
-/*};
-
-struct dyld_chained_starts_in_segment {
-    uint32_t size;
-    uint16_t page_size;         // 0x4000 on iOS
-    uint16_t pointer_format;    // DYLD_CHAINED_PTR_64 == 2 for you
-    uint64_t segment_offset;    // seg's file offset, relative to image base
-    uint32_t max_valid_pointer;
-    uint16_t page_count;
-    uint16_t page_start[/* page_count *//*];  // first fixup offset in each page
-};*/
-
-struct dyld_chained_import {
-    uint32_t lib_ordinal :  8;
-    uint32_t weak_import :  1;
-    uint32_t name_offset : 23;
-};
-
-struct dyld_chained_ptr_64_rebase {
-    uint64_t target   : 36;
-    uint64_t high8    :  8;
-    uint64_t reserved :  7;
-    uint64_t next     : 12;
-    uint64_t bind     :  1;
-};
-
-struct dyld_chained_ptr_64_bind {
-    uint64_t ordinal  : 24;
-    uint64_t addend   :  8;
-    uint64_t reserved : 19;
-    uint64_t next     : 12;
-    uint64_t bind     :  1;
-};
 
 static void kxdestroy_image(kxld_image_info_t *image_info)
 {
@@ -159,6 +113,13 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         return NULL;
     }
     
+    if(fcntl(machO->fd, F_GETPATH, image_info->path) != 0)
+    {
+        errno = ENOMEM;
+        LCUnmapMachO(machO);
+        return NULL;
+    }
+    
     bool success = KXMapMachOExecutable(machO, image_info);
     LCUnmapMachO(machO);
     if(!success)
@@ -191,6 +152,18 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     
     /* now the spicy port with the symbol exports */
     if(!KXRegisterKextExports(image_info))
+    {
+        kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    if(!KXRegisterObjCImage(image_info))
+    {
+        kxdestroy_image(image_info);
+        return NULL;
+    }
+    
+    if(!KXRunInitializers(image_info))
     {
         kxdestroy_image(image_info);
         return NULL;
