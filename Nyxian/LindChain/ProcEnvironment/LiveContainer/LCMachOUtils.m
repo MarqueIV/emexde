@@ -611,10 +611,8 @@ bool LCCheckCodeSignature(LCMachO *machO)
     }
     
     fchecklv_t checkInfo;
-    char messageBuffer[512];
-    messageBuffer[0] = '\0';
-    checkInfo.lv_error_message_size = sizeof(messageBuffer);
-    checkInfo.lv_error_message = messageBuffer;
+    checkInfo.lv_error_message_size = 0;
+    checkInfo.lv_error_message = NULL;
     checkInfo.lv_file_start= sliceOffset;
     int checkLVresult = fcntl(machO->fd, F_CHECK_LV, &checkInfo);
     
