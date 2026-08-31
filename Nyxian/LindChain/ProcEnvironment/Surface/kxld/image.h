@@ -99,7 +99,7 @@ typedef struct {
     struct mach_header_64 *header;
     kmod_dependency_t *deps;
     uint32_t ndeps;
-    kinfo_mod_t mod;
+    kinfo_mod_t *mod;
 } kxld_image_info_t;
 
 #endif /* KXLD_IMAGE_H */

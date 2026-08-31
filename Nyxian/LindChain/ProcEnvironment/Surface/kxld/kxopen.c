@@ -53,8 +53,8 @@ void *ksurface_kext_thread(void *ii)
     
     /* invoking kextension start */
     klog_log("kxld:thread", "[%p] spinning up kext", image_info);
-    image_info->mod.start();
-    if(!(image_info->mod.flags & KMOD_FLAG_PERSISTENT))
+    image_info->mod->start();
+    if(!(image_info->mod->flags & KMOD_FLAG_PERSISTENT))
     {
         /*kext_table_wrlock();
         kext_object_t *found = radix_remove(&(ksurface->kext_info.kexts), kext_object->key);
@@ -202,8 +202,8 @@ kxld_image_info_t *kxopen_with_fd(int fd,
             return NULL;
         }
         
-        if(depImageInfo->mod.version < image_info->deps[i].min_version ||
-           depImageInfo->mod.version > image_info->deps[i].max_version)
+        if(depImageInfo->mod->version < image_info->deps[i].min_version ||
+           depImageInfo->mod->version > image_info->deps[i].max_version)
         {
             os_unfair_lock_unlock(&g_kxld_lock);
             kxdestroy_image(image_info);
@@ -212,8 +212,8 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         }
         
         /* so the kext knows on what version this dependency is */
-        image_info->deps[i].min_version = depImageInfo->mod.version;
-        image_info->deps[i].max_version = depImageInfo->mod.version;
+        image_info->deps[i].min_version = depImageInfo->mod->version;
+        image_info->deps[i].max_version = depImageInfo->mod->version;
     }
     
     /* still very unmappable */
@@ -256,9 +256,9 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     }
     
     /* now lets initialize the kext it self */
-    if(image_info->mod.init)
+    if(image_info->mod->init)
     {
-        kern_return_t kr = image_info->mod.init();
+        kern_return_t kr = image_info->mod->init();
         if(kr != KERN_SUCCESS)
         {
             klog_log("kxld", "kext @ %s, had a failure initializing: %s", image_info->path, mach_error_string(kr));
@@ -269,14 +269,14 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         }
     }
     
-    if(image_info->mod.start)
+    if(image_info->mod->start)
     {
         pthread_t thread;
         if(pthread_create(&thread, NULL, ksurface_kext_thread, (void*)image_info) != 0)
         {
-            if(image_info->mod.deinit)
+            if(image_info->mod->deinit)
             {
-                kern_return_t kr = image_info->mod.deinit();
+                kern_return_t kr = image_info->mod->deinit();
                 if(kr != KERN_SUCCESS)
                 {
                     environment_panic("kext @ %s failed to deinitialize: %s", image_info->path, mach_error_string(kr));
@@ -302,22 +302,22 @@ void kxclose(kxld_image_info_t *image_info)
     klog_log("kxld", "unloading kext of @ %p", image_info);
     
     /* finding kext object */
-    if(!(image_info->mod.flags & KMOD_FLAG_PERSISTENT))
+    if(!(image_info->mod->flags & KMOD_FLAG_PERSISTENT))
     {
         /* now we can remove it again */
         klog_log("ksurface:kext:unload", "stopping kext");
         kern_return_t kr;
-        if(image_info->mod.stop)
+        if(image_info->mod->stop)
         {
-            kr = image_info->mod.stop();
+            kr = image_info->mod->stop();
             if(kr != KERN_SUCCESS)
             {
                 environment_panic("kext with key @ %p failed to stop: %s", image_info, mach_error_string(kr));
             }
         }
-        if(image_info->mod.deinit)
+        if(image_info->mod->deinit)
         {
-            kr = image_info->mod.deinit();
+            kr = image_info->mod->deinit();
             if(kr != KERN_SUCCESS)
             {
                 environment_panic("kext @ %p failed to deinitialize: %s", image_info, mach_error_string(kr));

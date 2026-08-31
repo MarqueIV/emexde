@@ -139,16 +139,16 @@ bool KXLocateKmod(kxld_image_info_t *image_info)
     {
         return false;
     }
-    memcpy(&(image_info->mod), blob, sizeof(image_info->mod));
+    image_info->mod = (kinfo_mod_t*)blob;
     
-    if(image_info->mod.magic != KSURFACE_KMOD_MAGIC ||
-       image_info->mod.abi_version != KSURFACE_KMOD_ABI_VERSION ||
-       strnlen(image_info->mod.identifier, KMOD_MAX_NAME) == KMOD_MAX_NAME)
+    if(image_info->mod->magic != KSURFACE_KMOD_MAGIC ||
+       image_info->mod->abi_version != KSURFACE_KMOD_ABI_VERSION ||
+       strnlen(image_info->mod->identifier, KMOD_MAX_NAME) == KMOD_MAX_NAME)
     {
         return false;
     }
     
-    image_info->ndeps = image_info->mod.dependency_count;
+    image_info->ndeps = image_info->mod->dependency_count;
     if(image_info->ndeps > KMOD_MAX_DEPENDENCIES ||
        sec_len < sizeof(kinfo_mod_t) + (uint64_t)image_info->ndeps * sizeof(kmod_dependency_t))
     {

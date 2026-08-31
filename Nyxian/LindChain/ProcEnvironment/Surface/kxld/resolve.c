@@ -114,7 +114,7 @@ void *KXResolve(const char *name)
 kern_return_t KXRegisterKext(kxld_image_info_t *image_info)
 {
     os_unfair_lock_lock(&g_kext_symbol_lock);
-    uint64_t key = KXSymbolKey(image_info->mod.identifier);
+    uint64_t key = KXSymbolKey(image_info->mod->identifier);
     kxld_image_info_t *found = radix_lookup(&g_kext_identity_tree, key);
     if(found != NULL)
     {
@@ -160,6 +160,6 @@ static void register_nximage(void)
 {
     /* pre-register ksurface */
     kxld_image_info_t *image_info = calloc(1, sizeof(kxld_image_info_t));
-    memcpy(&image_info->mod, &ksurface_kext_info, sizeof(ksurface_kext_info));
+    image_info->mod = (kinfo_mod_t*)&ksurface_kext_info;
     KXRegisterKext(image_info);
 }

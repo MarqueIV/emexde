@@ -61,7 +61,7 @@ static bool KXWalkExportTrie(kxld_image_info_t *image_info,
             uint64_t addrOffset = readULEB(&p, end);
             prefix[prefixLen] = '\0';
             void *addr = (void *)((uintptr_t)slide + addrOffset);
-            if(image_info->mod.flags & KMOD_FLAG_OVERRIDE_CORE)
+            if(image_info->mod->flags & KMOD_FLAG_OVERRIDE_CORE)
             {
                 KXRegisterExportCore(prefix, addr);
             }
