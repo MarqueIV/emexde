@@ -24,7 +24,8 @@
 
 uint64_t readULEB(const uint8_t **p, const uint8_t *end);
 
-static bool KXWalkExportTrie(const uint8_t *start,
+static bool KXWalkExportTrie(kxld_image_info_t *image_info,
+                             const uint8_t *start,
                              const uint8_t *p,
                              const uint8_t *end,
                              char *prefix,
@@ -60,7 +61,14 @@ static bool KXWalkExportTrie(const uint8_t *start,
             uint64_t addrOffset = readULEB(&p, end);
             prefix[prefixLen] = '\0';
             void *addr = (void *)((uintptr_t)slide + addrOffset);
-            KXRegisterExport(prefix, addr);
+            if(image_info->mod.flags & KMOD_FLAG_OVERRIDE_CORE)
+            {
+                KXRegisterExportCore(prefix, addr);
+            }
+            else
+            {
+                KXRegisterExport(prefix, addr);
+            }
         }
     }
     
@@ -79,7 +87,7 @@ static bool KXWalkExportTrie(const uint8_t *start,
         }
         c++;
         uint64_t childOffset = readULEB(&c, end);
-        KXWalkExportTrie(start, start + childOffset, end, prefix, prefixLen + len, slide);
+        KXWalkExportTrie(image_info, start, start + childOffset, end, prefix, prefixLen + len, slide);
     }
     return true;
 }
@@ -130,5 +138,5 @@ bool KXRegisterKextExports(kxld_image_info_t *image_info)
     const uint8_t *trieEnd = trieStart + trieSize;
     
     char prefix[NAME_MAX];
-    return KXWalkExportTrie(trieStart, trieStart, trieEnd, prefix, 0, image_info->slide);
+    return KXWalkExportTrie(image_info, trieStart, trieStart, trieEnd, prefix, 0, image_info->slide);
 }

@@ -38,6 +38,7 @@ typedef struct {
     void *addr;
 } kx_export_t;
 
+void KXRegisterExportCore(const char *name, void *addr);
 void KXRegisterExport(const char *name, void *addr);
 void *KXResolve(const char *name);
 

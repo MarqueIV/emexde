@@ -59,9 +59,10 @@
     const kinfo_mod_t ksurface_kext_info = __VA_ARGS__;
 
 typedef enum {
-    KMOD_FLAG_NONE             = 0,         /* sentinel */
-    KMOD_FLAG_PERSISTENT       = (1 << 0),  /* cannot be unloaded */
-    KMOD_FLAG_BACKGROUND_ONLY  = (1 << 1),  /* requires it's own thread */
+    KMOD_FLAG_NONE              = 0,        /* sentinel */
+    KMOD_FLAG_PERSISTENT        = (1 << 0), /* cannot be unloaded */
+    KMOD_FLAG_BACKGROUND_ONLY   = (1 << 1), /* requires it's own thread */
+    KMOD_FLAG_OVERRIDE_CORE     = (1 << 2), /* can override ksurface symbols for other kexts */
 } kmod_flags_t;
 
 typedef struct {
