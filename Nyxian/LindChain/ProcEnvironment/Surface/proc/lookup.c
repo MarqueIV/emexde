@@ -59,39 +59,23 @@ kern_return_t proc_for_pid_with_pidv(pid_t pid,
                                      int pidv,
                                      ksurface_proc_t **proc)
 {
-    assert(proc != NULL);
-    
-    proc_table_rdlock();
-    
-    /* process lookup */
-    ksurface_proc_t *found = radix_lookup(&(ksurface->proc_info.tree), pid);
-    if(found == NULL)
+    /* aquiring proc object */
+    ksurface_proc_t *found = NULL;
+    kern_return_t ret = proc_for_pid(pid, &found);
+    if(ret != KERN_SUCCESS)
     {
-        proc_table_unlock();
-        return KERN_NOT_FOUND;
+        return ret;
     }
     
-    /*
-     * caller expects retained process object, so
-     * attempting to retain it and if it doesnt work
-     * returning with an error.
-     */
-    bool retained = kvo_retain(found);
-    proc_table_unlock();
-    if(!retained)
-    {
-        return KERN_FAILURE;
-    }
-    
-    /* check if pidv matches */
+    /* perform pidv validation */
     kvo_rdlock(found);
-    if(proc_getpidv(found) != pidv)
+    bool valid = (proc_getpidv(found) == pidv);
+    kvo_unlock(found);
+    if(!valid)
     {
-        kvo_unlock(found);
         kvo_release(found);
         return KERN_NOT_FOUND;
     }
-    kvo_unlock(found);
     
     *proc = found;
     return KERN_SUCCESS;
