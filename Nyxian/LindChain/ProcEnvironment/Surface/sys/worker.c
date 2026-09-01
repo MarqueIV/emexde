@@ -24,6 +24,7 @@
 #include <LindChain/ProcEnvironment/Surface/sys/core.h>
 #include <LindChain/ProcEnvironment/Surface/proc/proc.h>
 #include <LindChain/ProcEnvironment/Shims/panic.h>
+#include <LindChain/ProcEnvironment/Utils/klog.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,10 +51,11 @@ static ksurface_proc_snapshot_t *syscall_get_caller_proc_snapshot(mach_msg_heade
      */
     audit_token_t *token = &trailer->msgh_audit;
     pid_t xnu_pid = (pid_t)token->val[5];
+    int xnu_pidv = (int)token->val[7];
     
     /* getting process of caller */
     ksurface_proc_t *proc = NULL;
-    kern_return_t ret = proc_for_pid(xnu_pid, &proc);
+    kern_return_t ret = proc_for_pid_with_pidv(xnu_pid, xnu_pidv, &proc);
     if(ret != KERN_SUCCESS)
     {
         return NULL;
