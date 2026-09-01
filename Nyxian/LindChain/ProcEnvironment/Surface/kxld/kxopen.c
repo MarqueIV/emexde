@@ -163,16 +163,16 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         return NULL;
     }
     
-    /* now let the fixup */
-    if(!KXApplyFixups(image_info))
+    /* we gotta get kmod first */
+    if(!KXLocateKmod(image_info))
     {
         os_unfair_lock_unlock(&g_kxld_lock);
         kxdestroy_image(image_info);
         return NULL;
     }
     
-    /* now we gotta get kmod */
-    if(!KXLocateKmod(image_info))
+    /* fixing up kmod and the blobs offsets */
+    if(!KXApplyFixups(image_info))
     {
         os_unfair_lock_unlock(&g_kxld_lock);
         kxdestroy_image(image_info);
