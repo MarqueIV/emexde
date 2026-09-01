@@ -139,7 +139,7 @@ static bool KXApplyRebases(kxld_image_info_t *ii,
                 break;
             }
             default:
-                klog_log("kxld", "unknown rebase opcode 0x%x", opcode);
+                klog_log("kextloader", "unknown rebase opcode 0x%x", opcode);
                 return false;
         }
     }
@@ -172,7 +172,7 @@ static bool KXApplyBinds(kxld_image_info_t *ii,
         void *addr = KXResolve(symName);                                \
         if(!addr && !weak)                                              \
         {                                                               \
-            klog_log("kxld", "unresolved symbol %s, %s", symName ? symName : "(null)", unresolvedAllowed ? "skipping due to kext compat" : "rejecting, because unresolved"); \
+            klog_log("kextloader", "unresolved symbol %s, %s", symName ? symName : "(null)", unresolvedAllowed ? "skipping due to kext compat" : "rejecting, because unresolved"); \
             if(!unresolvedAllowed)                                      \
             {                                                           \
                 return false;                                           \
@@ -253,7 +253,7 @@ static bool KXApplyBinds(kxld_image_info_t *ii,
                 break;
             }
             default:
-                klog_log("kxld", "unknown bind opcode 0x%x", opcode);
+                klog_log("kextloader", "unknown bind opcode 0x%x", opcode);
                 return false;
         }
     }
@@ -313,7 +313,7 @@ static bool KXApplyChainedFixups(kxld_image_info_t *image_info,
         const struct dyld_chained_starts_in_segment *seg = (const void *)((const uint8_t *)starts + segInfoOff);
         if(seg->pointer_format != DYLD_CHAINED_PTR_64 && seg->pointer_format != DYLD_CHAINED_PTR_64_OFFSET)
         {
-            klog_log("kxld", "unsupported pointer_format %u in seg %u", seg->pointer_format, segIdx);
+            klog_log("kextloader", "unsupported pointer_format %u in seg %u", seg->pointer_format, segIdx);
             return false;
         }
         
@@ -337,7 +337,7 @@ static bool KXApplyChainedFixups(kxld_image_info_t *image_info,
                 {
                     if(b->ordinal >= hdr->imports_count)
                     {
-                        fprintf(stderr, "kxld: bind ordinal %u out of range (%u)", b->ordinal, hdr->imports_count);
+                        klog_log("kextloader", "bind ordinal %u out of range (%u)", b->ordinal, hdr->imports_count);
                         return false;
                     }
                     const struct dyld_chained_import *imp = &imports[b->ordinal];
@@ -345,7 +345,7 @@ static bool KXApplyChainedFixups(kxld_image_info_t *image_info,
                     void *addr = KXResolve(name);
                     if(!addr && !imp->weak_import)
                     {
-                        klog_log("kxld", "unresolved symbol %s, %s", name?: "(null)", unresolvedAllowed ? "skipping due to kext compat" : "rejecting, because unresolved"); \
+                        klog_log("kextloader", "unresolved symbol %s, %s", name?: "(null)", unresolvedAllowed ? "skipping due to kext compat" : "rejecting, because unresolved");
                         if(!unresolvedAllowed)
                         {
                             return false;
