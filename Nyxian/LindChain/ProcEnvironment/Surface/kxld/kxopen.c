@@ -251,7 +251,7 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         kern_return_t kr = image_info->mod->init();
         if(kr != KERN_SUCCESS)
         {
-            klog_log("kextloader", "kext @ %s, had a failure initializing: %s", image_info->path, mach_error_string(kr));
+            klog_log("kextloader", "kext '%s', had a failure initializing: %s", image_info->mod->identifier, mach_error_string(kr));
             os_unfair_lock_unlock(&g_kxld_lock);
             kxdestroy_image(image_info);
             errno = EBADEXEC;
@@ -269,10 +269,10 @@ kxld_image_info_t *kxopen_with_fd(int fd,
                 kern_return_t kr = image_info->mod->deinit();
                 if(kr != KERN_SUCCESS)
                 {
-                    environment_panic("kext @ %s failed to deinitialize: %s", image_info->path, mach_error_string(kr));
+                    environment_panic("kext '%s' failed to deinitialize: %s", image_info->mod->identifier, mach_error_string(kr));
                 }
             }
-            klog_log("kextloader", "failed start thread for kext object");
+            klog_log("kextloader", "failed start thread for kext '%s'", image_info->mod->identifier);
             os_unfair_lock_unlock(&g_kxld_lock);
             kxdestroy_image(image_info);
             return NULL;
@@ -281,7 +281,7 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     }
     
     /* done =3 */
-    klog_log("kextloader", "successfully initialized kext @ %p", image_info->path, image_info);
+    klog_log("kextloader", "successfully initialized kext '%s'", image_info->mod->identifier);
     os_unfair_lock_unlock(&g_kxld_lock);
     return image_info;
 }
@@ -289,7 +289,7 @@ kxld_image_info_t *kxopen_with_fd(int fd,
 void kxclose(kxld_image_info_t *image_info)
 {
     os_unfair_lock_lock(&g_kxld_lock);
-    klog_log("kextloader", "unloading kext @ %p", image_info);
+    klog_log("kextloader", "unloading kext '%s'", image_info->mod->identifier);
     
     /* finding kext object */
     if(!(image_info->mod->flags & KMOD_FLAG_PERSISTENT))
@@ -302,7 +302,7 @@ void kxclose(kxld_image_info_t *image_info)
             kr = image_info->mod->stop();
             if(kr != KERN_SUCCESS)
             {
-                environment_panic("kext @ %p failed to stop: %s", image_info, mach_error_string(kr));
+                environment_panic("kext '%s' failed to stop: %s", image_info->mod->identifier, mach_error_string(kr));
             }
         }
         if(image_info->mod->deinit)
@@ -310,7 +310,7 @@ void kxclose(kxld_image_info_t *image_info)
             kr = image_info->mod->deinit();
             if(kr != KERN_SUCCESS)
             {
-                environment_panic("kext @ %p failed to deinitialize: %s", image_info, mach_error_string(kr));
+                environment_panic("kext '%s' failed to deinitialize: %s", image_info->mod->identifier, mach_error_string(kr));
             }
         }
         kxdestroy_image(image_info);
@@ -318,13 +318,13 @@ void kxclose(kxld_image_info_t *image_info)
     }
     else
     {
-        klog_log("kextloader", "kext @ %p is marked as not unloadable", image_info);
+        klog_log("kextloader", "kext '%s' is marked as not unloadable", image_info->mod->identifier);
         os_unfair_lock_unlock(&g_kxld_lock);
         return;
     }
     
     
-    klog_log("ksurface:kext:unload", "successfully unloaded kext @ %p", image_info);
+    klog_log("ksurface:kext:unload", "successfully unloaded kext '%s'", image_info->mod->identifier);
     os_unfair_lock_unlock(&g_kxld_lock);
     return;
 }
