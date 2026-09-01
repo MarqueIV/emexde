@@ -29,7 +29,7 @@ bool KXValidateCodeSignature(LCMachO *machO)
        machO->header->cputype != CPU_TYPE_ARM64)
     {
         errno = ENOEXEC;
-        return NULL;
+        return false;
     }
     
     /* trying to locate the link edit data command */
@@ -42,7 +42,7 @@ bool KXValidateCodeSignature(LCMachO *machO)
        linkEditDataCommand->datasize > machO->size - linkEditDataCommand->dataoff)
     {
         errno = ENOEXEC;
-        return NULL;
+        return false;
     }
     
     /* binary must be signed, otherwise no execution */
