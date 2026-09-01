@@ -58,22 +58,28 @@ bool KXValidateCodeSignature(LCMachO *machO)
         goto out_denied;
     }
     
-    /* checking NXTR kext requirement */
-    if(trust_nxt2_read_fd(machO->fd, &nxt2_result) != KERN_SUCCESS ||
-       !nxt2_result.isValid ||
-       !nxt2_result.isCdHashValid ||
-       !nxt2_result.isSigned)
+    /* nyxian trust blob is required and it must be signed with `org.emexlabs.nyxian.ksurface.kernelextension.loading` set to true */
+    if(trust_nxt2_read_fd(machO->fd, &nxt2_result) != KERN_SUCCESS)
     {
-        if(nxt2_result.entitlements != NULL)
-        {
-            CFRelease(nxt2_result.entitlements);
-        }
         goto out_denied;
     }
+    
+    /* entitlements must be present */
     if(nxt2_result.entitlements == NULL)
     {
         goto out_denied;
     }
+    
+    /* and it must be signed (data structure has to be trusted before reading it's contents, CS basics) */
+    if(!nxt2_result.isValid ||
+       !nxt2_result.isCdHashValid ||
+       !nxt2_result.isSigned)
+    {
+        CFRelease(nxt2_result.entitlements);
+        goto out_denied;
+    }
+    
+    /* blob is trusted, checking myxian trust blob entitlement requirement */
     hasKextEntitlement = CFDictionaryGetValue(nxt2_result.entitlements, kNXT2EntitlementKsurfaceKEXTLoading) == kCFBooleanTrue;
     CFRelease(nxt2_result.entitlements);
     if(!hasKextEntitlement)
