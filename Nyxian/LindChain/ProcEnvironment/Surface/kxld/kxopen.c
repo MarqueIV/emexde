@@ -119,7 +119,7 @@ kxld_image_info_t *kxopen_with_fd(int fd,
     }
     
     /* map machO */
-    LCMachO *machO = LCMapMachOFromFDRO(fd);
+    LCMachO *machO = LCMapMachOFromFDRO(dup(fd));
     if(machO == NULL)
     {
         os_unfair_lock_unlock(&g_kxld_lock);
