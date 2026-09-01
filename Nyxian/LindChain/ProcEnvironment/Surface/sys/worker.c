@@ -36,7 +36,7 @@
  * as asking processes for their pid is extremely stupid.
  * so we ensure nothing can be tempered.
  */
-static ksurface_proc_snapshot_t *get_caller_proc_snapshot(mach_msg_header_t *msg)
+static ksurface_proc_snapshot_t *syscall_get_caller_proc_snapshot(mach_msg_header_t *msg)
 {
     /*
      * The XNU kernel gurantees a trailer if asked
@@ -44,11 +44,14 @@ static ksurface_proc_snapshot_t *get_caller_proc_snapshot(mach_msg_header_t *msg
      */
     mach_msg_audit_trailer_t *trailer = (mach_msg_audit_trailer_t *)((uint8_t *)msg + round_msg(msg->msgh_size));
     
-    /* yep clear to go */
+    /*
+     * we aren't paranoid to validate what XNU gave us,
+     * since XNU gave it to us.
+     */
     audit_token_t *token = &trailer->msgh_audit;
     pid_t xnu_pid = (pid_t)token->val[5];
     
-    /* getting process */
+    /* getting process of caller */
     ksurface_proc_t *proc = NULL;
     kern_return_t ret = proc_for_pid(xnu_pid, &proc);
     if(ret != KERN_SUCCESS)
@@ -56,14 +59,12 @@ static ksurface_proc_snapshot_t *get_caller_proc_snapshot(mach_msg_header_t *msg
         return NULL;
     }
     
-    /* creating process copy with process reference consumption */
-    ksurface_proc_snapshot_t *proc_snapshot = kvo_snapshot(proc, kvObjSnapConsumeReference);
-    if(proc_snapshot == NULL)
-    {
-        return NULL;
-    }
-    
-    return proc_snapshot;
+    /*
+     * creating process snapshot with process reference consumed
+     * kvo_snapshot with that configuration consumes the objects
+     * reference on failure aswell.
+     */
+    return kvo_snapshot(proc, kvObjSnapConsumeReference);
 }
 
 /*
@@ -222,7 +223,7 @@ void* syscall_worker(void *ctx)
          * by just letting it send some pid, that would be
          * fragile and unsecure.
          */
-        proc_snapshot = get_caller_proc_snapshot(&(buffer->header));
+        proc_snapshot = syscall_get_caller_proc_snapshot(&(buffer->header));
         if(proc_snapshot == NULL)
         {
             /* checking if proc copy is null */
