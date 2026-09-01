@@ -126,16 +126,6 @@ kxld_image_info_t *kxopen_with_fd(int fd,
         return NULL;
     }
     
-    /* validating header of kext */
-    if(machO->header->filetype != MH_KEXT_BUNDLE ||
-       machO->header->cputype != CPU_TYPE_ARM64)
-    {
-        os_unfair_lock_unlock(&g_kxld_lock);
-        errno = ENOEXEC;
-        LCUnmapMachO(machO);
-        return NULL;
-    }
-    
     /* checking if the kernel says(double meaning x3) this is signed */
     if(!KXValidateCodeSignature(machO))
     {
