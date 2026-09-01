@@ -158,7 +158,7 @@ void* syscall_worker(void *ctx)
      * we simply tell XNU to always give us the identity of the process
      * requesting.
      */
-    mach_msg_option_t options = MACH_RCV_MSG | MACH_RCV_LARGE | MACH_RCV_TRAILER_TYPE(MACH_MSG_TRAILER_FORMAT_0) | MACH_RCV_TRAILER_ELEMENTS(MACH_RCV_TRAILER_AUDIT);
+    mach_msg_option_t options = MACH_RCV_MSG | MACH_RCV_TRAILER_TYPE(MACH_MSG_TRAILER_FORMAT_0) | MACH_RCV_TRAILER_ELEMENTS(MACH_RCV_TRAILER_AUDIT);
     
     /* worker thread request loop */
     for(;;)
@@ -188,9 +188,7 @@ void* syscall_worker(void *ctx)
             /* receive right is dead when the server stops */
             if(mr == MACH_RCV_PORT_DIED || mr == MACH_RCV_INVALID_NAME)
             {
-                vm_deallocate(mach_task_self(), (vm_address_t)buffer, sizeof(recv_buffer_t));
-                // environment_panic("syscall server worker thread died unexpectedly, this is undefined behaviour. (mr = 0x%x)", mr);
-                break;
+                environment_panic("syscall server worker thread died unexpectedly, this is undefined behaviour. (mr = 0x%x)", mr);
             }
             continue;
         }
