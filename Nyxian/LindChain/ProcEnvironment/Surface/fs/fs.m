@@ -358,6 +358,6 @@ kern_return_t ksurface_fs_load_kext_with_path(const char *path,
         return KERN_DENIED;
     }
     
-    return kxopen(executable.UTF8String, 0) != NULL ? KERN_SUCCESS : KERN_FAILURE;
+    return kxopen(executable.UTF8String, 0, NULL);
 }
 

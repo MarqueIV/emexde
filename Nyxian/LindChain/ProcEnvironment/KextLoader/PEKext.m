@@ -259,12 +259,7 @@ void ksurface_kext_free_deps(kmod_dependency_t *deps)
 
 - (kern_return_t)load
 {
-    void *image = kxopen(self.executablePath.UTF8String, 0);
-    if(image != NULL)
-    {
-        return KERN_SUCCESS;
-    }
-    return KERN_FAILURE;
+    return kxopen(self.executablePath.UTF8String, 0, NULL);
 }
 
 - (instancetype)initWithPath:(NSString*)path
