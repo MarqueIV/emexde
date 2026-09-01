@@ -27,6 +27,6 @@
 
 kxld_image_info_t *kxopen(const char *path, int mode);
 kxld_image_info_t *kxopen_with_fd(int fd, int mode);
-void kxclose(kxld_image_info_t *image_info);
+kern_return_t kxclose(kxld_image_info_t *image_info);
 
 #endif /* KXLD_KXOPEN_H */
