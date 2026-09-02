@@ -22,6 +22,73 @@
 import UIKit
 import UniformTypeIdentifiers
 
+class KextToggleTableCell: UITableViewCell {
+    static let reuseIdentifier = "KextToggleTableCell"
+    
+    var callback: (Bool) -> Void = { _ in }
+    
+    private(set) var toggle: UISwitch = {
+        let toggle = UISwitch()
+        return toggle
+    }()
+    
+    private var defaultValue: Bool = false
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        selectionStyle = .none
+        toggle.addTarget(self, action: #selector(toggleChanged(_:)), for: .valueChanged)
+        accessoryView = toggle
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleThemeChange), name: Notification.Name("uiColorChangeNotif"), object: nil)
+        
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (self: Self, previousTraitCollection: UITraitCollection) in
+            self.applyTheme()
+        }
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    func configure(title: String, defaultValue: Bool, callback: @escaping (Bool) -> Void = { _ in }) {
+        self.defaultValue = defaultValue
+        self.callback = callback
+        textLabel?.text = title
+        toggle.isOn = defaultValue
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        defaultValue = false
+        callback = { _ in }
+        textLabel?.text = nil
+        toggle.isOn = false
+    }
+    
+    private func applyTheme() {
+        toggle.onTintColor = currentTheme?.appLabel
+        toggle.thumbTintColor = currentTheme?.appTableCell
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        applyTheme()
+    }
+    
+    @objc private func toggleChanged(_ sender: UISwitch) {
+        callback(sender.isOn)
+    }
+    
+    @objc private func handleThemeChange() {
+        applyTheme()
+    }
+}
+
 class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
     
     var kexts: [PEKext] = []
@@ -52,6 +119,8 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
         } catch {
                 
         }
+        
+        self.tableView.register(KextToggleTableCell.self, forCellReuseIdentifier: KextToggleTableCell.reuseIdentifier)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -64,9 +133,10 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let kext: PEKext = self.kexts[indexPath.row]
-        let cell: UITableViewCell = UITableViewCell()
-        cell.selectionStyle = .none
-        cell.textLabel?.text = kext.bundleID
+        let cell: KextToggleTableCell = self.tableView.dequeueReusableCell(withIdentifier: KextToggleTableCell.reuseIdentifier, for: indexPath) as! KextToggleTableCell
+        cell.configure(title: kext.bundleID, defaultValue: kext.isEnabled) { newValue in
+            kext.isEnabled = newValue
+        }
         return cell
     }
     

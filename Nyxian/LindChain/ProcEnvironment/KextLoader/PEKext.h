@@ -34,6 +34,7 @@
 @property (nonatomic,strong) NSArray<PEDependency*> *dependencies;
 @property (nonatomic) uint64_t flags;
 @property (nonatomic) uint32_t abi_version;
+@property (atomic) BOOL isEnabled;
 
 - (int)load;
 
