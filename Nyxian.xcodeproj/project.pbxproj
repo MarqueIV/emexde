@@ -211,7 +211,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				LindChain/OpenSSL.xcframework,
-				LindChain/ProcEnvironment/litehook/litehook.c,
 				LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.m,
 				LindChain/ProcEnvironment/Surface/trust/cdhash.c,
 				LindChain/ProcEnvironment/Surface/trust/signing.c,
@@ -1080,6 +1079,7 @@
 		79AA11C12F7FFE24002FEAF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1087,6 +1087,7 @@
 					"$(SRCROOT)",
 					Nyxian/,
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				OTHER_CFLAGS = "-D__NXTOOL";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1097,6 +1098,7 @@
 		79AA11C22F7FFE24002FEAF2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
 				CODE_SIGN_STYLE = Automatic;
 				DEAD_CODE_STRIPPING = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -1104,6 +1106,7 @@
 					"$(SRCROOT)",
 					Nyxian/,
 				);
+				LD_RUNPATH_SEARCH_PATHS = "@loader_path";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				OTHER_CFLAGS = "-D__NXTOOL";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1138,10 +1141,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = "$(VERSION)";
-				OTHER_CFLAGS = (
-					"-DCLIENT_ENV",
-					"-D__NXTOOL",
-				);
+				OTHER_CFLAGS = "-DCLIENT_ENV";
 				OTHER_LDFLAGS = (
 					"-Wl,-U,_OBJC_CLASS_$_FBSSceneParameters",
 					"-Wl,-U,_OBJC_CLASS_$_LSApplicationWorkspace",
@@ -1186,10 +1186,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = "$(VERSION)";
-				OTHER_CFLAGS = (
-					"-DCLIENT_ENV",
-					"-D__NXTOOL",
-				);
+				OTHER_CFLAGS = "-DCLIENT_ENV";
 				OTHER_LDFLAGS = (
 					"-Wl,-U,_OBJC_CLASS_$_FBSSceneParameters",
 					"-Wl,-U,_OBJC_CLASS_$_LSApplicationWorkspace",

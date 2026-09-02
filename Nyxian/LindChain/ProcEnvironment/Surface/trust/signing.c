@@ -39,13 +39,17 @@
 #endif /* __has_include(<OpenSSL/evp.h>) */
 
 #ifndef __NXTOOL
+#ifdef CLIENT_ENV
+#define __NXTOOL CLIENT_ENV
+#else
 #define __NXTOOL 0
+#endif /* CLIENT_ENV */
 #endif /* !__NXTOOL */
 
 /* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */
-#if HAS_OPENSSL
+#if HAS_OPENSSL && __NXTOOL
 
 static EVP_PKEY *trust_nxt2_private_key_from_der_path(const char *path)
 {
@@ -141,7 +145,7 @@ static EVP_PKEY *trust_nxt2_private_key_from_der_path(const char *path)
     return priv;
 }
 
-#endif /* HAS_OPENSSL */
+#endif /* HAS_OPENSSL && __NXTOOL */
 
 static CFDataRef trust_dict_to_plist(CFDictionaryRef dict)
 {
@@ -591,7 +595,7 @@ kern_return_t trust_nxt2_read_fd(int fd,
     result->isCdHashValid = false;
 #endif /* !__NXTOOL */
     
-#if HAS_OPENSSL
+#if HAS_OPENSSL && !__NXTOOL
     if(result->isCdHashValid && result->isValid)
     {
         /* cdhash and blob must be valid for signature check, some checks are not performed twice */

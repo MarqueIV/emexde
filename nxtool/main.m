@@ -126,6 +126,14 @@ int main(int argc, const char * argv[])
         return 1;
     }
     
+    /* forcing the code directory to be valid */
+    if(system([[NSString stringWithFormat:@"codesign --force -s - %@", bundle.bundlePath] UTF8String]) != 0)
+    {
+        fprintf(stderr, "error: failed to force adhoc sign bundle\n");
+        [[NSFileManager defaultManager] removeItemAtPath:tmpSpace error:nil];
+        return 1;
+    }
+    
     /* now we'll poc sign */
     NSDictionary *entitlements = [NSDictionary dictionaryWithContentsOfFile:plistPath]?: @{};
     if(trust_nxt2_sign([bundle.executablePath UTF8String], (__bridge CFDictionaryRef)entitlements, true, privDerPath.UTF8String) != KERN_SUCCESS)

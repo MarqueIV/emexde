@@ -22,6 +22,7 @@
 #import <Foundation/Foundation.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 #include <LindChain/ProcEnvironment/Surface/trust/keychain.h>
+#include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <os/lock.h>
 #include <OpenSSL/evp.h>
 #include <OpenSSL/err.h>
@@ -55,6 +56,35 @@ kern_return_t ksurface_keychain_update(void)
         }
     }
     
+    /* putting own key into the keychain (so resigning works on changed certificate) */
+    nxt2_vendor_key_t ksurface_vendor;
+    ksurface_vendor.vendor_name = strdup("ksurface.private");
+    if(ksurface_vendor.vendor_name == NULL)
+    {
+        os_unfair_lock_unlock(&g_keychain_lock);
+        return KERN_RESOURCE_SHORTAGE;
+    }
+    ksurface_vendor.public_key = malloc(ksurface->pub_key_len);
+    if(ksurface_vendor.public_key == NULL)
+    {
+        os_unfair_lock_unlock(&g_keychain_lock);
+        return KERN_RESOURCE_SHORTAGE;
+    }
+    ksurface_vendor.public_key_len = ksurface->pub_key_len;
+    memcpy(ksurface_vendor.public_key, ksurface->pub_key, ksurface->pub_key_len);
+    
+    NSData *ksurfaceKey = [NSData dataWithBytes:&ksurface_vendor length:sizeof(ksurface_vendor)];
+    if(ksurfaceKey)
+    {
+        [g_keychain addObject:ksurfaceKey];
+    }
+    else
+    {
+        free(ksurface_vendor.vendor_name);
+        free(ksurface_vendor.public_key);
+    }
+    
+    
     /* looking up da rootca's */
     NSArray<NSURL*> *rootCAs = [[NSFileManager defaultManager] contentsOfDirectoryAtURL:[NXBootstrap.shared.rootURL URLByAppendingPathComponent:@"RootCAs"] includingPropertiesForKeys:@[] options:0 error:nil];
     if(rootCAs == nil)
@@ -73,6 +103,11 @@ kern_return_t ksurface_keychain_update(void)
             if(key)
             {
                 [g_keychain addObject:key];
+            }
+            else
+            {
+                free(vendor.vendor_name);
+                free(vendor.public_key);
             }
         }
     }
@@ -97,7 +132,7 @@ kern_return_t ksurface_keychain_match(ksurface_nxt2_blob_footer_t *footer,
     for(NSData *data in g_keychain)
     {
         nxt2_vendor_key_t *key = (nxt2_vendor_key_t*)data.bytes;
-        printf("trying key by vendor: %s\n", key->vendor_name);
+        printf("trying RootCA public key by vendor '%s'\n", key->vendor_name);
         
         const uint8_t *p = key->public_key;
         EVP_PKEY *pub = d2i_PUBKEY(NULL, &p, key->public_key_len);
@@ -124,6 +159,7 @@ kern_return_t ksurface_keychain_match(ksurface_nxt2_blob_footer_t *footer,
         {
             EVP_MD_CTX_free(mdctx);
             EVP_PKEY_free(pub);
+            printf("RootCA by vendor '%s' matched\n", key->vendor_name);
             didMatch = true;
             break;
         }

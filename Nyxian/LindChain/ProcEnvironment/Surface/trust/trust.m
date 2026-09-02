@@ -437,7 +437,9 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
         ksurface_nxt2_t result_nxt2;
         if(trust_nxt2_read(path, &result_nxt2) == KERN_SUCCESS)
         {
-            if(result_nxt2.needsResign)
+            if(result_nxt2.isValid &&
+               result_nxt2.isCdHashValid &&
+               result_nxt2.needsResign)
             {
                 int fd = open(path, O_RDONLY);  /* TODO: fd shall be used end to end >:3 (technically a vuln) */
                 if(fd < 0)
@@ -454,6 +456,15 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                 if(!success_vn_recover)
                 {
                     /* failed resign */
+                    CFRelease(result_nxt2.entitlements);
+                    CFRelease(executableString);
+                    return NULL;
+                }
+                
+                if(CDHashMatchesCodeDirectoryOfPath(resignPath.UTF8String, (uint8_t*)result_nxt2.cdhash) != KERN_SUCCESS)
+                {
+                    /* failed resign */
+                    [[NSFileManager defaultManager] removeItemAtPath:resignPath error:nil];
                     CFRelease(result_nxt2.entitlements);
                     CFRelease(executableString);
                     return NULL;

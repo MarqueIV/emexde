@@ -192,8 +192,11 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                             let nsDict = cfDict as NSDictionary
                             if let swiftDict = nsDict as? [String: Any] {
                                 ent = swiftDict
-                                if trust_nxt2.isValid && trust_nxt2.isCdHashValid {
-                                    isRootCATrusted = trust_nxt2.isSigned || trust_nxt2.needsResign
+                                withUnsafeBytes(of: trust_nxt2.cdhash) { rawBuffer in
+                                    let uint8Pointer = rawBuffer.bindMemory(to: UInt8.self).baseAddress!
+                                    if trust_nxt2.isValid && trust_nxt2.isCdHashValid && CDHashMatchesCodeDirectoryOfPath(executablePath, uint8Pointer) == KERN_SUCCESS {
+                                        isRootCATrusted = trust_nxt2.isSigned || trust_nxt2.needsResign
+                                    }
                                 }
                             }
                         }
