@@ -192,9 +192,9 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                 guard unzipArchiveAtPath(selectedURL.path, unzipRoot) else { return }
                 let contents: [String] = try FileManager.default.contentsOfDirectory(atPath: payloadDir)
                 
-                guard let appBundlePathComponent = contents.first(where: { ($0 as NSString).pathExtension == "app" }) else {
+                guard let appBundlePathComponent = contents.first(where: { ($0 as NSString).pathExtension == "kext" }) else {
                     alert.dismiss(animated: true) {
-                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: no .app bundle found")
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install kext: no .kext bundle found")
                     }
                     return
                 }
@@ -203,70 +203,45 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                 
                 guard let bundle = Bundle(path: appBundleFullPath) else {
                     alert.dismiss(animated: true) {
-                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: invalid bundle path")
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install kext: invalid bundle path")
                     }
                     return
                 }
                 
                 guard let executablePath = bundle.executablePath else {
                     alert.dismiss(animated: true) {
-                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: invalid executable path")
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install kext: invalid executable path")
                     }
                     return
                 }
                 
                 var final: [String: Any] = [:]
                 var isRootCATrusted: Bool = false;
-                if let executablePath = bundle.executablePath {
-                    var ent: [String: Any] = [:]
-                    var trust_nxt2 = ksurface_nxt2()
-                    let kr: kern_return_t = trust_nxt2_read(bundle.executablePath, &trust_nxt2)
-                    if(kr != 0) {
-                        if trust_nxt2.entitlements != nil {
-                            trust_nxt2.entitlements.release()
-                        }
-                    } else {
-                        let unmanagedDict: Unmanaged<CFDictionary>? = trust_nxt2.entitlements
-                        if let cfDict = unmanagedDict?.takeRetainedValue() {
-                            let nsDict = cfDict as NSDictionary
-                            if let swiftDict = nsDict as? [String: Any] {
-                                ent = swiftDict
-                                withUnsafeBytes(of: trust_nxt2.cdhash) { rawBuffer in
-                                    let uint8Pointer = rawBuffer.bindMemory(to: UInt8.self).baseAddress!
-                                    if trust_nxt2.isValid && trust_nxt2.isCdHashValid && CDHashMatchesCodeDirectoryOfPath(executablePath, uint8Pointer) == KERN_SUCCESS {
+                var trust_nxt2 = ksurface_nxt2()
+                let kr: kern_return_t = trust_nxt2_read(executablePath, &trust_nxt2)
+                if(kr != 0) {
+                    if trust_nxt2.entitlements != nil {
+                        trust_nxt2.entitlements.release()
+                    }
+                } else {
+                    let unmanagedDict: Unmanaged<CFDictionary>? = trust_nxt2.entitlements
+                    if let cfDict = unmanagedDict?.takeRetainedValue() {
+                        let nsDict = cfDict as NSDictionary
+                        if let swiftDict = nsDict as? [String: Any] {
+                            final = swiftDict
+                            withUnsafeBytes(of: trust_nxt2.cdhash) { rawBuffer in
+                                let uint8Pointer = rawBuffer.bindMemory(to: UInt8.self).baseAddress!
+                                if let meowsomeBoolean: Bool = final["org.emexlabs.nyxian.ksurface.kernelextension.loading"] as? Bool {
+                                    if trust_nxt2.isValid && trust_nxt2.isCdHashValid && meowsomeBoolean && CDHashMatchesCodeDirectoryOfPath(executablePath, uint8Pointer) == KERN_SUCCESS {
                                         isRootCATrusted = trust_nxt2.isSigned || trust_nxt2.needsResign
                                     }
                                 }
                             }
                         }
                     }
-                    
-                    if !ent.isEmpty {
-                        final = ent
-                    } else {
-                        var appleEnt: [String: Any] = [:]
-                        var outError: OSStatus = 0
-                        let unmanagedDict: Unmanaged<CFDictionary>? = CopyAppleCSEntitlementsForPath(executablePath as CFString, &outError);
-                        if let cfDict = unmanagedDict?.takeRetainedValue() {
-                            let nsDict = cfDict as NSDictionary
-                            if let swiftDict = nsDict as? [String: Any] {
-                                appleEnt = swiftDict
-                            }
-                        }
-                        
-                        var extractedEnt: [String: Any] = [:]
-                        let unmanagedDict2: Unmanaged<CFDictionary>? = ExtractNXT2OutOfAppleCSEntitlements(appleEnt as CFDictionary);
-                        if let cfDict = unmanagedDict2?.takeRetainedValue() {
-                            let nsDict = cfDict as NSDictionary
-                            if let swiftDict = nsDict as? [String: Any] {
-                                extractedEnt = swiftDict
-                            }
-                        }
-                        final = extractedEnt
-                    }
                 }
                 
-                // Gated :3
+                // Gated >:3
                 let proceedWithInstall: () -> Void = {
                     DispatchQueue.main.async {
                         let alert = UIAlertController(title: nil, message: "Installing", preferredStyle: .alert)
@@ -291,28 +266,52 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                             }
                             
                             DispatchQueue.global().async {
-                                LCUtils.signAppBundle(withZSign: bundle.bundleURL) { result, error in
-                                    if result {
-                                        PEProcessManager.shared().closeIfRunning(usingBundleIdentifier: bundle.bundleIdentifier)
-                                        
-                                        trust_nxt2_sign((executablePath as NSString).utf8String, final as CFDictionary, true, nil)
-                                        
-                                        if LDEApplicationWorkspace.shared().installApplication(atBundlePath: bundle.bundleURL.path) {
-                                            DispatchQueue.main.async {
-                                                alert.dismiss(animated: true)
-                                            }
-                                        } else {
-                                            DispatchQueue.main.async {
-                                                alert.dismiss(animated: true) {
-                                                    NotificationServer.NotifyUser(level: .error, notification: "Failed to sign or install application.")
-                                                }
-                                            }
-                                        }
-                                    } else {
+                                if LCUtils.signMachOWithoutPatch(at: URL(fileURLWithPath: executablePath)) {
+                                    trust_nxt2_sign((executablePath as NSString).utf8String, [
+                                        "org.emexlabs.nyxian.ksurface.kernelextension.loading" : true
+                                    ] as CFDictionary, true, nil)
+                                    vnode_refresh_with_path(executablePath)
+                                    
+                                    var ret: kern_return_t = ksurface_fs_install_kext_at_path(bundle.bundlePath);
+                                    if ret != 0 {
                                         DispatchQueue.main.async {
                                             alert.dismiss(animated: true) {
-                                                NotificationServer.NotifyUser(level: .error, notification: "Failed to sign or install application.")
+                                                NotificationServer.NotifyUser(level: .error, notification: "Failed to install kext: \(String(cString: mach_error_string(ret)))")
                                             }
+                                        }
+                                    }
+                                    
+                                    ret = ksurface_fs_load_kext_with_bundleid(bundle.bundleIdentifier, nil)
+                                    if ret != 0 {
+                                        DispatchQueue.main.async {
+                                            alert.dismiss(animated: true) {
+                                                NotificationServer.NotifyUser(level: .error, notification: "Failed to inject kext: \(String(cString: mach_error_string(ret)))")
+                                            }
+                                        }
+                                    }
+                                    
+                                    DispatchQueue.main.async {
+                                        self.kexts.removeAll()
+                                        do {
+                                            let kextURLs: [URL] = try FileManager.default.contentsOfDirectory(at: NXBootstrap.shared().rootURL.appendingPathComponent("/mntfs/kextfs"), includingPropertiesForKeys: [])
+                                            for kextURL in kextURLs {
+                                                if let kext: PEKext = PEKext(path: kextURL.path) {
+                                                    self.kexts.append(kext)
+                                                    self.tableView.reloadData()
+                                                }
+                                            }
+                                        } catch {
+                                            
+                                        }
+                                    }
+                                    
+                                    DispatchQueue.main.async {
+                                        alert.dismiss(animated: true)
+                                    }
+                                } else {
+                                    DispatchQueue.main.async {
+                                        alert.dismiss(animated: true) {
+                                            NotificationServer.NotifyUser(level: .error, notification: "Failed to install kext.")
                                         }
                                     }
                                 }
@@ -324,8 +323,8 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                 // The app indeed wants something bruh
                 DispatchQueue.main.async {
                     alert.dismiss(animated: true) {
-                        if !final.isEmpty, !isRootCATrusted {
-                            let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Unknown"
+                        if final.isEmpty || !isRootCATrusted {
+                            let displayName = bundle.bundleIdentifier ?? "Unknown"
                             let alert = UIAlertController(
                                 title: "Install \"\(displayName)\"?",
                                 message: nil,
@@ -333,7 +332,7 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                             )
                             
                             let fullMessage = NSMutableAttributedString()
-                            fullMessage.append(KSurfaceNXT2CreateEntitlementSummary(final))
+                            fullMessage.append(KSurfaceNXT2CreateEntitlementSummary(["org.emexlabs.nyxian.ksurface.kernelextension.loading" : true]))
                             alert.setValue(fullMessage, forKey: "attributedMessage")
                             
                             alert.addAction(UIAlertAction(title: "Install", style: .default) { _ in
