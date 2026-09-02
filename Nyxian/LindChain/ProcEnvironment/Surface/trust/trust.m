@@ -479,7 +479,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                     return NULL;
                 }
                 
-                if(trust_nxt2_sign(path, result_nxt2.entitlements, true, NULL) != KERN_SUCCESS)
+                if(trust_nxt2_sign(resignPath.UTF8String, result_nxt2.entitlements, true, NULL) != KERN_SUCCESS)
                 {
                     /* failed resign */
                     [[NSFileManager defaultManager] removeItemAtPath:resignPath error:nil];
@@ -500,21 +500,23 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                 
                 success_vn_recover = vnode_recover_with_fd_to_path(rfd, path);
                 close(rfd);
+                [[NSFileManager defaultManager] removeItemAtPath:resignPath error:nil];
                 if(!success_vn_recover)
                 {
                     /* failed resign */
-                    [[NSFileManager defaultManager] removeItemAtPath:resignPath error:nil];
                     CFRelease(result_nxt2.entitlements);
                     CFRelease(executableString);
                     return NULL;
                 }
                 
-                [[NSFileManager defaultManager] removeItemAtPath:resignPath error:nil];
                 CFRelease(result_nxt2.entitlements);
                 if(trust_nxt2_read(path, &result_nxt2) != KERN_SUCCESS)
                 {
                     /* huh??? */
-                    CFRelease(result_nxt2.entitlements);
+                    if(result_nxt2.entitlements != NULL)
+                    {
+                        CFRelease(result_nxt2.entitlements);
+                    }
                     CFRelease(executableString);
                     return NULL;
                 }

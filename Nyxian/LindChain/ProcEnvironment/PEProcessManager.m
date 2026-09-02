@@ -116,10 +116,6 @@
     }
     
     LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForBundleID:bundleIdentifier];
-    if(!applicationObject.isLaunchAllowed)
-    {
-        return -1;
-    }
     
     /* creating process */
     NSMutableDictionary *mutableItems = [items mutableCopy];
