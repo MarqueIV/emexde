@@ -119,7 +119,10 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let application = self.applications[indexPath.row]
-        PEProcessManager.shared().spawnProcess(withBundleIdentifier: application.bundleIdentifier, withItems: [:], withKernelSurfaceProcess: nil, doRestartIfRunning: false)
+        let processIdentifier: pid_t = PEProcessManager.shared().spawnProcess(withBundleIdentifier: application.bundleIdentifier, withItems: [:], withKernelSurfaceProcess: nil, doRestartIfRunning: false)
+        if processIdentifier < 0 {
+            NotificationServer.NotifyUser(level: .error, notification: "\"\(application.localizedName ?? "Unknown")\" Is No Longer Available")
+        }
     }
     
     @objc func plusButtonPressed() {

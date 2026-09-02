@@ -118,7 +118,6 @@
     LDEApplicationObject *applicationObject = [[LDEApplicationWorkspace shared] applicationObjectForBundleID:bundleIdentifier];
     if(!applicationObject.isLaunchAllowed)
     {
-        [NotificationServer NotifyUserWithLevel:NotifLevelError notification:[NSString stringWithFormat:@"\"%@\" Is No Longer Available", applicationObject.localizedName] delay:0.0];
         return -1;
     }
     

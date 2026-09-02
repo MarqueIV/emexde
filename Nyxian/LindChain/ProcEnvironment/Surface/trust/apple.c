@@ -22,7 +22,10 @@
 /* ----------------------------------------------------------------------
  *  Project Headers
  * -------------------------------------------------------------------- */
+#if !CLIENT_ENV
 #include <LindChain/ProcEnvironment/Surface/trust/apple.h>
+#endif /* !CLIENT_ENV */
+#include <CoreFoundation/CoreFoundation.h>
 #include <CommonCrypto/CommonDigest.h>
 #include <libkern/OSByteOrder.h>
 #include <mach-o/loader.h>
@@ -89,11 +92,15 @@ typedef uint32_t SecCSFlags;
 extern const CFStringRef kSecCodeInfoEntitlementsDict;
 typedef struct __SecRequirement * SecRequirementRef;
 
+#if !__NXTOOL
+
 enum {
     kSecCSDefaultFlags = 0,
     kSecCSSigningInformation = 1 << 1,
     kSecCSRequirementInformation = 1 << 2,
 };
+
+#endif /* !__NXTOOL */
 
 /* ----------------------------------------------------------------------
  *  Function Prototypes
@@ -104,6 +111,7 @@ OSStatus SecCodeCopySigningInformation(SecStaticCodeRef code, SecCSFlags flags, 
 /* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */
+#if !CLIENT_ENV && !__NXTOOL
 CFDictionaryRef CopyAppleCSEntitlementsForPath(CFStringRef path,
                                                OSStatus *outErr)
 {
@@ -334,13 +342,14 @@ CFDictionaryRef ExtractNXT2OutOfAppleCSEntitlements(CFDictionaryRef appleCSEntit
     
     return newNXT2Entitlements;
 }
+#endif /* !CLIENT_ENV && !__NXTOOL */
 
-static bool range_valid(size_t offset, size_t length, size_t total)
+bool __range_valid(size_t offset, size_t length, size_t total)
 {
     return offset <= total && length <= total - offset;
 }
 
-static bool is_code_directory_slot(uint32_t slot)
+bool __is_code_directory_slot(uint32_t slot)
 {
     if(slot == CSSLOT_CODEDIRECTORY)
     {
@@ -356,9 +365,9 @@ static bool is_code_directory_slot(uint32_t slot)
     return false;
 }
 
-static bool cdhash_for_code_directory(const uint8_t *cd_bytes,
-                                      size_t available,
-                                      uint8_t result[USER_FSIGNATURES_CDHASH_LEN])
+bool __cdhash_for_code_directory(const uint8_t *cd_bytes,
+                                 size_t available,
+                                 uint8_t result[USER_FSIGNATURES_CDHASH_LEN])
 {
     if(cd_bytes == NULL ||
        result == NULL ||
@@ -449,7 +458,7 @@ static bool superblob_contains_cdhash(const uint8_t *signature,
         uint32_t type = OSSwapBigToHostInt32(entry.type);
         uint32_t offset = OSSwapBigToHostInt32(entry.offset);
         
-        if(!is_code_directory_slot(type))
+        if(!__is_code_directory_slot(type))
         {
             continue;
         }
@@ -461,7 +470,7 @@ static bool superblob_contains_cdhash(const uint8_t *signature,
         }
         
         uint8_t candidate[USER_FSIGNATURES_CDHASH_LEN];
-        if(!cdhash_for_code_directory(signature + offset, blob_length - offset, candidate))
+        if(!__cdhash_for_code_directory(signature + offset, blob_length - offset, candidate))
         {
             /* bad CD don't accept it >:3 */
             return false;
@@ -528,7 +537,7 @@ static bool thin_macho_contains_cdhash(const uint8_t *base,
         return false;
     }
     
-    if(!range_valid(header_size, sizeofcmds, size))
+    if(!__range_valid(header_size, sizeofcmds, size))
     {
         return false;
     }
@@ -540,7 +549,7 @@ static bool thin_macho_contains_cdhash(const uint8_t *base,
     
     for(uint32_t i = 0; i < ncmds; i++)
     {
-        if(!range_valid(command_offset, sizeof(struct load_command), command_end))
+        if(!__range_valid(command_offset, sizeof(struct load_command), command_end))
         {
             return false;
         }
@@ -553,7 +562,7 @@ static bool thin_macho_contains_cdhash(const uint8_t *base,
             return false;
         }
         
-        if(!range_valid(command_offset, lc.cmdsize, command_end))
+        if(!__range_valid(command_offset, lc.cmdsize, command_end))
         {
             return false;
         }
@@ -574,7 +583,7 @@ static bool thin_macho_contains_cdhash(const uint8_t *base,
             
             memcpy(&sig, base + command_offset, sizeof(sig));
             
-            if(!range_valid(sig.dataoff, sig.datasize, size))
+            if(!__range_valid(sig.dataoff, sig.datasize, size))
             {
                 return false;
             }
@@ -676,7 +685,7 @@ kern_return_t CDHashMatchesCodeDirectory(const uint8_t *base,
             return KERN_DENIED;
         }
         
-        if(!range_valid((size_t)slice_offset, (size_t)slice_size, size))
+        if(!__range_valid((size_t)slice_offset, (size_t)slice_size, size))
         {
             return KERN_DENIED;
         }
