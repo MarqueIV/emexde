@@ -36,7 +36,7 @@ class SettingsViewController: UIThemedTableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return NXApplicationState.extensionLessMode ? 3 : 5
+        return NXApplicationState.extensionLessMode ? 3 : 4
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

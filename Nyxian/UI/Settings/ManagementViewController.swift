@@ -92,7 +92,7 @@ class ManagementViewController: UIThemedTableViewController {
                 if indexPath.row == 0 {
                     do {
                         try FileManager.default.createDirectory(atPath: "\(NSHomeDirectory())/Library/RootCAGen", withIntermediateDirectories: true)
-                        trust_nxt2_generate_rootca_keypair("\(NSHomeDirectory())/Library/RootCAGen/pubkey", "\(NSHomeDirectory())/Library/RootCAGen/privkey")
+                        trust_nxt2_generate_rootca_keypair(UserDefaults.standard.string(forKey: "LDEOrganizationPrefix") ?? NXUser.shared().username,"\(NSHomeDirectory())/Library/RootCAGen/pubkey", "\(NSHomeDirectory())/Library/RootCAGen/privkey")
                         if !zipDirectoryAtPath("\(NSHomeDirectory())/Library/RootCAGen", "\(NSHomeDirectory())/Library/RootCAGen.zip", false) {
                             try FileManager.default.removeItem(atPath: "\(NSHomeDirectory())/Library/RootCAGen")
                             throw NSError(domain: "org.emexlabs.nyxian.rootca.zip", code: -1, userInfo: [NSLocalizedDescriptionKey:"Failed to zip RootCA"])

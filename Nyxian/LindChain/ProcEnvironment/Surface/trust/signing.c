@@ -41,12 +41,6 @@
 #endif /* !__NXTOOL */
 
 /* ----------------------------------------------------------------------
- *  Constants
- * -------------------------------------------------------------------- */
-#define APPEND_TAG_NXTR "NXTR"
-#define APPEND_TAG_NXT2 "NXT2"
-
-/* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */
 static CFDataRef trust_dict_to_plist(CFDictionaryRef dict)
@@ -560,11 +554,21 @@ static int write_all(int fd,
     return 0;
 }
 
-kern_return_t trust_nxt2_generate_rootca_keypair(const char *public_key_path,
+kern_return_t trust_nxt2_generate_rootca_keypair(const char *vendor_name,
+                                                 const char *public_key_path,
                                                  const char *private_key_path)
 {
-    if(public_key_path == NULL ||
+    if(vendor_name == NULL ||
+       public_key_path == NULL ||
        private_key_path == NULL)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    size_t vendor_name_len = strlen(vendor_name);
+
+    if(vendor_name_len == 0 ||
+       vendor_name_len > NXT2_VENDOR_NAME_MAX)
     {
         return KERN_INVALID_ARGUMENT;
     }
@@ -650,7 +654,30 @@ kern_return_t trust_nxt2_generate_rootca_keypair(const char *public_key_path,
         goto done;
     }
     
-    if(write_all(public_fd, public_der, (size_t)public_len) != 0)
+    nxt2_pubkey_header_t pub_header = {
+        .magic = NXT2_PUBKEY_MAGIC,
+        .version = NXT2_PUBKEY_VERSION,
+        .name_len = (uint32_t)vendor_name_len,
+        .key_len = (uint32_t)public_len,
+    };
+    
+    if(write_all(public_fd,
+                 (const uint8_t *)&pub_header,
+                 sizeof(pub_header)) != 0)
+    {
+        goto done;
+    }
+    
+    if(write_all(public_fd,
+                 (const uint8_t *)vendor_name,
+                 vendor_name_len) != 0)
+    {
+        goto done;
+    }
+    
+    if(write_all(public_fd,
+                 public_der,
+                 (size_t)public_len) != 0)
     {
         goto done;
     }
