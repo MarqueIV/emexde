@@ -54,17 +54,17 @@ class ManagementViewController: UIThemedTableViewController {
                 tableViewCell.accessoryType = .disclosureIndicator
             case 1:
                 if indexPath.row == 0 {
-                    tableViewCell.textLabel?.text = "Generate RootCA"
+                    tableViewCell.textLabel?.text = "Generate Root Trust Key Pair"
                 } else if indexPath.row == 1 {
-                    tableViewCell.textLabel?.text = "Installed public RootCA's"
+                    tableViewCell.textLabel?.text = "Installed public root trust keys"
                     tableViewCell.accessoryType = .disclosureIndicator
                 }
             case 2:
                 if indexPath.row == 0 {
-                    tableViewCell.textLabel?.text = "Installed Application's"
+                    tableViewCell.textLabel?.text = "Installed Applications"
                     tableViewCell.accessoryType = .disclosureIndicator
                 } else if indexPath.row == 1 {
-                    tableViewCell.textLabel?.text = "Installed KEXT's"
+                    tableViewCell.textLabel?.text = "Installed KEXTs"
                     tableViewCell.accessoryType = .disclosureIndicator
                 }
             default:
@@ -109,7 +109,7 @@ class ManagementViewController: UIThemedTableViewController {
                 if indexPath.row == 0 {
                     navigationController?.pushViewController(ApplicationManagementViewController(style: .insetGrouped), animated: true)
                 } else {
-                    print("pressed on list kext")
+                    navigationController?.pushViewController(KEXTManagementViewController(style: .insetGrouped), animated: true)
                 }
             default:
                 if indexPath.row == 0 {
