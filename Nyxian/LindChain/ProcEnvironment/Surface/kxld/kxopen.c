@@ -176,6 +176,7 @@ kern_return_t kxopen_with_fd(int fd,
         /* so the kext knows on what version this dependency is */
         image_info->mod->dependencies[i].min_version = depImageInfo->mod->version;
         image_info->mod->dependencies[i].max_version = depImageInfo->mod->version;
+        depImageInfo->mod->flags |= KMOD_FLAG_PERSISTENT;   /* deny dependency unload TODO: track images */
     }
     
     /* apply persistent flag if KXLD_NOCLOSE is set */
