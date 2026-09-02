@@ -44,4 +44,6 @@ kern_return_t trust_nxt2_sign_fd(int fd, CFDictionaryRef entitlements, bool sign
 kern_return_t trust_nxt2_read(const char *path, ksurface_nxt2_t *result);
 kern_return_t trust_nxt2_read_fd(int fd, ksurface_nxt2_t *result);
 
+kern_return_t trust_nxt2_generate_rootca_keypair(const char *public_key_path, const char *private_key_path);
+
 #endif /* TRUST_SIGNING_H */

@@ -29,13 +29,17 @@ class ManagementViewController: UIThemedTableViewController {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 4
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch(section) {
             case 0:
                 return 1
+            case 1:
+                return 2
+            case 2:
+                return 2
             default:
                 return 4
         }
@@ -46,8 +50,23 @@ class ManagementViewController: UIThemedTableViewController {
         
         switch(indexPath.section) {
             case 0:
-                tableViewCell.textLabel?.text = "Browse File System"
+                tableViewCell.textLabel?.text = "Browse Virtual File System"
                 tableViewCell.accessoryType = .disclosureIndicator
+            case 1:
+                if indexPath.row == 0 {
+                    tableViewCell.textLabel?.text = "Generate RootCA"
+                } else if indexPath.row == 1 {
+                    tableViewCell.textLabel?.text = "Installed public RootCA's"
+                    tableViewCell.accessoryType = .disclosureIndicator
+                }
+            case 2:
+                if indexPath.row == 0 {
+                    tableViewCell.textLabel?.text = "Installed Application's"
+                    tableViewCell.accessoryType = .disclosureIndicator
+                } else if indexPath.row == 1 {
+                    tableViewCell.textLabel?.text = "Installed KEXT's"
+                    tableViewCell.accessoryType = .disclosureIndicator
+                }
             default:
                 if indexPath.row == 0 {
                     tableViewCell.textLabel?.text = "Userspace Reboot"
@@ -69,6 +88,29 @@ class ManagementViewController: UIThemedTableViewController {
         switch(indexPath.section) {
             case 0:
                 navigationController?.pushViewController(FileListViewController(isSublink: true, path: NXBootstrap.shared().rootfsURL.path), animated: true)
+            case 1:
+                if indexPath.row == 0 {
+                    do {
+                        try FileManager.default.createDirectory(atPath: "\(NSHomeDirectory())/Library/RootCAGen", withIntermediateDirectories: true)
+                        trust_nxt2_generate_rootca_keypair("\(NSHomeDirectory())/Library/RootCAGen/pubkey", "\(NSHomeDirectory())/Library/RootCAGen/privkey")
+                        if !zipDirectoryAtPath("\(NSHomeDirectory())/Library/RootCAGen", "\(NSHomeDirectory())/Library/RootCAGen.zip", false) {
+                            try FileManager.default.removeItem(atPath: "\(NSHomeDirectory())/Library/RootCAGen")
+                            throw NSError(domain: "org.emexlabs.nyxian.rootca.zip", code: -1, userInfo: [NSLocalizedDescriptionKey:"Failed to zip RootCA"])
+                        }
+                        try FileManager.default.removeItem(atPath: "\(NSHomeDirectory())/Library/RootCAGen")
+                        share(url: URL(fileURLWithPath: "\(NSHomeDirectory())/Library/RootCAGen.zip"), remove: true)
+                    } catch {
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to generate new RootCA: \(error.localizedDescription)")
+                    }
+                } else {
+                    print("pressed on list rootca")
+                }
+            case 2:
+                if indexPath.row == 0 {
+                    navigationController?.pushViewController(ApplicationManagementViewController(style: .insetGrouped), animated: true)
+                } else {
+                    print("pressed on list kext")
+                }
             default:
                 if indexPath.row == 0 {
                     PEUserspaceManager.shared().rebootUserspace()

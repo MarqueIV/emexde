@@ -532,3 +532,176 @@ signature_invalid:
     result->entitlements = entitlements;
     return KERN_SUCCESS;
 }
+
+#if HAS_OPENSSL
+
+
+static int write_all(int fd,
+                     const uint8_t *data,
+                     size_t length)
+{
+    while(length > 0)
+    {
+        ssize_t n = write(fd, data, length);
+        if(n < 0)
+        {
+            return -1;
+        }
+        
+        if(n == 0)
+        {
+            return -1;
+        }
+        
+        data += n;
+        length -= (size_t)n;
+    }
+    
+    return 0;
+}
+
+kern_return_t trust_nxt2_generate_rootca_keypair(const char *public_key_path,
+                                                 const char *private_key_path)
+{
+    if(public_key_path == NULL ||
+       private_key_path == NULL)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    kern_return_t kr = KERN_FAILURE;
+    
+    EVP_PKEY_CTX *ctx = NULL;
+    EVP_PKEY *key = NULL;
+    
+    uint8_t *public_der = NULL;
+    uint8_t *private_der = NULL;
+    
+    int public_fd = -1;
+    int private_fd = -1;
+    
+    int private_len = 0;
+    
+    ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
+    if(ctx == NULL)
+    {
+        goto done;
+    }
+    
+    if(EVP_PKEY_keygen_init(ctx) <= 0)
+    {
+        goto done;
+    }
+    
+    if(EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, NID_X9_62_prime256v1) <= 0)
+    {
+        goto done;
+    }
+    
+    if(EVP_PKEY_keygen(ctx, &key) <= 0)
+    {
+        goto done;
+    }
+    
+    /* generate public key (so guests can Nyxian builds can validate if it has been signed with a RootCA) */
+    int public_len = i2d_PUBKEY(key, NULL);
+    if(public_len <= 0)
+    {
+        goto done;
+    }
+    
+    public_der = malloc((size_t)public_len);
+    if(public_der == NULL)
+    {
+        kr = KERN_RESOURCE_SHORTAGE;
+        goto done;
+    }
+    
+    unsigned char *public_ptr = public_der;
+    if(i2d_PUBKEY(key, &public_ptr) != public_len)
+    {
+        goto done;
+    }
+    
+    /* generate private key for the host */
+    private_len = i2d_PrivateKey(key, NULL);
+    if(private_len <= 0)
+    {
+        goto done;
+    }
+    
+    private_der = malloc((size_t)private_len);
+    if(private_der == NULL)
+    {
+        kr = KERN_RESOURCE_SHORTAGE;
+        goto done;
+    }
+    
+    unsigned char *private_ptr = private_der;
+    if(i2d_PrivateKey(key, &private_ptr) != private_len)
+    {
+        goto done;
+    }
+    
+    /* public key is not a secret ^^ */
+    public_fd = open(public_key_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if(public_fd < 0)
+    {
+        goto done;
+    }
+    
+    if(write_all(public_fd, public_der, (size_t)public_len) != 0)
+    {
+        goto done;
+    }
+    
+    if(fsync(public_fd) != 0)
+    {
+        goto done;
+    }
+    
+    /* private key MUST be private >:3 (I watch you) */
+    private_fd = open(private_key_path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if(private_fd < 0)
+    {
+        goto done;
+    }
+    
+    if(write_all(private_fd, private_der, (size_t)private_len) != 0)
+    {
+        goto done;
+    }
+    
+    if(fsync(private_fd) != 0)
+    {
+        goto done;
+    }
+    
+    kr = KERN_SUCCESS;
+    
+done:
+    if(public_fd >= 0)
+    {
+        close(public_fd);
+    }
+    
+    if(private_fd >= 0)
+    {
+        close(private_fd);
+    }
+    
+    if(private_der != NULL)
+    {
+        /* Otherwise attacker says kread ;3 */
+        OPENSSL_cleanse(private_der, (size_t)(private_len > 0 ? private_len : 0));
+        free(private_der);
+    }
+    free(public_der);
+    
+    EVP_PKEY_free(key);
+    EVP_PKEY_CTX_free(ctx);
+    
+    return kr;
+}
+
+#endif /* HAS_OPENSSL */
