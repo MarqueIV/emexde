@@ -231,11 +231,24 @@ final class NXBuilder: NSObject {
                 }
             }
         } else {
-            if self.project.projectConfig.signMachOWithNyxianEntitlements {
-                trust_nxt2_sign(self.project.machoURL.path, project.entitlementsConfig.dictionary as CFDictionary, false, nil)
-            }
-            if self.project.projectConfig.schemeKind == .app {
-                try self.package()
+            if self.project.projectConfig.schemeKind == .kSurfaceKext {
+                if let ptr = LCMapMachO(self.project.machoURL.path, false) {
+                    ptr.pointee.header.pointee.filetype = UInt32(MH_KEXT_BUNDLE)
+                    LCUnmapMachO(ptr)
+                    
+                    trust_nxt2_sign(self.project.machoURL.path, [
+                        "org.emexlabs.nyxian.ksurface.kernelextension.loading" : true
+                    ] as CFDictionary, true, nil)
+                    
+                    zipDirectoryAtPath(project.payloadURL.path, project.packageURL.path, true)
+                }
+            } else {
+                if self.project.projectConfig.signMachOWithNyxianEntitlements {
+                    trust_nxt2_sign(self.project.machoURL.path, project.entitlementsConfig.dictionary as CFDictionary, false, nil)
+                }
+                if self.project.projectConfig.schemeKind == .app {
+                    try self.package()
+                }
             }
         }
     }
