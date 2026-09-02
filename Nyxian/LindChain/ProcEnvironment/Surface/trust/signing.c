@@ -731,4 +731,112 @@ done:
     return kr;
 }
 
+kern_return_t trust_nxt2_public_key_read(const char *path,
+                                         nxt2_vendor_key_t *result)
+{
+    if(path == NULL || result == NULL)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    memset(result, 0, sizeof(*result));
+    
+    int fd = open(path, O_RDONLY);
+    if(fd < 0)
+    {
+        return KERN_FAILURE;
+    }
+    
+    kern_return_t kr = KERN_FAILURE;
+    
+    nxt2_pubkey_header_t hdr;
+    if(read(fd, &hdr, sizeof(hdr)) != sizeof(hdr))
+    {
+        goto done;
+    }
+    
+    if(hdr.magic != NXT2_PUBKEY_MAGIC ||
+       hdr.version != NXT2_PUBKEY_VERSION)
+    {
+        goto done;
+    }
+    
+    if(hdr.name_len == 0 ||
+       hdr.name_len > NXT2_VENDOR_NAME_MAX)
+    {
+        goto done;
+    }
+    
+    if(hdr.key_len == 0 ||
+       hdr.key_len > 4096)
+    {
+        goto done;
+    }
+    
+    char *name = calloc(1, (size_t)hdr.name_len + 1);
+    if(name == NULL)
+    {
+        kr = KERN_RESOURCE_SHORTAGE;
+        goto done;
+    }
+    
+    if(read(fd, name, hdr.name_len) != (ssize_t)hdr.name_len)
+    {
+        free(name);
+        goto done;
+    }
+    
+    uint8_t *key = malloc(hdr.key_len);
+    if(key == NULL)
+    {
+        free(name);
+        kr = KERN_RESOURCE_SHORTAGE;
+        goto done;
+    }
+    
+    if(read(fd, key, hdr.key_len) != (ssize_t)hdr.key_len)
+    {
+        free(key);
+        free(name);
+        goto done;
+    }
+    
+    const unsigned char *p = key;
+    EVP_PKEY *pub = d2i_PUBKEY(NULL, &p, hdr.key_len);
+    if(pub == NULL)
+    {
+        free(key);
+        free(name);
+        goto done;
+    }
+    
+    if(p != key + hdr.key_len)
+    {
+        EVP_PKEY_free(pub);
+        free(key);
+        free(name);
+        goto done;
+    }
+    
+    if(EVP_PKEY_base_id(pub) != EVP_PKEY_EC)
+    {
+        EVP_PKEY_free(pub);
+        free(key);
+        free(name);
+        goto done;
+    }
+    
+    EVP_PKEY_free(pub);
+    
+    result->vendor_name = name;
+    result->public_key = key;
+    result->public_key_len = hdr.key_len;
+    
+    kr = KERN_SUCCESS;
+    
+done:
+    close(fd);
+    return kr;
+}
+
 #endif /* HAS_OPENSSL */
