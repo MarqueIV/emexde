@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------- */
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/Surface/trust/cdhash.h>
+#include <LindChain/ProcEnvironment/Surface/trust/keychain.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #if __has_include(<OpenSSL/evp.h>)
@@ -514,10 +515,19 @@ kern_return_t trust_nxt2_read_fd(int fd,
         EVP_MD_CTX_free(mdctx);
         EVP_PKEY_free(pub);
     }
+    
+#if HOST_ENV
+    if(!result->isSigned && ksurface_keychain_match(blob_footer, blob_header) == KERN_SUCCESS)
+    {
+        result->needsResign = true;
+    }
+#endif /* HOST_ENV */
 #else
     /* cannot verify without openssl */
     result->isSigned = false;
 #endif /* HAS_OPENSSL */
+    
+    
     
 signature_invalid:
     

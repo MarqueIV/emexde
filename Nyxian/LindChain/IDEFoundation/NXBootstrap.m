@@ -369,6 +369,8 @@ BOOL PEURLIsContainedIn(NSURL *candidate,
                     goto report_error;
                 }
                 
+                ksurface_keychain_update();
+                
                 self.version = 28;
             }
         }

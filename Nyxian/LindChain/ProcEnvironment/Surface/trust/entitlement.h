@@ -191,6 +191,7 @@ struct ksurface_nxt2 {
     bool isValid;       /* unlike in nxtr a valid blob in nxt2 means it passes sanity checks! */
     bool isSigned;      /* means the blob is signed */
     bool isCdHashValid;
+    bool needsResign;   /* trust will resign the executable entirely when set */
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     CFDictionaryRef entitlements;
 };
