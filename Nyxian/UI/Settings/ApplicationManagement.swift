@@ -163,19 +163,25 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 let contents: [String] = try FileManager.default.contentsOfDirectory(atPath: payloadDir)
                 
                 guard let appBundlePathComponent = contents.first(where: { ($0 as NSString).pathExtension == "app" }) else {
-                    NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: no .app bundle found")
+                    alert.dismiss(animated: true) {
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: no .app bundle found")
+                    }
                     return
                 }
                 
                 let appBundleFullPath = payloadDir.appending("/\(appBundlePathComponent)")
                 
                 guard let bundle = Bundle(path: appBundleFullPath) else {
-                    NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: invalid bundle path")
+                    alert.dismiss(animated: true) {
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: invalid bundle path")
+                    }
                     return
                 }
                 
                 guard let executablePath = bundle.executablePath else {
-                    NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: invalid executable path")
+                    alert.dismiss(animated: true) {
+                        NotificationServer.NotifyUser(level: .error, notification: "Failed to install application: invalid executable path")
+                    }
                     return
                 }
                 
