@@ -109,12 +109,19 @@ int main(int argc, const char * argv[])
         return 1;
     }
     
+    BOOL isKext = NO;
     NSBundle *bundle;
     for(NSString *item in items)
     {
         if([item.pathExtension isEqualToString:@"app"])
         {
             bundle = [NSBundle bundleWithPath:[payloadPath stringByAppendingPathComponent:item]];
+            break;
+        }
+        else if([item.pathExtension isEqualToString:@"kext"])
+        {
+            bundle = [NSBundle bundleWithPath:[payloadPath stringByAppendingPathComponent:item]];
+            isKext = YES;
             break;
         }
     }
@@ -127,7 +134,7 @@ int main(int argc, const char * argv[])
     }
     
     /* forcing the code directory to be valid */
-    if(system([[NSString stringWithFormat:@"codesign --force -s - %@", bundle.bundlePath] UTF8String]) != 0)
+    if(!isKext && system([[NSString stringWithFormat:@"codesign --force -s - %@", bundle.bundlePath] UTF8String]) != 0)
     {
         fprintf(stderr, "error: failed to force adhoc sign bundle\n");
         [[NSFileManager defaultManager] removeItemAtPath:tmpSpace error:nil];
