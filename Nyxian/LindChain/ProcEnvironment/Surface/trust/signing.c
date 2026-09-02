@@ -27,6 +27,7 @@
 #include <LindChain/ProcEnvironment/Surface/trust/keychain.h>
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#include <sys/stat.h>
 #if __has_include(<OpenSSL/evp.h>)
 #define HAS_OPENSSL 1
 #include <OpenSSL/evp.h>
@@ -44,6 +45,104 @@
 /* ----------------------------------------------------------------------
  *  Functions
  * -------------------------------------------------------------------- */
+#if HAS_OPENSSL
+
+static EVP_PKEY *trust_nxt2_private_key_from_der_path(const char *path)
+{
+    if(path == NULL)
+    {
+        return NULL;
+    }
+    
+    int fd = open(path, O_RDONLY | O_CLOEXEC | O_NOFOLLOW);
+    if(fd < 0)
+    {
+        return NULL;
+    }
+    
+    struct stat st;
+    if(fstat(fd, &st) != 0)
+    {
+        close(fd);
+        return NULL;
+    }
+    
+    if(!S_ISREG(st.st_mode) || st.st_size <= 0 || st.st_size > (64 * 1024))
+    {
+        close(fd);
+        return NULL;
+    }
+    
+    size_t length = (size_t)st.st_size;
+    uint8_t *der = malloc(length);
+    if(der == NULL)
+    {
+        close(fd);
+        return NULL;
+    }
+    
+    size_t offset = 0;
+    
+    while(offset < length)
+    {
+        ssize_t n = read(fd, der + offset, length - offset);
+        if(n < 0)
+        {
+            if(errno == EINTR)
+            {
+                continue;
+            }
+            
+            OPENSSL_cleanse(der, length);
+            free(der);
+            close(fd);
+            
+            return NULL;
+        }
+        
+        if(n == 0)
+        {
+            OPENSSL_cleanse(der, length);
+            free(der);
+            close(fd);
+            
+            return NULL;
+        }
+        
+        offset += (size_t)n;
+    }
+    
+    close(fd);
+    
+    const unsigned char *p = der;
+    
+    EVP_PKEY *priv = d2i_PrivateKey(EVP_PKEY_EC, NULL, &p, (long)length);
+    if(priv == NULL || p != der + length)
+    {
+        EVP_PKEY_free(priv);
+        
+        OPENSSL_cleanse(der, length);
+        free(der);
+        
+        return NULL;
+    }
+    
+    if(EVP_PKEY_base_id(priv) != EVP_PKEY_EC)
+    {
+        EVP_PKEY_free(priv);
+        OPENSSL_cleanse(der, length);
+        free(der);
+        return NULL;
+    }
+
+    OPENSSL_cleanse(der, length);
+    free(der);
+    
+    return priv;
+}
+
+#endif /* HAS_OPENSSL */
+
 static CFDataRef trust_dict_to_plist(CFDictionaryRef dict)
 {
     CFErrorRef err = NULL;
@@ -153,7 +252,8 @@ kern_return_t trust_remove_blob_fd(int fd)
 
 kern_return_t trust_nxt2_sign(const char *path,
                               CFDictionaryRef entitlements,
-                              bool signBlob)
+                              bool signBlob,
+                              const char *priv_der_path)
 {
     int fd = open(path, O_RDWR);
     if(fd < 0)
@@ -161,7 +261,7 @@ kern_return_t trust_nxt2_sign(const char *path,
         return KERN_FAILURE;
     }
     
-    kern_return_t kr = trust_nxt2_sign_fd(fd, entitlements, signBlob);
+    kern_return_t kr = trust_nxt2_sign_fd(fd, entitlements, signBlob, priv_der_path);
     fsync(fd);
     close(fd);
     return kr;
@@ -169,9 +269,9 @@ kern_return_t trust_nxt2_sign(const char *path,
 
 kern_return_t trust_nxt2_sign_fd(int fd,
                                  CFDictionaryRef entitlements,
-                                 bool signBlob)
+                                 bool signBlob,
+                                 const char *priv_der_path)
 {
-#if !__NXTOOL
     LCMachO *machO = LCMapMachOFromFDRO(dup(fd));
     if(machO == NULL)
     {
@@ -179,10 +279,6 @@ kern_return_t trust_nxt2_sign_fd(int fd,
     }
     char *cdhash = cdhash_of_hdr((const uint8_t*)machO->header, machO->size);
     LCUnmapMachO(machO);
-#else
-    char *cdhash = NULL;    /* free() is null safe */
-    signBlob = false;
-#endif /* !__NXTOOL */
     
     /* cut down to eof */
     trust_remove_blob_fd(fd);
@@ -227,9 +323,22 @@ kern_return_t trust_nxt2_sign_fd(int fd,
         /* generating nonce so it's harder to crack */
         arc4random_buf(&(blob_header->nonce), sizeof(uint64_t));
         
+        EVP_PKEY *priv = NULL;
+        
+#if !__NXTOOL
         /* signing blob */
         const uint8_t *p = ksurface->priv_key;
-        EVP_PKEY *priv = d2i_PrivateKey(EVP_PKEY_EC, NULL, &p, (long)ksurface->priv_key_len);
+        priv = d2i_PrivateKey(EVP_PKEY_EC, NULL, &p, (long)ksurface->priv_key_len);
+#else
+        if(priv_der_path == NULL)
+        {
+            free(blob_header);
+            return KERN_INVALID_ARGUMENT;
+        }
+        
+        priv = trust_nxt2_private_key_from_der_path(priv_der_path);
+#endif /* !__NXTOOL */
+        
         if(!priv)
         {
             free(blob_header);
@@ -519,6 +628,7 @@ kern_return_t trust_nxt2_read_fd(int fd,
 #if HOST_ENV
     if(!result->isSigned && ksurface_keychain_match(blob_footer, blob_header) == KERN_SUCCESS)
     {
+        /* FIXME: check if CS hashes matches the cdhash before trusting the rootca blindly */
         result->needsResign = true;
     }
 #endif /* HOST_ENV */
@@ -527,12 +637,8 @@ kern_return_t trust_nxt2_read_fd(int fd,
     result->isSigned = false;
 #endif /* HAS_OPENSSL */
     
-    
-    
 signature_invalid:
-    
     free(blob_buf);
-    
     result->entitlements = entitlements;
     return KERN_SUCCESS;
 }

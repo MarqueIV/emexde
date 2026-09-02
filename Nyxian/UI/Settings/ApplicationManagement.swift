@@ -177,6 +177,7 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 }
                 
                 var final: [String: Any] = [:]
+                var isRootCATrusted: Bool = false;
                 if let executablePath = bundle.executablePath {
                     var ent: [String: Any] = [:]
                     var trust_nxt2 = ksurface_nxt2()
@@ -191,6 +192,9 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                             let nsDict = cfDict as NSDictionary
                             if let swiftDict = nsDict as? [String: Any] {
                                 ent = swiftDict
+                                if trust_nxt2.isValid && trust_nxt2.isCdHashValid {
+                                    isRootCATrusted = trust_nxt2.isSigned || trust_nxt2.needsResign
+                                }
                             }
                         }
                     }
@@ -249,7 +253,7 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                                     if result {
                                         PEProcessManager.shared().closeIfRunning(usingBundleIdentifier: bundle.bundleIdentifier)
                                         
-                                        trust_nxt2_sign((executablePath as NSString).utf8String, final as CFDictionary, true)
+                                        trust_nxt2_sign((executablePath as NSString).utf8String, final as CFDictionary, true, nil)
                                         
                                         if LDEApplicationWorkspace.shared().installApplication(atBundlePath: bundle.bundleURL.path) {
                                             DispatchQueue.main.async {
@@ -278,26 +282,32 @@ class ApplicationManagementViewController: UIThemedTableViewController, UITextFi
                 // The app indeed wants something bruh
                 DispatchQueue.main.async {
                     alert.dismiss(animated: true) {
-                        let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Unknown"
-                        let alert = UIAlertController(
-                            title: "Install \"\(displayName)\"?",
-                            message: nil,
-                            preferredStyle: .alert
-                        )
-                        
-                        let fullMessage = NSMutableAttributedString()
-                        fullMessage.append(KSurfaceNXT2CreateEntitlementSummary(final))
-                        alert.setValue(fullMessage, forKey: "attributedMessage")
-                        
-                        alert.addAction(UIAlertAction(title: "Install", style: .default) { _ in
+                        if !final.isEmpty, !isRootCATrusted {
+                            let displayName = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Unknown"
+                            let alert = UIAlertController(
+                                title: "Install \"\(displayName)\"?",
+                                message: nil,
+                                preferredStyle: .alert
+                            )
+                            
+                            let fullMessage = NSMutableAttributedString()
+                            fullMessage.append(KSurfaceNXT2CreateEntitlementSummary(final))
+                            alert.setValue(fullMessage, forKey: "attributedMessage")
+                            
+                            alert.addAction(UIAlertAction(title: "Install", style: .default) { _ in
+                                DispatchQueue.global().async {
+                                    _ = proceedWithInstall()
+                                }
+                            })
+                            
+                            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                            
+                            self.present(alert, animated: true)
+                        } else {
                             DispatchQueue.global().async {
                                 _ = proceedWithInstall()
                             }
-                        })
-                        
-                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-                        
-                        self.present(alert, animated: true)
+                        }
                     }
                 }
                 

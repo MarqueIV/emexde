@@ -468,7 +468,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                     return NULL;
                 }
                 
-                if(trust_nxt2_sign(path, result_nxt2.entitlements, true) != KERN_SUCCESS)
+                if(trust_nxt2_sign(path, result_nxt2.entitlements, true, NULL) != KERN_SUCCESS)
                 {
                     /* failed resign */
                     [[NSFileManager defaultManager] removeItemAtPath:resignPath error:nil];

@@ -210,6 +210,10 @@
 		79AA11C62F7FFF12002FEAF2 /* Exceptions for "Nyxian" folder in "nxtool" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				LindChain/OpenSSL.xcframework,
+				LindChain/ProcEnvironment/litehook/litehook.c,
+				LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.m,
+				LindChain/ProcEnvironment/Surface/trust/cdhash.c,
 				LindChain/ProcEnvironment/Surface/trust/signing.c,
 				LindChain/Utils/Zip.m,
 			);
