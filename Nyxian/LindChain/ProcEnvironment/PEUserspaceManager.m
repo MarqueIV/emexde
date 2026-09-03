@@ -139,21 +139,27 @@
         }
     }
     klog_log(domain, "%@ [ok]", [self class]);
+    os_unfair_lock_unlock(&self->_lock);
     
-    if(ksurface_shimcache_build() != KERN_SUCCESS)
-    {
-        ksurface_panic("shimcache build failed");
-    }
-    klog_log(domain, "shimcache [ok]");
-    
-    /* spinning up the launch services */
-    [[PELaunchServiceManager shared] reloadAllEntries];
-    
-    /* mark current boot as successful */
-    atomic_store_explicit(&_launchServiceManagerStable, true, memory_order_release);
-    atomic_store_explicit(&_bootSuccessful, true, memory_order_release);
-    
-    os_unfair_lock_unlock(&_lock);
+    dispatch_queue_t backgroundQueue = dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0);
+    dispatch_async(backgroundQueue, ^{
+        [[NXBootstrap shared] waitTillDone];
+        
+        os_unfair_lock_lock(&self->_lock);
+        if(ksurface_shimcache_build() != KERN_SUCCESS)
+        {
+            ksurface_panic("shimcache build failed");
+        }
+        klog_log(domain, "shimcache [ok]");
+        
+        /* spinning up the launch services */
+        [[PELaunchServiceManager shared] reloadAllEntries];
+        
+        /* mark current boot as successful */
+        atomic_store_explicit(&self->_launchServiceManagerStable, true, memory_order_release);
+        atomic_store_explicit(&self->_bootSuccessful, true, memory_order_release);
+        os_unfair_lock_unlock(&self->_lock);
+    });
 }
 
 - (void)boot
