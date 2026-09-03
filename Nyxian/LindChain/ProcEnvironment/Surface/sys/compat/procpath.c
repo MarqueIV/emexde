@@ -50,30 +50,27 @@ DEFINE_SYSCALL_HANDLER(procpath)
     size_t u_size = 0;
     if(!syscall_copy_in(sys_task_, sizeof(size_t), &u_size, u_size_ptr))
     {
-        kvo_release(target);
         sys_return_failure_with_errno(EFAULT);
     }
     
-    /* does the process path buffer fit into the userspace buffer */
+    /* getting buffer of target (we shouldn't hold it for long) */
+    char path[PATH_MAX];
+    _Static_assert(sizeof(target->nyx.identity->path) <= sizeof(path), "process path exceeds temporary buffer");
     kvo_rdlock(target);
-    size_t size = strnlen(target->nyx.identity->path, sizeof(target->nyx.identity->path) - 1) + 1;
+    strlcpy(path, target->nyx.identity->path, sizeof(path));
+    kvo_unlock(target);
+    kvo_release(target);
+    
+    /* does the process path buffer fit into the userspace buffer */
+    size_t size = strnlen(path, sizeof(path) - 1) + 1;
     if(u_size < size)
     {
-        kvo_unlock(target);
-        kvo_release(target);
         if(!syscall_copy_out(sys_task_, sizeof(size_t), &size, u_size_ptr))
         {
             sys_return_failure_with_errno(EFAULT);
         }
         sys_return_failure_with_errno(ERANGE);
     }
-    
-    /* copying path into temporary buffer (copy out could trigger fault) */
-    char path[PATH_MAX];
-    _Static_assert(sizeof(target->nyx.identity->path) <= sizeof(path), "process path exceeds temporary buffer");
-    strlcpy(path, target->nyx.identity->path, sizeof(path));
-    kvo_unlock(target);
-    kvo_release(target);
     
     /* final copy out */
     if(!syscall_copy_out(sys_task_, size, path, u_buffer_ptr))
