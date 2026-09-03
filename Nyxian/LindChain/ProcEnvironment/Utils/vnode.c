@@ -49,6 +49,7 @@ bool vnode_recover_with_fd_to_path(int fd,
                                    const char *path)
 {
     /* creates new node at zero cost */
+    unlink(path);   /* unlink first, there shall be no vnode before hand */
     if(fclonefileat(fd, AT_FDCWD, path, 0) == 0)
     {
         /* yayyy =3 */
@@ -56,7 +57,6 @@ bool vnode_recover_with_fd_to_path(int fd,
     }
     
     /* fallback is using copy file */
-    unlink(path);   /* unlink first, there shall be no vnode before hand */
     int copyfd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0777);
     if(copyfd < 0)
     {
@@ -65,13 +65,10 @@ bool vnode_recover_with_fd_to_path(int fd,
     }
     
     /* more expensive, but more efficient than nothing */
-    if(fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) == 0)
-    {
-        /* atleast this worked :3 */
-        close(copyfd);
-        return true;
-    }
-    
+    off_t offset = lseek(fd, 0, SEEK_CUR);
+    lseek(fd, 0, SEEK_SET);
+    bool copyfile_succeeded = fcopyfile(fd, copyfd, NULL, COPYFILE_DATA) == 0;
+    lseek(fd, offset, SEEK_SET);
     close(copyfd);
-    return false;
+    return copyfile_succeeded;
 }
