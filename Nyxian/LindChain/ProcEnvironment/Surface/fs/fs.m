@@ -191,6 +191,8 @@ kern_return_t ksurface_fs_init(void)
         }
     }
     
+    ksurface_fs_umount([[NSString stringWithFormat:@"%s/Documents/mntfs/rootfs/dev", home] UTF8String]);
+    
     klog_log("ksurface:fs", "starting mount preserver");
     kr = ksurface_fs_preserver_kickstart();
     if(kr != KERN_SUCCESS)

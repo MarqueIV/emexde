@@ -25,6 +25,9 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <limits.h>
+#include <os/lock.h>
+
+static os_unfair_lock g_mount_lock = OS_UNFAIR_LOCK_INIT;
 
 static kern_return_t __ksurface_fs_mount_clear_directory(const char *dir_path)
 {
@@ -176,13 +179,52 @@ kern_return_t ksurface_fs_mount2(FSMountAttr attributes,
         strlcpy(node.target, device_dir, PATH_MAX);
     }
     
+    os_unfair_lock_lock(&g_mount_lock);
+    
     /* and register it */
     kern_return_t kr = ksurface_fs_preserver_add_node(node);
     if(kr != KERN_SUCCESS)
     {
+        os_unfair_lock_unlock(&g_mount_lock);
         return kr;
     }
     
-    /* adding sandbox registry */
-    return ksurface_fs_sandbox_registry_add(permissions, type, mount_dir, (type == kFSNodeTypeDirectory) ? NULL : device_dir);
+    /* adding sandbox filesystem register for mount */
+    kr = ksurface_fs_sandbox_registry_add(permissions, type, mount_dir, (type == kFSNodeTypeDirectory) ? NULL : device_dir);
+    os_unfair_lock_unlock(&g_mount_lock);
+    return kr;
+}
+
+kern_return_t ksurface_fs_umount(const char *mount_dir)
+{
+    if(mount_dir == NULL)
+    {
+        return KERN_INVALID_ARGUMENT;
+    }
+    
+    char rpath[PATH_MAX];
+    if(realpath(mount_dir, rpath) == NULL)
+    {
+        /* path doesn't exist so mount does not? */
+        strlcpy(rpath, mount_dir, PATH_MAX);
+    }
+    
+    /* perform userspace unmount */
+    os_unfair_lock_lock(&g_mount_lock);
+    kern_return_t kr = ksurface_fs_sandbox_registry_remove(rpath);
+    if(kr != KERN_SUCCESS)
+    {
+        os_unfair_lock_unlock(&g_mount_lock);
+        return kr;
+    }
+    
+    kr = ksurface_fs_preserver_remove_node(rpath);
+    if(kr != KERN_SUCCESS)
+    {
+        os_unfair_lock_unlock(&g_mount_lock);
+        return kr;
+    }
+    os_unfair_lock_unlock(&g_mount_lock);
+    
+    return KERN_SUCCESS;
 }

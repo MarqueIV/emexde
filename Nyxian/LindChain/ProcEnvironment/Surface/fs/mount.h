@@ -47,4 +47,6 @@ typedef struct {
 kern_return_t ksurface_fs_mount(FSMountAttr attributes, const char *mount_dir, const char *bind_dir, ...) __attribute__((deprecated("Use ksurface_fs_mount2(3) instead")));
 kern_return_t ksurface_fs_mount2(FSMountAttr attributes, const char *device_dir, const char *mount_dir, ...);
 
+kern_return_t ksurface_fs_umount(const char *mount_dir);
+
 #endif /* FS_MOUNT_H */
