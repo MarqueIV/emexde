@@ -29,6 +29,7 @@
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 #import <LindChain/IDEFoundation/NXProject.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
 
 static os_unfair_lock g_shimcache_lock = OS_UNFAIR_LOCK_INIT;
 
@@ -127,6 +128,14 @@ kern_return_t ksurface_shimcache_build(void)
             os_unfair_lock_unlock(&g_shimcache_lock);
             return KERN_FAILURE;
         }
+    }
+    
+    /* sign it */
+    if(![LCUtils signMachOWithoutPatchAtURL:[NSURL fileURLWithPath:shimCacheDylib]])
+    {
+        klog_log("shimcache:build", "couldn't sign shimcache");
+        os_unfair_lock_unlock(&g_shimcache_lock);
+        return KERN_SUCCESS;
     }
     
     /* mount shim to correct place FIXME: supposed to add the mount */
