@@ -107,7 +107,7 @@
     /* now we can spin up that baby (micro kernel) =3 */
     ksurface_kinit();
     
-    if(enabled && strcmp(getenv("FORCE_DISABLE_KEXT_LOADING") ?: "0", "1") != 0)
+    if(enabled)
     {
         klog_log(domain, "loading kexts into address space");
         NSMutableString *string = [[NSMutableString alloc] init];
