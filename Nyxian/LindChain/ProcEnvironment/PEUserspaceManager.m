@@ -144,6 +144,7 @@
     {
         ksurface_panic("shimcache build failed");
     }
+    klog_log(domain, "shimcache [ok]");
     
     /* spinning up the launch services */
     [[PELaunchServiceManager shared] reloadAllEntries];

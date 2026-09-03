@@ -154,11 +154,10 @@ kern_return_t ksurface_shimcache_build(void)
         NSString *mainSourceFile = nil;
         if(![job executeJobWithOutDiagnostics:&outDiagnostic withOutMainSource:&mainSourceFile])
         {
-            klog_log("shimcache:build", "error occured while building shim cache");
+            klog_log("shimcache:build:error", "%@:", mainSourceFile);
             for(MDKDiagnostic *diagnostic in outDiagnostic)
             {
-                klog_log("shimcache:build", "%@:", mainSourceFile);
-                klog_log("shimcache:build", "    %@", diagnostic.message);
+                klog_log("shimcache:build:error", "    %@", diagnostic.message);
             }
             os_unfair_lock_unlock(&g_shimcache_lock);
             return KERN_FAILURE;
