@@ -28,6 +28,7 @@
 #import <MobileDevelopmentKit/MobileDevelopmentKit.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 #import <LindChain/IDEFoundation/NXProject.h>
+#import <LindChain/ProcEnvironment/Utils/klog.h>
 
 static os_unfair_lock g_shimcache_lock = OS_UNFAIR_LOCK_INIT;
 
@@ -114,11 +115,14 @@ kern_return_t ksurface_shimcache_build(void)
     for(MDKJob *job in jobs)
     {
         NSArray<MDKDiagnostic*> *outDiagnostic = nil;
-        if(![job executeJobWithOutDiagnostics:&outDiagnostic withOutMainSource:nil])
+        NSString *mainSourceFile = nil;
+        if(![job executeJobWithOutDiagnostics:&outDiagnostic withOutMainSource:&mainSourceFile])
         {
+            klog_log("shimcache:build", "error occured while building shim cache");
             for(MDKDiagnostic *diagnostic in outDiagnostic)
             {
-                printf("%s\n", diagnostic.message.UTF8String);
+                klog_log("shimcache:build", "%@:", mainSourceFile);
+                klog_log("shimcache:build", "    %@", diagnostic.message);
             }
             os_unfair_lock_unlock(&g_shimcache_lock);
             return KERN_FAILURE;
@@ -127,7 +131,7 @@ kern_return_t ksurface_shimcache_build(void)
     
     /* mount shim to correct place FIXME: supposed to add the mount */
     ksurface_fs_mount2(kFSMountAttrRead, "/dev/nounlink", [shimCacheDylib UTF8String]);
-    ksurface_fs_mount2(kFSMountAttrRead, [shimCacheDylib UTF8String], [[[[[NXBootstrap shared] rootfsURL] URLByAppendingPathComponent:@"/Documents/mntfs/bootfs/shimcache.dylib"] path] UTF8String]);
+    ksurface_fs_mount2(kFSMountAttrRead, [shimCacheDylib UTF8String], [[[[[NXBootstrap shared] rootURL] URLByAppendingPathComponent:@"/mntfs/bootfs/shimcache.dylib"] path] UTF8String]);
     
     os_unfair_lock_unlock(&g_shimcache_lock);
     return KERN_SUCCESS;
