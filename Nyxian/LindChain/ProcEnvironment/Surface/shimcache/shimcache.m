@@ -93,6 +93,12 @@ kern_return_t ksurface_shimcache_build(void)
         }
     }
     
+    if([codeFiles count] <= 0)
+    {
+        os_unfair_lock_unlock(&g_shimcache_lock);
+        return KERN_SUCCESS;
+    }
+    
     /* now we need to compile them together to one shimcache */
     NSString *shimCacheDylib = [[shimcacheBuildURL URLByAppendingPathComponent:@"shimcache.dylib"] path];
     
