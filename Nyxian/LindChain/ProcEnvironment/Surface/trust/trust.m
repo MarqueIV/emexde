@@ -39,6 +39,7 @@
 #import <LindChain/ProcEnvironment/Surface/fs/sandbox.h>
 #import <LindChain/ProcEnvironment/Utils/vnode.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
+#import <LindChain/Utils/CFTools.h>
 #import <ksurface_config.h>
 
 /* ----------------------------------------------------------------------
@@ -386,46 +387,19 @@ static bool trust_resign_with_fd(int *fd,
        result_nxt2->needsResign)
     {
         os_unfair_lock_lock(&resign_lock);
-        NSString *resignPath = [[NSHomeDirectory() stringByAppendingPathComponent:@"/Library/ResignFast."] stringByAppendingString:[[NSUUID UUID] UUIDString]];
-        if(!vnode_recover_with_fd_to_path(*fd, [resignPath UTF8String]))
+        if(![LCUtils signMachOAtURL:[NSURL fileURLWithPath:[NSString stringWithCString:path encoding:NSUTF8StringEncoding]]])
         {
             os_unfair_lock_unlock(&resign_lock);
             return false;
         }
         
-        if(![LCUtils signMachOAtURL:[NSURL fileURLWithPath:resignPath]])
-        {
-            unlink(resignPath.UTF8String);
-            os_unfair_lock_unlock(&resign_lock);
-            return false;
-        }
-        
-        /* reopen after vnode recover and resign */
-        close(*fd);
-        *fd = open(resignPath.UTF8String, O_RDWR | O_EXLOCK);
-        if(*fd < 0)
+        if(vnode_inaccessible_reopen(fd) != 0)
         {
             os_unfair_lock_unlock(&resign_lock);
             return false;
         }
         
         if(trust_nxt2_sign_fd(*fd, result_nxt2->entitlements, true, NULL) != KERN_SUCCESS)
-        {
-            unlink(resignPath.UTF8String);
-            os_unfair_lock_unlock(&resign_lock);
-            return false;
-        }
-        
-        if(!vnode_recover_with_fd_to_path(*fd, path))
-        {
-            os_unfair_lock_unlock(&resign_lock);
-            return false;
-        }
-        
-        close(*fd);
-        unlink(resignPath.UTF8String);
-        *fd = open(path, O_RDONLY | O_EXLOCK);
-        if(*fd < 0)
         {
             os_unfair_lock_unlock(&resign_lock);
             return false;
@@ -517,7 +491,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     /* signature validation */
 #if KSURFACE_CS_ALLOW_NXT2
     {
-        int fd = open(path, O_RDONLY | O_EXLOCK);
+        int fd = vnode_inaccessible_open(path, O_RDWR);
         if(fd < 0)
         {
             CFRelease(executableString);
@@ -572,22 +546,22 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             CFRelease(result_nxt2.entitlements);
             if(identity->entitlements == NULL)
             {
-                close(fd);
+                vnode_inaccessible_close(fd);
                 CFRelease(executableString);
                 free(identity);
                 return NULL;
             }
             identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
-            close(fd);
+            vnode_inaccessible_close(fd);
             return identity;
             
         out_failure_release_nxt2:
-            close(fd);
+            vnode_inaccessible_close(fd);
             CFRelease(result_nxt2.entitlements);
             CFRelease(executableString);
             return NULL;
         }
-        close(fd);
+        vnode_inaccessible_close(fd);
     }
 #endif /* KSURFACE_CS_ALLOW_NXT2 */
     
