@@ -103,7 +103,7 @@ kern_return_t ksurface_fs_mount(FSMountAttr attributes,
     }
     else
     {
-        device_dir = "/dev/nodelete";
+        device_dir = "/dev/nounlink";
         mount_dir = old_mount_dir;
     }
     
@@ -149,7 +149,7 @@ kern_return_t ksurface_fs_mount2(FSMountAttr attributes,
     
     /* if bind_dir is givven it becomes a directory */
     FSNodeType type = kFSNodeTypeSymbolicLink;
-    static const char preserver_device[PATH_MAX] = "/dev/nodelete";
+    static const char preserver_device[PATH_MAX] = "/dev/nounlink";
     if(strncmp(device_dir, preserver_device, sizeof(preserver_device)) == 0)
     {
         type = kFSNodeTypeDirectory;
