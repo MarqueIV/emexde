@@ -32,4 +32,6 @@ kern_return_t kxopen(const char *path, int mode, kxld_image_info_t **image_info)
 kern_return_t kxopen_with_fd(int fd, int mode, kxld_image_info_t **image_info);
 kern_return_t kxclose(kxld_image_info_t *image_info);
 
+kern_return_t kxld_seal(void);
+
 #endif /* KXLD_KXOPEN_H */
