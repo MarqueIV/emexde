@@ -198,6 +198,22 @@ int LiveProcessMain(int argc, char *argv[])
     overwriteEnvironmentProperties(environmentDictionary);
     overwriteArguments(argumentDictionary, &argc, &argv);
     
+    /* checking for shimcache */
+    NSString *nyxianRoot = [NSString stringWithCString:getenv("NXROOT") encoding:NSUTF8StringEncoding];
+    if(nyxianRoot != NULL)
+    {
+        NSString *shimPath = [nyxianRoot stringByAppendingString:@"/boot/shimcache.dylib"];
+        if([[NSFileManager defaultManager] fileExistsAtPath:shimPath])
+        {
+            /* now load the shimcache! */
+            void *handle = dlopen(shimPath.fileSystemRepresentation, RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE);
+            if(handle == NULL)
+            {
+                printf("dlopen: %s\n", dlerror());
+            }
+        }
+    }
+    
 #if DEBUG
     setenv("DYLD_MMAP_SANDBOX_EXEC_ALLOWED_PATH", dyld_get_mmap_sandbox_map_exec_allowed_path(), 0);
 #endif /* DEBUG */
