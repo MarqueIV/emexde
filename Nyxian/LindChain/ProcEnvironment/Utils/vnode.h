@@ -36,7 +36,7 @@ bool vnode_recover_with_fd_to_path(int fd, const char *path);
  * the guest accessible path.
  */
 int vnode_inaccessible_open(const char *path, int flg);
-int vnode_inaccessible_close(int fd);
+int vnode_inaccessible_close(int fd, bool refresh);
 int vnode_inaccessible_reopen(int *fd);
 
 #endif /* __VNODE_H */

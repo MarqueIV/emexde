@@ -172,7 +172,8 @@ int vnode_inaccessible_open(const char *path,
     return inaccessible_fd;
 }
 
-int vnode_inaccessible_close(int fd)
+int vnode_inaccessible_close(int fd,
+                             bool refresh)
 {
     os_unfair_lock_lock(&g_vnode_inaccessible_inode_lock);
     
@@ -192,7 +193,7 @@ int vnode_inaccessible_close(int fd)
         return -1;
     }
     
-    if(!vnode_recover_with_fd_to_path(fd, accessiblePath))
+    if(refresh && !vnode_recover_with_fd_to_path(fd, accessiblePath))
     {
         os_unfair_lock_unlock(&g_vnode_inaccessible_inode_lock);
         return -1;

@@ -491,6 +491,7 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
     /* signature validation */
 #if KSURFACE_CS_ALLOW_NXT2
     {
+        bool refresh = false;
         int fd = vnode_inaccessible_open(path, O_RDWR);
         if(fd < 0)
         {
@@ -508,9 +509,16 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
                 return NULL;
             }
             
-            if(result_nxt2.needsResign && !trust_resign_with_fd(&fd, &result_nxt2))
+            if(result_nxt2.needsResign)
             {
-                goto out_failure_release_nxt2;
+                if(!trust_resign_with_fd(&fd, &result_nxt2))
+                {
+                    goto out_failure_release_nxt2;
+                }
+                else
+                {
+                    refresh = true;
+                }
             }
             
             LCMachO *machO = LCMapMachOFromFDRO(dup(fd));
@@ -546,22 +554,22 @@ ksurface_trust_identity_t *trust_identity_create_from_path(const char *path)
             CFRelease(result_nxt2.entitlements);
             if(identity->entitlements == NULL)
             {
-                vnode_inaccessible_close(fd);
+                vnode_inaccessible_close(fd, refresh);
                 CFRelease(executableString);
                 free(identity);
                 return NULL;
             }
             identity->filePermissions = trust_identity_give_file_permissions(executableString, identity->entitlements);
-            vnode_inaccessible_close(fd);
+            vnode_inaccessible_close(fd, refresh);
             return identity;
             
         out_failure_release_nxt2:
-            vnode_inaccessible_close(fd);
+            vnode_inaccessible_close(fd, refresh);
             CFRelease(result_nxt2.entitlements);
             CFRelease(executableString);
             return NULL;
         }
-        vnode_inaccessible_close(fd);
+        vnode_inaccessible_close(fd, refresh);
     }
 #endif /* KSURFACE_CS_ALLOW_NXT2 */
     
