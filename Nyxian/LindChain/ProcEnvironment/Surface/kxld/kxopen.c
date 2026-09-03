@@ -261,6 +261,10 @@ kern_return_t kxopen_with_fd(int fd,
                 ksurface_panic("kext '%s' failed to deinitialize: %s", image_info->mod->identifier, mach_error_string(kr));
             }
         }
+        if(KXUnregisterKext(image_info) == KERN_SUCCESS)
+        {
+            kxdestroy_image(image_info);
+        }
         os_unfair_lock_unlock(&g_kxld_lock);
         return KERN_SUCCESS;
     }
