@@ -28,7 +28,7 @@
 #include <LindChain/ProcEnvironment/Surface/trust/signing.h>
 #include <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>
-#include <LindChain/ProcEnvironment/Shims/panic.h>
+#import <LindChain/ProcEnvironment/Utils/kpanic.h>
 #include <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/KextLoader/PEKext.h>
 #include <mach/mach.h>
@@ -56,7 +56,7 @@ kern_return_t ksurface_fs_init(void)
     kern_return_t kr = ksurface_fs_sandbox_init();
     if(kr != KERN_SUCCESS)
     {
-        environment_panic("failed to initialize fs sandbox");
+        ksurface_panic("failed to initialize fs sandbox");
     }
     
     typedef struct {
