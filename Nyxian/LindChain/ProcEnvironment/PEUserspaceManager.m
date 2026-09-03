@@ -28,9 +28,10 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/Utils/kpanic.h>
 #import <LindChain/IDEFoundation/NXBootstrap.h>
-#import <LindChain/ProcEnvironment/Surface/fs/fs.h>
 #import <LindChain/ProcEnvironment/KextLoader/PEKextLoader.h>
 #import <LindChain/ProcEnvironment/Surface/shimcache/shimcache.h>
+#import <LindChain/ProcEnvironment/Surface/fs/fs.h>
+#import <LindChain/ProcEnvironment/Surface/kxld/kxopen.h>
 #import <Nyxian-Swift.h>
 
 @implementation PEUserspaceManager {
@@ -118,6 +119,12 @@
             [NotificationServer NotifyUserWithLevel:NotifLevelError notification:message delay:1.0];
         }
     }
+    else
+    {
+        klog_log(domain, "kext loader [disabled]");
+        /* seal so nobody can load them anyways */
+        kxld_seal();
+    }
     
     /* now the actual userspace */
     Class UserspaceBootChain[] = {
@@ -141,6 +148,7 @@
     klog_log(domain, "%@ [ok]", [self class]);
     os_unfair_lock_unlock(&self->_lock);
     
+    /* shimcache needs to exist before the Userspace can truly spin up */
     dispatch_queue_t backgroundQueue = dispatch_get_global_queue(QOS_CLASS_BACKGROUND, 0);
     dispatch_async(backgroundQueue, ^{
         [[NXBootstrap shared] waitTillDone];
