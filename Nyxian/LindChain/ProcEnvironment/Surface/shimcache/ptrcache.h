@@ -19,16 +19,36 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LIVESHIM_H
-#define LIVESHIM_H
+#ifndef PTRCACHE_H
+#define PTRCACHE_H
 
-#include <CoreFoundation/CoreFoundation.h>
+#include <stdint.h>
+#include <mach/kern_return.h>
 
-CF_EXPORT double LiveShimVersionNumber;
-CF_EXPORT const unsigned char LiveShimVersionString[];
+#define NYX_DYLD_BLOB_MAGIC 0x4E595844594C4431ULL   /* "NYXDYLD1" */
 
-#include <LiveShim/LiveShimSyscall.h>
-#include <LiveShim/dyld.h>
-#include <LiveShim/ptrcache.h>
+enum {
+    kDyldPtrOpen = 0,
+    kDyldPtrFcntl,
+    kDyldPtrFstat64,
+    kDyldPtrStat64,
+    kDyldPtrOpenat,
+    kDyldPtrCount
+};
 
-#endif /* LIVESHIM_H */
+typedef struct {
+    uint64_t magic;
+    
+    uint32_t version;
+    uint32_t size;
+    
+    uint64_t open;
+    uint64_t fcntl;
+    uint64_t fstat64;
+    uint64_t stat64;
+    uint64_t openat;
+} nyx_ptr_cache_blob_t;
+
+kern_return_t ksurface_ptrcache_emit(void);
+
+#endif /* PTRCACHE_H */

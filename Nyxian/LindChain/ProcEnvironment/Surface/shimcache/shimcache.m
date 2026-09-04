@@ -29,6 +29,7 @@
 #import <LindChain/IDEFoundation/NXBootstrap.h>
 #import <LindChain/IDEFoundation/NXProject.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
+#import <LindChain/ProcEnvironment/Utils/vnode.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCUtils.h>
 
 static os_unfair_lock g_shimcache_lock = OS_UNFAIR_LOCK_INIT;
@@ -168,6 +169,13 @@ kern_return_t ksurface_shimcache_build(void)
     if(![LCUtils signMachOWithoutPatchAtURL:[NSURL fileURLWithPath:shimCacheDylib]])
     {
         klog_log("shimcache:build", "couldn't sign shimcache");
+        os_unfair_lock_unlock(&g_shimcache_lock);
+        return KERN_SUCCESS;
+    }
+    
+    if(!vnode_refresh_with_path(shimCacheDylib.UTF8String))
+    {
+        klog_log("shimcache:build", "couldn't refresh vnode of shimcache");
         os_unfair_lock_unlock(&g_shimcache_lock);
         return KERN_SUCCESS;
     }

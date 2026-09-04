@@ -19,16 +19,23 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef LIVESHIM_H
-#define LIVESHIM_H
+#ifndef LIVESHIM_PTRCACHE_H
+#define LIVESHIM_PTRCACHE_H
 
-#include <CoreFoundation/CoreFoundation.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-CF_EXPORT double LiveShimVersionNumber;
-CF_EXPORT const unsigned char LiveShimVersionString[];
+enum {
+    kDyldPtrOpen = 0,
+    kDyldPtrFcntl,
+    kDyldPtrFstat64,
+    kDyldPtrStat64,
+    kDyldPtrOpenat,
+    kDyldPtrCount
+};
 
-#include <LiveShim/LiveShimSyscall.h>
-#include <LiveShim/dyld.h>
-#include <LiveShim/ptrcache.h>
+extern uint64_t ptrcache[kDyldPtrCount];
 
-#endif /* LIVESHIM_H */
+bool load_ptrcache(void);
+
+#endif /* LIVESHIM_PTRCACHE_H */
