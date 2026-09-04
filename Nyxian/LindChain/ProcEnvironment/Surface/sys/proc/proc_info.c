@@ -23,5 +23,13 @@
 
 DEFINE_SYSCALL_HANDLER(proc_info)
 {
+    /* parse arguments */
+    int32_t u_callnum = (int32_t)args[0];
+    pid_t u_pid = (pid_t)args[1];
+    uint32_t u_flavour = (uint32_t)args[2];
+    uint64_t u_arg = (uint64_t)args[3];
+    userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
+    int32_t buffersize = (int32_t)args[5];
+    
     sys_return;
 }
