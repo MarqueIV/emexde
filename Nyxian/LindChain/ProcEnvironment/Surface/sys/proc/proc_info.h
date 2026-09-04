@@ -19,12 +19,12 @@
  along with Nyxian. If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef SURFACE_SYS_KILL_H
-#define SURFACE_SYS_KILL_H
+#ifndef SURFACE_SYS_PROC_INFO_H
+#define SURFACE_SYS_PROC_INFO_H
 
 #include <LindChain/ProcEnvironment/Surface/surface.h>
 #include <LindChain/ProcEnvironment/Surface/extra/xnubits/proc_info.h>
 
 DEFINE_SYSCALL_HANDLER(proc_info);
 
-#endif /* SURFACE_SYS_KILL_H */
+#endif /* SURFACE_SYS_PROC_INFO_H */

@@ -20,6 +20,9 @@
 */
 
 #include <LindChain/ProcEnvironment/Surface/sys/proc/proc_info.h>
+#include <LindChain/ProcEnvironment/Surface/proc/lookup.h>
+#include <LindChain/ProcEnvironment/Surface/proc/spawn.h>
+#include <LindChain/ProcEnvironment/Surface/proc/permit.h>
 
 DEFINE_SYSCALL_HANDLER(proc_info_listpids)
 {
@@ -53,7 +56,34 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidfileportinfo)
 
 DEFINE_SYSCALL_HANDLER(proc_info_terminate)
 {
-    sys_return_failure_with_errno(ENOSYS);
+    pid_t u_pid = (pid_t)args[1];
+    
+    if(!proc_snapshot_primitive_over_pid_allowed(sys_proc_snapshot_, u_pid, kPEEntitlementFlagProcessKill, kPEEntitlementFlagNone))
+    {
+        sys_return_failure_with_errno(errno);
+    }
+    
+    /* we need the process */
+    ksurface_proc_t *target;
+    kern_return_t kr = proc_for_pid(u_pid, &target);
+    if(kr != KERN_SUCCESS)
+    {
+        sys_return_failure_with_errno(ESRCH);
+    }
+    
+    /* making sure it is not ksurface it self */
+    kvo_rdlock(target);
+    if(target->bsd.kp_proc.p_flag & P_SYSTEM)
+    {
+        kvo_unlock(target);
+        kvo_release(target);
+        sys_return_failure_with_errno(EPERM);
+    }
+    kvo_unlock(target);
+    
+    /* now terminating it lol */
+    proc_kill(target, SIGKILL);
+    sys_return;
 }
 
 DEFINE_SYSCALL_HANDLER(proc_info_dirtycontrol)
@@ -95,11 +125,13 @@ DEFINE_SYSCALL_HANDLER(proc_info)
 {
     /* parse arguments */
     int32_t u_callnum = (int32_t)args[0];
-    pid_t u_pid = (pid_t)args[1];
-    uint32_t u_flavour = (uint32_t)args[2];
-    uint64_t u_arg = (uint64_t)args[3];
-    userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
-    int32_t buffersize = (int32_t)args[5];
+    /*
+     * pid_t u_pid = (pid_t)args[1];
+     * uint32_t u_flavour = (uint32_t)args[2];
+     * uint64_t u_arg = (uint64_t)args[3];
+     * userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
+     * int32_t buffersize = (int32_t)args[5];
+     */
     
     switch(u_callnum)
     {
