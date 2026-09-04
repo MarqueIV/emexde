@@ -52,9 +52,29 @@ struct NXApplicationState {
         return !extensionExists || !extensionCorrectlyEntitled;
     }()
     
-    static var loadKernelExtensions: Bool = false
+    private static var actualLoadKernelExtensions: Bool = false
+    static var loadKernelExtensions: Bool {
+        get {
+            if UserDefaults.standard.bool(forKey: "LDEDisableKernelExtensionsForce") {
+                UserDefaults.standard.removeObject(forKey: "LDEDisableKernelExtensionsForce")
+                return false
+            }
+            return self.actualLoadKernelExtensions;
+        }
+        set {
+            if UserDefaults.standard.bool(forKey: "LDEDisableKernelExtensionsForce") {
+                return
+            }
+            actualLoadKernelExtensions = newValue
+        }
+    }
     
-    static var fileListRequiresToSendRequests: Bool = false;
+    static var fileListRequiresToSendRequests: Bool = false
+    
+    static func restartAppWithoutKEXTLoadingEnabled() {
+        UserDefaults.standard.set(true, forKey: "LDEDisableKernelExtensionsForce")
+        PERestartSelf()
+    }
 }
 
 func checkSigningSetup(completionHandler: @escaping (Bool) -> Void = { _ in }, showAlert: Bool = true) {
@@ -285,7 +305,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate, UITabBarControllerDeleg
     ) {
         completionHandler(true)
         if NXApplicationState.loadKernelExtensions, shortcutItem.type == "org.emexlabs.nyxian.noload" {
-            NotificationServer.NotifyUser(level: .note, notification: "You have to close Nyxian first before you can start it without Ksurface Kernel Extensions.")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                NXApplicationState.restartAppWithoutKEXTLoadingEnabled()
+            });
         }
     }
 }
