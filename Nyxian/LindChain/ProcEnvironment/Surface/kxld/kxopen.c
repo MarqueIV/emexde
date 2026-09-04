@@ -301,6 +301,11 @@ out_failure:
 kern_return_t kxclose(kxld_image_info_t *claimed_image_info)
 {
     os_unfair_lock_lock(&g_kxld_lock);
+    if(g_kxld_sealed)
+    {
+        os_unfair_lock_unlock(&g_kxld_lock);
+        return KERN_ALREADY_IN_SET;
+    }
     klog_log("kextloader", "unloading kext '%s'", claimed_image_info->mod->identifier);
     
     /* finding kext object */
@@ -362,7 +367,7 @@ kern_return_t kxld_seal(void)
     if(g_kxld_sealed)
     {
         os_unfair_lock_unlock(&g_kxld_lock);
-        return KERN_ALREADY_IN_SET;
+        return KERN_SUCCESS;
     }
     g_kxld_sealed = true;
     os_unfair_lock_unlock(&g_kxld_lock);
