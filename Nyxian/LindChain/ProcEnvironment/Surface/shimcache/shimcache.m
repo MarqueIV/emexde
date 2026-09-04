@@ -127,7 +127,7 @@ kern_return_t ksurface_shimcache_build(void)
     }
     
     /* now we need to compile them together to one shimcache */
-    NSString *shimCacheDylib = [[shimcacheBuildURL URLByAppendingPathComponent:@"shimcache.dylib"] path];
+    NSString *shimCacheDylib = [[[[NXBootstrap shared] rootURL] URLByAppendingPathComponent:@"/mntfs/bootfs/shimcache.dylib"] path];
     
     NSMutableArray<NSString*> *driverFlags = [NSMutableArray array];
     [driverFlags addObjectsFromArray:[NXProjectConfig sdkCompilerFlags]];
@@ -164,6 +164,7 @@ kern_return_t ksurface_shimcache_build(void)
             return KERN_FAILURE;
         }
     }
+    [[NSFileManager defaultManager] removeItemAtURL:shimcacheBuildURL error:nil];
     
     /* sign it */
     if(![LCUtils signMachOWithoutPatchAtURL:[NSURL fileURLWithPath:shimCacheDylib]])
@@ -180,9 +181,10 @@ kern_return_t ksurface_shimcache_build(void)
         return KERN_SUCCESS;
     }
     
+    /* moving*/
+    
     /* mount shim to correct place */
-    ksurface_fs_mount2(kFSMountAttrRead, "/dev/nounlink", [shimCacheDylib UTF8String]);
-    ksurface_fs_mount2(kFSMountAttrRead, [shimCacheDylib UTF8String], [[[[[NXBootstrap shared] rootURL] URLByAppendingPathComponent:@"/mntfs/bootfs/shimcache.dylib"] path] UTF8String]);
+    ksurface_fs_mount2(kFSMountAttrRead, "/dev/nounlink", [shimCacheDylib UTF8String]); /* bootfs is already read-only vmount'ed */
     
     os_unfair_lock_unlock(&g_shimcache_lock);
     return KERN_SUCCESS;
