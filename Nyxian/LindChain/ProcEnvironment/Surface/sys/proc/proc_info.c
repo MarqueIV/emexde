@@ -83,6 +83,7 @@ DEFINE_SYSCALL_HANDLER(proc_info_terminate)
     
     /* now terminating it lol */
     proc_kill(target, SIGKILL);
+    kvo_release(target);
     sys_return;
 }
 
