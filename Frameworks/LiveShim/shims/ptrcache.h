@@ -26,12 +26,17 @@
 #include <stdint.h>
 
 enum {
+    /* for the RO file system sandbox mmap bypass */
     kDyldPtrOpen = 0,
     kDyldPtrFcntl,
     kDyldPtrFstat64,
     kDyldPtrStat64,
     kDyldPtrOpenat,
-    kDyldPtrCount
+    
+    /* for the dlopen with the lock bypasses */
+    kDyldLockUnlockFunc,
+    
+    kDyldPtrCount,
 };
 
 extern uint64_t ptrcache[kDyldPtrCount];

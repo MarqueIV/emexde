@@ -25,29 +25,19 @@
 #include <stdint.h>
 #include <mach/kern_return.h>
 
-#define NYX_DYLD_BLOB_MAGIC 0x4E595844594C4431ULL   /* "NYXDYLD1" */
-
 enum {
+    /* for the RO file system sandbox mmap bypass */
     kDyldPtrOpen = 0,
     kDyldPtrFcntl,
     kDyldPtrFstat64,
     kDyldPtrStat64,
     kDyldPtrOpenat,
-    kDyldPtrCount
+    
+    /* for the dlopen with the lock bypasses */
+    kDyldLockUnlockFunc,
+    
+    kDyldPtrCount,
 };
-
-typedef struct {
-    uint64_t magic;
-    
-    uint32_t version;
-    uint32_t size;
-    
-    uint64_t open;
-    uint64_t fcntl;
-    uint64_t fstat64;
-    uint64_t stat64;
-    uint64_t openat;
-} nyx_ptr_cache_blob_t;
 
 kern_return_t ksurface_ptrcache_emit(void);
 

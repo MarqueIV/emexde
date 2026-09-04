@@ -23,6 +23,8 @@
 #import <LindChain/ProcEnvironment/Surface/shimcache/ptrcache.h>
 #import <LindChain/ProcEnvironment/Surface/fs/mount.h>
 #import <LindChain/ProcEnvironment/Utils/klog.h>
+#import <LindChain/ProcEnvironment/litehook/litehook.h>
+#import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #include <string.h>
 #include <mach/mach.h>
 #include <mach/task_info.h>
@@ -124,6 +126,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
     }
     
     dyld_search_entry_t entries[kDyldPtrCount] = {
+        /* first shit */
         [kDyldPtrOpen] = {
             .signature = 0xD4001001D28000B0ULL,
             .found = NULL,
@@ -144,15 +147,45 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
             .signature = 0xD4001001D28039F0ULL,
             .found = NULL,
         },
+        
+        /* 2nd shit */
+        [kDyldLockUnlockFunc] = {
+            .signature = 0x0,
+            .found = NULL,
+        },
     };
+    searchDyldFunctions(dyldBase, entries, kDyldPtrOpenat + 1);
     
-    searchDyldFunctions(dyldBase, entries, kDyldPtrCount);
+    /* now the shit that takes 20~30ms if not cached properly */
+    const char *libdyldPath = "/usr/lib/system/libdyld.dylib";
+    mach_header_u *libdyldHeader = LCGetLoadedImageHeader(0, libdyldPath);
+    assert(libdyldHeader != NULL);
+    void **lockUnlockPtr = NULL;
+    void **vtableLibSystemHelpers = litehook_find_dsc_symbol(libdyldPath, "__ZTVN5dyld416LibSystemHelpersE");
+    void *lockFunc = litehook_find_dsc_symbol(libdyldPath, "__ZNK5dyld416LibSystemHelpers42os_unfair_recursive_lock_lock_with_optionsEP26os_unfair_recursive_lock_s24os_unfair_lock_options_t");
+#if DEBUG
+    void *unlockFunc = litehook_find_dsc_symbol(libdyldPath, "__ZNK5dyld416LibSystemHelpers31os_unfair_recursive_lock_unlockEP26os_unfair_recursive_lock_s");
+#endif /* DEBUG */
+    while(!lockUnlockPtr)
+    {
+        if(vtableLibSystemHelpers[0] == lockFunc)
+        {
+            lockUnlockPtr = vtableLibSystemHelpers;
+            NSCAssert(vtableLibSystemHelpers[1] == unlockFunc, @"dyld has changed: lock and unlock functions are not next to each other");
+            break;
+        }
+        vtableLibSystemHelpers++;
+    }
+    
+    entries[kDyldLockUnlockFunc].found = lockUnlockPtr;
+    
     static const char *names[kDyldPtrCount] = {
         "open",
         "fcntl",
         "fstat64",
         "stat64",
-        "openat"
+        "openat",
+        "lockUnlockFunc",
     };
     
     for(size_t i = 0; i < kDyldPtrCount; i++)
