@@ -741,7 +741,7 @@
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         SwizzleObjCMethod(@selector(allApplications), PrivClass(LSApplicationWorkspace), @selector(hook_allApplications), [LSApplicationWorkspaceHooks class], kSwizzleMethodTypeInstance);
-        SwizzleObjCMethod(@selector(allInstalledApplications), PrivClass(LSApplicationWorkspace), @selector(hook_allApplications), [LSApplicationWorkspaceHooks class], kSwizzleMethodTypeInstance);
+        SwizzleObjCMethod(@selector(allInstalledApplications), PrivClass(LSApplicationWorkspace), @selector(hook_allInstalledApplications), [LSApplicationWorkspaceHooks class], kSwizzleMethodTypeInstance);
         SwizzleObjCMethod(@selector(uninstallApplication:withOptions:error:usingBlock:), PrivClass(LSApplicationWorkspace), @selector(hook_uninstallApplication:withOptions:error:usingBlock:), [LSApplicationWorkspaceHooks class], kSwizzleMethodTypeInstance);
         SwizzleObjCMethod(@selector(openApplicationWithBundleID:), PrivClass(LSApplicationWorkspace), @selector(hook_openApplicationWithBundleID:), [LSApplicationWorkspaceHooks class], kSwizzleMethodTypeInstance);
         SwizzleObjCMethod(@selector(_applicationIconImageForBundleIdentifier:format:scale:), [UIImage class], @selector(hook_iconForBundleID:format:scale:), [UIImage class], kSwizzleMethodTypeClass);
@@ -750,6 +750,22 @@
 }
 
 - (NSArray<LSApplicationSpoofProxy*>*)hook_allApplications
+{
+    LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
+    [workspace ping];
+    
+    NSArray<LDEApplicationObject*> *allApplicationObjects = [workspace allApplicationObjects];
+    NSMutableArray<LSApplicationSpoofProxy*> *apps = [NSMutableArray array];
+    for(LDEApplicationObject *object in allApplicationObjects)
+    {
+        LSApplicationSpoofProxy *proxy = [LSApplicationSpoofProxy applicationProxyForLDEObject:object];
+        [apps addObject:proxy];
+    }
+    
+    return apps;
+}
+
+- (NSArray<LSApplicationSpoofProxy*>*)hook_allInstalledApplications
 {
     LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
     [workspace ping];
