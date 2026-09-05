@@ -23,6 +23,11 @@
 #include <LindChain/ProcEnvironment/Surface/proc/lookup.h>
 #include <LindChain/ProcEnvironment/Surface/proc/spawn.h>
 #include <LindChain/ProcEnvironment/Surface/proc/permit.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <os/lock.h>
+
+static os_unfair_lock g_kernmsgbuf_lock = OS_UNFAIR_LOCK_INIT;
 
 DEFINE_SYSCALL_HANDLER(proc_info_listpids)
 {
@@ -41,7 +46,49 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidfdinfo)
 
 DEFINE_SYSCALL_HANDLER(proc_info_kernmsgbuf)
 {
-    sys_return_failure_with_errno(ENOSYS);
+    /* first permission checks */
+    if(proc_geteuid(sys_proc_snapshot_) != 0 && !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), kPEEntitlementFlagPlatform))
+    {
+        sys_return_failure_with_errno(EPERM);
+    }
+    
+    /* parsing arguments */
+    userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
+    int32_t u_buffersize = (int32_t)args[5];
+    
+    /* getting size */
+    extern int kfd; /* file descriptor to kernel log */
+    struct stat kfdstat;
+    if(fstat(kfd, &kfdstat) != 0)
+    {
+        return 0;
+    }
+    off_t currentSize = kfdstat.st_size;
+    off_t copySize = (u_buffersize < currentSize) ? u_buffersize : currentSize;
+    
+    /* is it asking for the size? */
+    if(u_buffersize == 0 && u_buffer == NULL)
+    {
+        return (int)currentSize;
+    }
+    
+    /* copy! (locked so it doesn't become a memory starvation vector) */
+    os_unfair_lock_lock(&g_kernmsgbuf_lock);
+    void *klog_mem = mmap(NULL, currentSize, PROT_READ, MAP_SHARED, kfd, 0);
+    if(klog_mem == MAP_FAILED)
+    {
+        os_unfair_lock_unlock(&g_kernmsgbuf_lock);
+        sys_return_failure_with_errno(ENOMEM);  /* "if you run out of memory, you run out of memory" - speedyfriendy67 (such a retarded quote bruh ^^) */
+    }
+    bool success = syscall_copy_out(sys_task_, copySize, klog_mem, u_buffer);
+    munmap(klog_mem, currentSize);
+    os_unfair_lock_unlock(&g_kernmsgbuf_lock);
+    if(!success)
+    {
+        sys_return_failure_with_errno(EFAULT);
+    }
+    
+    return (int)copySize;
 }
 
 DEFINE_SYSCALL_HANDLER(proc_info_setcontrol)
@@ -56,6 +103,7 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidfileportinfo)
 
 DEFINE_SYSCALL_HANDLER(proc_info_terminate)
 {
+    /* parsing arguments */
     pid_t u_pid = (pid_t)args[1];
     
     if(!proc_snapshot_primitive_over_pid_allowed(sys_proc_snapshot_, u_pid, kPEEntitlementFlagProcessKill, kPEEntitlementFlagNone))
@@ -131,7 +179,7 @@ DEFINE_SYSCALL_HANDLER(proc_info)
      * uint32_t u_flavour = (uint32_t)args[2];
      * uint64_t u_arg = (uint64_t)args[3];
      * userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
-     * int32_t buffersize = (int32_t)args[5];
+     * int32_t u_buffersize = (int32_t)args[5];
      */
     
     switch(u_callnum)
