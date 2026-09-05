@@ -863,7 +863,7 @@ static UIImage *Gib26Icon(UIImage *rawIcon,
         return nil;
     }
     
-    /* more research is needed on how apple applies the variant :c */
+    /* more research is needed on how apple applies the format :c */
     ISImageDescriptor *descriptor = [[ISImageDescriptorClass alloc] initWithSize:size scale:scale];
     descriptor.shape = 1;
     descriptor.appearance = 0;
