@@ -206,6 +206,14 @@ kern_return_t ksurface_fs_init(void)
         }
     }
     
+    klog_log("ksurface:fs", "starting mount preserver");
+    kr = ksurface_fs_preserver_kickstart();
+    if(kr != KERN_SUCCESS)
+    {
+        ksurface_panic("failed to start mount preserver");
+        return kr;
+    }
+    
     return KERN_SUCCESS;
 }
 

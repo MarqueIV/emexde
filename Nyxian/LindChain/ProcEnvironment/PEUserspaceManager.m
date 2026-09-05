@@ -173,14 +173,6 @@
         /* mark current boot as successful */
         atomic_store_explicit(&self->_launchServiceManagerStable, true, memory_order_release);
         atomic_store_explicit(&self->_bootSuccessful, true, memory_order_release);
-        
-        klog_log(domain, "starting mount preserver");
-        kern_return_t kr = ksurface_fs_preserver_kickstart();
-        if(kr != KERN_SUCCESS)
-        {
-            ksurface_panic("failed to start mount preserver");
-            return;
-        }
         os_unfair_lock_unlock(&self->_lock);
     });
 }
