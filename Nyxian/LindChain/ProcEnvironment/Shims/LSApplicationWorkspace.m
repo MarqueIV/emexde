@@ -720,6 +720,49 @@
     return PrivClass(LSApplicationProxy);
 }
 
+- (NSMethodSignature *)methodSignatureForSelector:(SEL)sel
+{
+    NSMethodSignature *sig = [super methodSignatureForSelector:sel];
+    if(sig)
+    {
+        return sig;
+    }
+    return [PrivClass(LSApplicationProxy) instanceMethodSignatureForSelector:sel];
+}
+
+- (void)forwardInvocation:(NSInvocation *)inv
+{
+    SEL sel = inv.selector;
+    static NSMutableSet *seen;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{ seen = [NSMutableSet set]; });
+    NSString *name = NSStringFromSelector(sel);
+    @synchronized(seen)
+    {
+        if(![seen containsObject:name])
+        {
+            [seen addObject:name];
+        }
+    }
+
+    NSUInteger len = inv.methodSignature.methodReturnLength;
+    if(len)
+    {
+        void *buf = calloc(1, len);
+        [inv setReturnValue:buf];
+        free(buf);
+    }
+}
+
+- (BOOL)respondsToSelector:(SEL)sel
+{
+    if([super respondsToSelector:sel])
+    {
+        return YES;
+    }
+    return [PrivClass(LSApplicationProxy) instancesRespondToSelector:sel];
+}
+
 @end
 
 @interface LSApplicationWorkspaceHooks: NSObject
@@ -749,7 +792,7 @@
     return [self hook_defaultWorkspace];
 }
 
-- (NSArray<LSApplicationSpoofProxy*>*)hook_allApplications
++ (NSArray<LSApplicationSpoofProxy*>*)giveAllApps
 {
     LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
     [workspace ping];
@@ -765,20 +808,14 @@
     return apps;
 }
 
+- (NSArray<LSApplicationSpoofProxy*>*)hook_allApplications
+{
+    return [LSApplicationWorkspaceHooks giveAllApps];
+}
+
 - (NSArray<LSApplicationSpoofProxy*>*)hook_allInstalledApplications
 {
-    LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
-    [workspace ping];
-    
-    NSArray<LDEApplicationObject*> *allApplicationObjects = [workspace allApplicationObjects];
-    NSMutableArray<LSApplicationSpoofProxy*> *apps = [NSMutableArray array];
-    for(LDEApplicationObject *object in allApplicationObjects)
-    {
-        LSApplicationSpoofProxy *proxy = [LSApplicationSpoofProxy applicationProxyForLDEObject:object];
-        [apps addObject:proxy];
-    }
-    
-    return apps;
+    return [LSApplicationWorkspaceHooks giveAllApps];
 }
 
 - (BOOL)openApplicationWithBundleID:(NSString*)bundleIdentifier
