@@ -41,6 +41,9 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(kxld_image)
         case kvObjEventCopy:
         case kvObjEventSnapshot:
             ksurface_panic("attempting to copy or snapshot a kxld image object is illegal");
+        case kvObjEventInit:
+            image_info->safeToUnmap = true;
+            return 0;
         case kvObjEventDeinit:
             if(image_info->mod != NULL)
             {
@@ -65,18 +68,13 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(kxld_image)
                         }
                     }
                     kern_return_t kr = KXUnregisterKext(image_info);
-                    if(kr == KERN_SUCCESS || kr == KERN_NOT_FOUND)
-                    {
-                        if(image_info->base != NULL && image_info->safeToUnmap)
-                        {
-                            munmap(image_info->base, image_info->len);
-                        }
-                    }
-                    else
+                    if(kr != KERN_SUCCESS && kr != KERN_NOT_FOUND)
                     {
                         ksurface_panic("kext '%s' failed to unregister: %s", image_info->mod->identifier, mach_error_string(kr));
                     }
                 }
+                
+                /* must come after, cause it may need a dependency to deinitialize */
                 if(image_info->dependenciesResolved)
                 {
                     klog_log("kextloader:unload", "releasing references of dependencies of kext '%s'", image_info->mod->identifier);
@@ -86,12 +84,19 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(kxld_image)
                         kern_return_t kr = KXGetRegisteredKextForIdentifier(image_info->mod->dependencies[i].identifier, &depImageInfo);
                         if(kr != KERN_SUCCESS)
                         {
-                            ksurface_panic("failed to find previously resolvable dependency that was reference incremented.");
+                            ksurface_panic("failed to find previously resolvable dependency that was reference incremented");
                         }
                         kvo_release(depImageInfo);
                     }
                 }
+                
+                /* then unmap */
+                if(image_info->base != NULL && image_info->safeToUnmap)
+                {
+                    munmap(image_info->base, image_info->len);
+                }
             }
+            [[fallthrough]];    /* this is C23, fallthrough needs marking lol, apple fix your standard warn flags */
         default:
             return 0;
     }
