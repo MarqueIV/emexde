@@ -818,11 +818,6 @@
     return [LSApplicationWorkspaceHooks giveAllApps];
 }
 
-- (BOOL)openApplicationWithBundleID:(NSString*)bundleIdentifier
-{
-    return NO;  /* no call path to do that externally yet */
-}
-
 - (BOOL)hook_uninstallApplication:(NSString *)bundleID
                       withOptions:(NSDictionary<NSString *, id> *_Nullable)arg1
                             error:(NSError **)arg2
@@ -845,41 +840,51 @@
                             scale:(CGFloat)scale
 {
     LDEApplicationObject *obj = [[LDEApplicationWorkspace shared] applicationObjectForBundleID:bundleIdentifier];
-    if(obj)
+    if(obj && obj.icon)
     {
         UIImage *rawIcon = obj.icon;
         
         CGSize targetSize;
-        switch(format)
         {
-            case 1:     /* AppStore */
-                targetSize = CGSizeMake(1024, 1024);
-                break;
-            default:    /* Fallback */  /* just tried and was amazed that you could place default cases everywhere OWO */
-            case 2:     /* Home Screen */
-                targetSize = CGSizeMake(60, 60);
-                break;
-            case 3:     /* Spotlight */
-                targetSize = CGSizeMake(40, 40);
-                break;
-            case 4:     /* Settings */
-                targetSize = CGSizeMake(29, 29);
-                break;
-            case 5:     /* Notifications */
-                targetSize = CGSizeMake(20, 20);
-                break;
+            static NSMutableDictionary<NSString *, NSValue *> *sizeCache;
+            static dispatch_once_t once;
+            dispatch_once(&once, ^{
+                sizeCache = [NSMutableDictionary new];
+            });
+            
+            NSString *key = [NSString stringWithFormat:@"%d@%.1f", format, scale];
+            @synchronized(sizeCache)
+            {
+                NSValue *found = sizeCache[key];
+                if(found)
+                {
+                    targetSize = found.CGSizeValue;
+                    goto got_size;
+                }
+            }
+            
+            /* dw apple tells us what their size and scale is dw ^^ */
+            UIImage *probe = [self hook_iconForBundleID:@"com.apple.Preferences" format:format scale:scale];
+            targetSize = probe ? probe.size : CGSizeMake(60, 60);
+            
+            @synchronized(sizeCache)
+            {
+                sizeCache[key] = [NSValue valueWithCGSize:targetSize];
+            }
         }
-        
-        CGRect r = (CGRect){ .origin = CGPointZero, .size = targetSize };
-        UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:targetSize.width * 0.2237];
-        UIGraphicsImageRendererFormat *fmt = [UIGraphicsImageRendererFormat defaultFormat];
-        fmt.scale = scale;
-        UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize format:fmt];
-        UIImage *curvedImage = [rr imageWithActions:^(UIGraphicsImageRendererContext *ctx){
-            [mask addClip];
-            [rawIcon drawInRect:r];
-        }];
-        return curvedImage;
+    got_size:
+        {
+            CGRect r = (CGRect){ .origin = CGPointZero, .size = targetSize };
+            UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:targetSize.width * 0.2237];
+            UIGraphicsImageRendererFormat *fmt = [UIGraphicsImageRendererFormat defaultFormat];
+            fmt.scale = scale;
+            UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize format:fmt];
+            UIImage *curvedImage = [rr imageWithActions:^(UIGraphicsImageRendererContext *ctx){
+                [mask addClip];
+                [rawIcon drawInRect:r];
+            }];
+            return curvedImage;
+        }
     }
     return [self hook_iconForBundleID:bundleIdentifier format:format scale:scale];
 }
