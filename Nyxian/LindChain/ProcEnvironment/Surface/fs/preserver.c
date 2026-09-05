@@ -256,12 +256,11 @@ static kern_return_t repair_node(pres_node_t *n)
         struct stat mkstat;
         if(lstat(n->path, &mkstat) != 0)
         {
-            kr = KERN_FAILURE;
-            n->intact = false;
-            return kr;
+            goto fix_directory;
         }
         
-        if(S_ISLNK(mkstat.st_mode))
+        /* because mkdir resolves ;-; */
+        if(!S_ISDIR(mkstat.st_mode))
         {
             goto fix_directory;
         }
