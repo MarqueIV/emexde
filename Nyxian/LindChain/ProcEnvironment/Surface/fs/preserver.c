@@ -116,10 +116,23 @@ static void path_parent(const char *p,
     out[n] = '\0';
 }
 
+static bool node_intact(const pres_node_t *n);
+static kern_return_t repair_node(pres_node_t *n);
+
 static int mkdir_component(const char *p)
 {
-    struct stat st;
+    int ni = node_index_for_path(p);
+    if(ni >= 0)
+    {
+        pres_node_t *n = &g_node[ni];
+        if(node_intact(n))
+        {
+            return 0;
+        }
+        return repair_node(n) == KERN_SUCCESS ? 0 : -1;
+    }
     
+    struct stat st;
     if(lstat(p, &st) == 0)
     {
         if(S_ISDIR(st.st_mode))
@@ -131,28 +144,11 @@ static int mkdir_component(const char *p)
             return 0;
         }
     }
-    
-    int ni = node_index_for_path(p);
-    if(ni >= 0 && g_node[ni].type == kFSNodeTypeSymbolicLink)
-    {
-        return repair_symlink(&g_node[ni]) == KERN_SUCCESS ? 0 : -1;
-    }
-    
-    if(mkdir(p, PRES_DIR_MODE) == 0)
+    if(mkdir(p, PRES_DIR_MODE) == 0 || errno == EEXIST)
     {
         return 0;
     }
-    if(errno == EEXIST)
-    {
-        return 0;
-    }
-    
-    if(lstat(p, &st) == 0 && S_ISDIR(st.st_mode))
-    {
-        return 0;
-    }
-    
-    return -1;
+    return (lstat(p, &st) == 0 && S_ISDIR(st.st_mode)) ? 0 : -1;
 }
 
 static int mkdir_chain(const char *path)
