@@ -33,7 +33,7 @@
 @property (readonly, nullable, nonatomic) NSNumber *sharedUsage;
 @end
 
-@interface LSApplicationSpoofProxy : NSObject
+@interface LDEApplicationProxy : NSObject
 
 @property (nonatomic, readonly) LDEApplicationObject *applicationObject;
 @property (nonatomic, readonly) NSNumber *ODRDiskUsage;
@@ -260,12 +260,12 @@
 
 @end
 
-@implementation LSApplicationSpoofProxy
+@implementation LDEApplicationProxy
 
 /* inits */
 + (id)applicationProxyForLDEObject:(LDEApplicationObject*)object
 {
-    LSApplicationSpoofProxy *applicationProxy = [[LSApplicationSpoofProxy alloc] init];
+    LDEApplicationProxy *applicationProxy = [[LDEApplicationProxy alloc] init];
     if(self)
     {
         applicationProxy->_applicationObject = object;
@@ -792,28 +792,28 @@
     return [self hook_defaultWorkspace];
 }
 
-+ (NSArray<LSApplicationSpoofProxy*>*)giveAllApps
++ (NSArray<LDEApplicationProxy*>*)giveAllApps
 {
     LDEApplicationWorkspace *workspace = [LDEApplicationWorkspace shared];
     [workspace ping];
     
     NSArray<LDEApplicationObject*> *allApplicationObjects = [workspace allApplicationObjects];
-    NSMutableArray<LSApplicationSpoofProxy*> *apps = [NSMutableArray array];
+    NSMutableArray<LDEApplicationProxy*> *apps = [NSMutableArray array];
     for(LDEApplicationObject *object in allApplicationObjects)
     {
-        LSApplicationSpoofProxy *proxy = [LSApplicationSpoofProxy applicationProxyForLDEObject:object];
+        LDEApplicationProxy *proxy = [LDEApplicationProxy applicationProxyForLDEObject:object];
         [apps addObject:proxy];
     }
     
     return apps;
 }
 
-- (NSArray<LSApplicationSpoofProxy*>*)hook_allApplications
+- (NSArray<LDEApplicationProxy*>*)hook_allApplications
 {
     return [LSApplicationWorkspaceHooks giveAllApps];
 }
 
-- (NSArray<LSApplicationSpoofProxy*>*)hook_allInstalledApplications
+- (NSArray<LDEApplicationProxy*>*)hook_allInstalledApplications
 {
     return [LSApplicationWorkspaceHooks giveAllApps];
 }
@@ -840,11 +840,6 @@
 
 @implementation UIImage (PrivateHook)
 
-+ (void)lazyLoad
-{
-    SwizzleObjCMethod(@selector(_applicationIconImageForBundleIdentifier:format:scale:), [UIImage class], @selector(hook_iconForBundleID:format:scale:), [UIImage class], kSwizzleMethodTypeClass);
-}
-
 + (UIImage *)hook_iconForBundleID:(NSString *)bundleIdentifier
                            format:(int)format
                             scale:(CGFloat)scale
@@ -853,11 +848,33 @@
     if(obj)
     {
         UIImage *rawIcon = obj.icon;
-        CGRect r = (CGRect){ .size = rawIcon.size };
-        UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:rawIcon.size.width * 0.2237];
+        
+        CGSize targetSize;
+        switch(format)
+        {
+            case 1:     /* AppStore */
+                targetSize = CGSizeMake(1024, 1024);
+                break;
+            default:    /* Fallback */  /* just tried and was amazed that you could place default cases everywhere OWO */
+            case 2:     /* Home Screen */
+                targetSize = CGSizeMake(60, 60);
+                break;
+            case 3:     /* Spotlight */
+                targetSize = CGSizeMake(40, 40);
+                break;
+            case 4:     /* Settings */
+                targetSize = CGSizeMake(29, 29);
+                break;
+            case 5:     /* Notifications */
+                targetSize = CGSizeMake(20, 20);
+                break;
+        }
+        
+        CGRect r = (CGRect){ .origin = CGPointZero, .size = targetSize };
+        UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:targetSize.width * 0.2237];
         UIGraphicsImageRendererFormat *fmt = [UIGraphicsImageRendererFormat defaultFormat];
         fmt.scale = scale;
-        UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:rawIcon.size format:fmt];
+        UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize format:fmt];
         UIImage *curvedImage = [rr imageWithActions:^(UIGraphicsImageRendererContext *ctx){
             [mask addClip];
             [rawIcon drawInRect:r];
