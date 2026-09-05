@@ -23,6 +23,7 @@
 #import <LindChain/Utils/Swizzle.h>
 #import <LindChain/Private/UIKitPrivate.h>
 #import <LindChain/Services/applicationmgmtd/LDEApplicationWorkspace.h>
+#import <LindChain/Services/applicationmgmtd/ISIcon.h>
 
 /* WIP TO A HUGE EXTEND! */
 
@@ -833,6 +834,53 @@
 
 @end
 
+static UIImage *Gib26Icon(UIImage *rawIcon,
+                          CGSize size,
+                          CGFloat scale)
+{
+    if(!rawIcon.CGImage)
+    {
+        return nil;
+    }
+    
+    Class IFImageClass = NSClassFromString(@"IFImage");
+    Class ISIconClass = NSClassFromString(@"ISIcon");
+    Class ISImageDescriptorClass = NSClassFromString(@"ISImageDescriptor");
+    if(!IFImageClass || !ISIconClass || !ISImageDescriptorClass)
+    {
+        return nil;
+    }
+    
+    IFImage *source = [[IFImageClass alloc] initWithCGImage:rawIcon.CGImage scale:rawIcon.scale];
+    if(!source)
+    {
+        return nil;
+    }
+    
+    ISIcon *icon = [[ISIconClass alloc] initWithImages:@[source]];
+    if(!icon)
+    {
+        return nil;
+    }
+    
+    /* more research is needed on how apple applies the variant :c */
+    ISImageDescriptor *descriptor = [[ISImageDescriptorClass alloc] initWithSize:size scale:scale];
+    descriptor.shape = 1;
+    descriptor.appearance = 0;
+    descriptor.appearanceVariant = 0;
+    descriptor.shouldApplyMask = YES;
+    descriptor.drawBorder = YES;
+    
+    /* apperently what apple uses */
+    IFImage *rendered = [icon prepareImageForDescriptor:descriptor];
+    if(!rendered || !rendered.CGImage)
+    {
+        return nil;
+    }
+    
+    return [UIImage imageWithCGImage:rendered.CGImage scale:scale orientation:UIImageOrientationUp];
+}
+
 @implementation UIImage (PrivateHook)
 
 + (UIImage *)hook_iconForBundleID:(NSString *)bundleIdentifier
@@ -874,16 +922,31 @@
         }
     got_size:
         {
-            CGRect r = (CGRect){ .origin = CGPointZero, .size = targetSize };
-            UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:targetSize.width * 0.2237];
-            UIGraphicsImageRendererFormat *fmt = [UIGraphicsImageRendererFormat defaultFormat];
-            fmt.scale = scale;
-            UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize format:fmt];
-            UIImage *curvedImage = [rr imageWithActions:^(UIGraphicsImageRendererContext *ctx){
-                [mask addClip];
-                [rawIcon drawInRect:r];
-            }];
-            return curvedImage;
+            if(@available(iOS 26.0, *))
+            {
+                /* the asking apple way */
+                UIImage *image = Gib26Icon(rawIcon, targetSize, scale);
+                if(image == nil)
+                {
+                    goto manual_way;
+                }
+                return image;
+            }
+            
+        manual_way:
+            {
+                /* the doing it my self way */
+                CGRect r = (CGRect){ .origin = CGPointZero, .size = targetSize };
+                UIBezierPath *mask = [UIBezierPath bezierPathWithRoundedRect:r cornerRadius:targetSize.width * 0.2237];
+                UIGraphicsImageRendererFormat *fmt = [UIGraphicsImageRendererFormat defaultFormat];
+                fmt.scale = scale;
+                UIGraphicsImageRenderer *rr = [[UIGraphicsImageRenderer alloc] initWithSize:targetSize format:fmt];
+                UIImage *curvedImage = [rr imageWithActions:^(UIGraphicsImageRendererContext *ctx){
+                    [mask addClip];
+                    [rawIcon drawInRect:r];
+                }];
+                return curvedImage;
+            }
         }
     }
     return [self hook_iconForBundleID:bundleIdentifier format:format scale:scale];
