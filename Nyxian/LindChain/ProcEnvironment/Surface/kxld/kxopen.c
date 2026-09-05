@@ -136,26 +136,48 @@ kern_return_t kxopen_with_fd(int fd,
     }
     
     /* resolve dependencies versions */
-    for(uint32_t i = 0; i < image_info->mod->dependency_count; i++)
+    for(int64_t i = 0; i < (int64_t)image_info->mod->dependency_count; i++)
     {
-        kxld_image_info_t *depImageInfo;
-        kern_return_t kr = KXGetRegisteredKextForIdentifier(image_info->mod->dependencies[i].identifier, &depImageInfo);
-        if(kr != KERN_SUCCESS)
         {
+            kxld_image_info_t *depImageInfo;
+            kern_return_t kr = KXGetRegisteredKextForIdentifier(image_info->mod->dependencies[i].identifier, &depImageInfo);
+            if(kr != KERN_SUCCESS)
+            {
+                goto revert;
+            }
+            
+            if(depImageInfo->mod->version < image_info->mod->dependencies[i].min_version ||
+               depImageInfo->mod->version > image_info->mod->dependencies[i].max_version)
+            {
+                goto revert;
+            }
+            
+            /* so the kext knows on what version this dependency is */
+            image_info->mod->dependencies[i].min_version = depImageInfo->mod->version;
+            image_info->mod->dependencies[i].max_version = depImageInfo->mod->version;
+            if(!kvo_retain(depImageInfo))
+            {
+                goto revert;
+            }
+            
+            continue;
+        }
+    revert:
+        {
+            for(; i >= 0; i--)
+            {
+                kxld_image_info_t *depImageInfo;
+                kern_return_t kr = KXGetRegisteredKextForIdentifier(image_info->mod->dependencies[i].identifier, &depImageInfo);
+                if(kr != KERN_SUCCESS)
+                {
+                    ksurface_panic("failed to find previously resolvable dependency that was reference incremented.");
+                }
+                kvo_release(depImageInfo);
+            }
             goto out_failure_destroy;
         }
-        
-        if(depImageInfo->mod->version < image_info->mod->dependencies[i].min_version ||
-           depImageInfo->mod->version > image_info->mod->dependencies[i].max_version)
-        {
-            goto out_failure_destroy;
-        }
-        
-        /* so the kext knows on what version this dependency is */
-        image_info->mod->dependencies[i].min_version = depImageInfo->mod->version;
-        image_info->mod->dependencies[i].max_version = depImageInfo->mod->version;
-        depImageInfo->mod->flags |= KMOD_FLAG_PERSISTENT;   /* deny dependency unload TODO: track images */
     }
+    image_info->dependenciesResolved = true;
     
     /* apply persistent flag if KXLD_NOCLOSE is set */
     if(mode & KXLD_NOCLOSE)

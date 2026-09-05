@@ -42,36 +42,54 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(kxld_image)
         case kvObjEventSnapshot:
             ksurface_panic("attempting to copy or snapshot a kxld image object is illegal");
         case kvObjEventDeinit:
-            if(!(image_info->mod->flags & KMOD_FLAG_PERSISTENT))
+            if(image_info->mod != NULL)
             {
-                if(image_info->isStarted && image_info->mod->start)
+                if(!(image_info->mod->flags & KMOD_FLAG_PERSISTENT))
                 {
-                    kern_return_t kr = image_info->mod->stop();
-                    if(kr != KERN_SUCCESS)
+                    if(image_info->isStarted && image_info->mod->start)
                     {
-                        ksurface_panic("kext '%s' failed to stop: %s", image_info->mod->identifier, mach_error_string(kr));
+                        klog_log("kextloader:unload", "stopping kext '%s'", image_info->mod->identifier);
+                        kern_return_t kr = image_info->mod->stop();
+                        if(kr != KERN_SUCCESS)
+                        {
+                            ksurface_panic("kext '%s' failed to stop: %s", image_info->mod->identifier, mach_error_string(kr));
+                        }
+                    }
+                    if(image_info->isInitialized && image_info->mod->deinit)
+                    {
+                        klog_log("kextloader:unload", "deinitializing kext '%s'", image_info->mod->identifier);
+                        kern_return_t kr = image_info->mod->deinit();
+                        if(kr != KERN_SUCCESS)
+                        {
+                            ksurface_panic("kext '%s' failed to deinitialize: %s", image_info->mod->identifier, mach_error_string(kr));
+                        }
+                    }
+                    kern_return_t kr = KXUnregisterKext(image_info);
+                    if(kr == KERN_SUCCESS || kr == KERN_NOT_FOUND)
+                    {
+                        if(image_info->base != NULL && image_info->safeToUnmap)
+                        {
+                            munmap(image_info->base, image_info->len);
+                        }
+                    }
+                    else
+                    {
+                        ksurface_panic("kext '%s' failed to unregister: %s", image_info->mod->identifier, mach_error_string(kr));
                     }
                 }
-                klog_log("kextloader:unload", "deinitilizing kext '%s'", image_info->mod->identifier);
-                if(image_info->isInitialized && image_info->mod->deinit)
+                if(image_info->dependenciesResolved)
                 {
-                    kern_return_t kr = image_info->mod->deinit();
-                    if(kr != KERN_SUCCESS)
+                    klog_log("kextloader:unload", "releasing references of dependencies of kext '%s'", image_info->mod->identifier);
+                    for(uint32_t i = 0; i < image_info->mod->dependency_count; i++)
                     {
-                        ksurface_panic("kext '%s' failed to deinitialize: %s", image_info->mod->identifier, mach_error_string(kr));
+                        kxld_image_info_t *depImageInfo;
+                        kern_return_t kr = KXGetRegisteredKextForIdentifier(image_info->mod->dependencies[i].identifier, &depImageInfo);
+                        if(kr != KERN_SUCCESS)
+                        {
+                            ksurface_panic("failed to find previously resolvable dependency that was reference incremented.");
+                        }
+                        kvo_release(depImageInfo);
                     }
-                }
-                kern_return_t kr = KXUnregisterKext(image_info);
-                if(kr == KERN_SUCCESS || kr == KERN_NOT_FOUND)
-                {
-                    if(image_info->base != NULL && image_info->safeToUnmap)
-                    {
-                        munmap(image_info->base, image_info->len);
-                    }
-                }
-                else
-                {
-                    ksurface_panic("kext '%s' failed to unregister: %s", image_info->mod->identifier, mach_error_string(kr));
                 }
             }
         default:

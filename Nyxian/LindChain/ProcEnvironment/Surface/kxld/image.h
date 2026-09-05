@@ -106,6 +106,7 @@ typedef struct {
     bool isInitialized;
     bool isStarted;
     bool safeToUnmap;
+    bool dependenciesResolved;
 } kxld_image_info_t;
 
 DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(kxld_image);
