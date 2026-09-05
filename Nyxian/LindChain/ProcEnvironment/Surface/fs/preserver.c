@@ -141,6 +141,8 @@ static int mkdir_component(const char *p)
         }
         if(S_ISLNK(st.st_mode) && stat(p, &st) == 0 && S_ISDIR(st.st_mode))
         {
+            unlink(p);
+            mkdir(p, PRES_DIR_MODE);
             return 0;
         }
     }
@@ -251,11 +253,25 @@ static kern_return_t repair_node(pres_node_t *n)
     }
     else
     {
-        if(mkdir(n->path, PRES_DIR_MODE) == 0 || errno == EEXIST)
+        struct stat mkstat;
+        if(lstat(n->path, &mkstat) != 0)
+        {
+            kr = KERN_FAILURE;
+            n->intact = false;
+            return kr;
+        }
+        
+        if(S_ISLNK(mkstat.st_mode))
+        {
+            goto fix_directory;
+        }
+        
+        if(mkdir(n->path, PRES_DIR_MODE) == 0 || errno == EEXIST)   /* mkdir resolves ;-; */
         {
             kr = KERN_SUCCESS;
         }
         else if(errno == ENOTDIR)
+    fix_directory:
         {
             unlink(n->path);
             kr = (mkdir(n->path, PRES_DIR_MODE) == 0) ? KERN_SUCCESS : KERN_FAILURE;
