@@ -182,6 +182,9 @@ int LCBootstrapMain(NSString *executablePath,
         return 1;
     }
     
+    /* insert the libraries before everything else */
+    LCInsertLibrariesIfNeeded();
+    
     /* preload executable to bypass RT_NOLOAD */
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
     int64_t ret = liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningGetCDHash, cdhash, NULL, MACH_PORT_NULL);
@@ -221,7 +224,6 @@ int LCBootstrapMain(NSString *executablePath,
     UIKitGuestHooksInit();
     initDead10ccFix();
     DyldHooksInit();
-    LCInsertLibrariesIfNeeded();
     
     return entry(argc, argv);
 }
