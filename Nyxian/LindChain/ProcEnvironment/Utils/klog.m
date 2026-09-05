@@ -557,6 +557,20 @@ void klog_log_internal(const char *system, const char *format, ...)
         
         /* writing */
         ssize_t written = write(kfd, utf8, len);
+#if DEBUG
+        static bool isLaunchdParent = false;
+        static dispatch_once_t onceTokenSecond;
+        dispatch_once(&onceTokenSecond, ^{
+            if(getppid() == 1)
+            {
+                isLaunchdParent = true;
+            }
+        });
+        if(!isLaunchdParent)
+        {
+            write(STDERR_FILENO, utf8, len);
+        }
+#endif /* DEBUG */
         
         /* truncation if applicable */
         if(written == len)
