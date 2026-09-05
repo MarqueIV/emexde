@@ -33,9 +33,10 @@ _builtin_vm_protect:     \n
     ret
 );
 
-void __assert_rtn(const char* func, const char* file, int line, const char* failedexpr) {
+void __assert_rtn(const char* func, const char* file, int line, const char* failedexpr)
+{
     [NSException raise:NSInternalInconsistencyException format:@"Assertion failed: (%s), file %s, line %d.\n", failedexpr, file, line];
-    abort(); // silent compiler warning
+    __builtin_unreachable();
 }
 
 // https://github.com/pinauten/PatchfinderUtils/blob/master/Sources/CFastFind/CFastFind.c

@@ -229,7 +229,10 @@ uint32_t hook_dyld_get_program_sdk_version(void* dyldApiInstancePtr)
     return guestAppSdkVersion;
 }
 
-bool performHookDyldApi(const char* functionName, uint32_t adrpOffset, void** origFunction, void* hookFunction)
+bool performHookDyldApi(const char* functionName,
+                        uint32_t adrpOffset,
+                        void** origFunction,
+                        void* hookFunction)
 {
     
     uint32_t* baseAddr = dlsym(RTLD_DEFAULT, functionName);
