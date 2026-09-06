@@ -533,19 +533,17 @@ static os_unfair_lock g_window_rects_lock = OS_UNFAIR_LOCK_INIT;
 
 - (void)process:(PEProcess *)process didExitWithWait4Code:(int)code
 {
-    
     dispatch_async(dispatch_get_main_queue(), ^{
         [[NXWindowServer shared] closeWindowWithIdentifier:self.windowIdentifier withCompletion:nil];
     });
 }
 
-#if DEBUG
-
 - (void)dealloc
 {
+    [self.process removeObserver:self];
+#if DEBUG
     NSLog(@"deallocated %@", self);
-}
-
 #endif /* DEBUG */
+}
 
 @end

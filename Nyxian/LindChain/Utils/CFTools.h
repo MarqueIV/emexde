@@ -40,12 +40,9 @@ typedef enum {
     __CFBundleELFBinary
 } __CFPBinaryType;
 
-void CFOverwrite(CFTypeRef dst, CFTypeRef src);
 Boolean CFSwap(CFTypeRef ref1, CFTypeRef ref2);
 
 void CFBundleSetBinaryType(CFBundleRef bundle, __CFPBinaryType type);
 __CFPBinaryType CFBundleGetBinaryType(CFBundleRef bundle);
-
-void CFReleaseTry(CFTypeRef ref);
 
 #endif /* CFTOOLS_H */

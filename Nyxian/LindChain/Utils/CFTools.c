@@ -23,33 +23,6 @@
 #include <assert.h>
 #include <malloc/malloc.h>
 
-void CFOverwrite(CFTypeRef dst,
-                 CFTypeRef src)
-{
-    assert(src != NULL && dst != NULL);
-    
-    /* literally overwriting object, this is normal memory */
-    CFTypeID srcID = CFGetTypeID(src);
-    CFTypeID dstID = CFGetTypeID(dst);
-    assert(srcID == dstID);
-    
-    /*
-     * CFRuntimeBase = isa (8) + refcount/flags (8) = 16 bytes
-     * skip it... preserve identity (pointer) and retain count
-     */
-    size_t src_size = malloc_size(src);
-    size_t size = malloc_size(dst);
-    assert(src_size <= size);
-    
-    /*
-     * retain everything in src payload first
-     * so objects survive when dst's old pointers get orphaned.
-     */
-    CFRetain(src);
-    
-    memcpy((uint8_t *)dst + cfheader_size(), (uint8_t *)src + cfheader_size(), size - cfheader_size());
-}
-
 Boolean CFSwap(CFTypeRef ref1,
                CFTypeRef ref2)
 {
@@ -61,6 +34,8 @@ Boolean CFSwap(CFTypeRef ref1,
     /*
      * CFRuntimeBase = isa (8) + refcount/flags (8) = 16 bytes
      * skip it... preserve identity (pointer) and retain count
+     *
+     * lol it is just malloc memory :3
      */
     size_t len = malloc_size(ref1);
     if(len != malloc_size(ref2))
@@ -125,12 +100,4 @@ __CFPBinaryType CFBundleGetBinaryType(CFBundleRef bundle)
     }
     
     return (__CFPBinaryType)((UInt8*)bundle)[offset];
-}
-
-void CFReleaseTry(CFTypeRef ref)
-{
-    if(ref != NULL)
-    {
-        CFRelease(ref);
-    }
 }

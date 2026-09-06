@@ -416,7 +416,7 @@ DEFINE_SYSCALL_HANDLER(pectl_userspace)
             {
                 sys_return_failure_with_errno(EPERM);
             }
-            [[PEUserspaceManager shared] rebootUserspaceWithType:kPEUserspaceRebootTypeDefault];
+            [[PEUserspaceManager shared] rebootUserspace];
             sys_return;
         case kPECTLUserspaceGetMode:
             return [[PEUserspaceManager shared] mode];

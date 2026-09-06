@@ -222,14 +222,6 @@
     return YES;
 }
 
-- (BOOL)rebootUserspaceWithType:(PEUserspaceRebootType)type
-{
-    os_unfair_lock_lock(&_lock);
-    BOOL success = [self rebootUserspaceWithType_nolock:type];
-    os_unfair_lock_unlock(&_lock);
-    return success;
-}
-
 - (BOOL)rebootUserspace
 {
     os_unfair_lock_lock(&_lock);
@@ -248,21 +240,9 @@
     const char *domain = "PEUserspaceManager:restore";
     
     os_unfair_lock_lock(&_lock);
-    BOOL inRetry = NO;
     goto first;
     
-recoverable_fail:
-    if(inRetry)
-    {
-        goto retry_fail;
-    }
-    /* here we can still return back without consequences */
-    [self rebootUserspaceWithType_nolock:kPEUserspaceRebootTypeDefault];
-    os_unfair_lock_unlock(&_lock);
-    return NO;
-    
 retry_fail: /* a retry shall not happen, happens tho if something goes wrong */
-    inRetry = YES;
     klog_log(domain, "failed to restore, reattempt restore");
     
 first:
