@@ -280,7 +280,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         }
         
         out[i] = (uint64_t)(uintptr_t)entries[i].found;
-        klog_log("ptrcache:emit", "%s = 0x%llx", names[i], (unsigned long long)out[i]);
+        klog_log("ptrcache:emit", "%s @ %p", names[i], (void*)out[i]);
     }
     
     return KERN_SUCCESS;
