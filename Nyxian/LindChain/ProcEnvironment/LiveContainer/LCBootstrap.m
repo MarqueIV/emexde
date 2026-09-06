@@ -93,10 +93,10 @@ void LCOverwriteExecutablePath(NSString *executablePath)
      * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
      */
     int (*orig__NSGetExecutablePath)(void* dyldPtr, char* buf, uint32_t* bufsize);
-    performHookDyldApiFast(kDyldHookDataNSGetExecutablePath, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
+    performHookDyldApiFast(kDyldNSGetExecutablePathVTFN, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
     _NSGetExecutablePath((char*)[executablePath UTF8String], NULL);
     /* put the original function back */
-    performHookDyldApiFast(kDyldHookDataNSGetExecutablePath, nil, orig__NSGetExecutablePath);
+    performHookDyldApiFast(kDyldNSGetExecutablePathVTFN, nil, orig__NSGetExecutablePath);
         
     /* overwriting remaining upper systems */
     NSString *procName = [executablePath lastPathComponent];

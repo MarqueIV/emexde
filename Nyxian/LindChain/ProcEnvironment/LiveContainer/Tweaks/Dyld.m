@@ -376,8 +376,8 @@ void DyldHooksInit(void)
         
         guestAppSdkVersion = getDyldImageBuildVersion((void*)ORIG_FUNC(_dyld_get_image_header)(appMainImageIndex)).version;
         if(!initGuestSDKVersionInfo() ||
-           !performHookDyldApiFast(kDyldHookDataDyldProgramSDKAtLeast, NULL, hook_dyld_program_sdk_at_least) ||
-           !performHookDyldApiFast(kDyldHookDataDyldGetProgramSDKVersion, NULL, hook_dyld_get_program_sdk_version))
+           !performHookDyldApiFast(kDyldProgramSDKAtLeastVTFN, NULL, hook_dyld_program_sdk_at_least) ||
+           !performHookDyldApiFast(kDyldGetProgramSDKVersionVTFN, NULL, hook_dyld_get_program_sdk_version))
         {
             exit(0);
         }

@@ -25,12 +25,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef struct {
-    void *functionPtr;
-    uint32_t *adrpInstPtr;
-    void *gdyldPtr;
-} dyld_hook_data_t;
-
 enum {
     /* for the RO file system sandbox mmap bypass */
     kDyldPtrOpen = 0,
@@ -45,29 +39,15 @@ enum {
     /* dyld hook ptrs */
     kDyldGDyldPtr,
     
-    kDyldNSGetExecutablePathFn,
-    kDyldNSGetExecutablePathAdrpInstrPtr,
-    
-    kDyldProgramSDKAtLeastFn,
-    kDyldProgramSDKAtLeastAdrpInstrPtr,
-    
-    kDyldGetProgramSDKVersionFn,
-    kDyldGetProgramSDKVersionAdrpInstrPtr,
+    kDyldNSGetExecutablePathVTFN,
+    kDyldProgramSDKAtLeastVTFN,
+    kDyldGetProgramSDKVersionVTFN,
     
     kDyldPtrCount,
 };
 
-typedef enum {
-    kDyldHookDataNSGetExecutablePath = 0,
-    kDyldHookDataDyldProgramSDKAtLeast,
-    kDyldHookDataDyldGetProgramSDKVersion,
-    
-    kDyldHookDataCount,
-} DyldHookData;
-
 extern uint64_t ptrcache[kDyldPtrCount];
 
 bool load_ptrcache(void);
-dyld_hook_data_t ptrcache_get_dyld_hook_data(DyldHookData index);
 
 #endif /* LIVESHIM_PTRCACHE_H */

@@ -39,25 +39,12 @@ enum {
     /* dyld hook ptrs */
     kDyldGDyldPtr,
     
-    kDyldNSGetExecutablePathFn,
-    kDyldNSGetExecutablePathAdrpInstrPtr,
-    
-    kDyldProgramSDKAtLeastFn,
-    kDyldProgramSDKAtLeastAdrpInstrPtr,
-    
-    kDyldGetProgramSDKVersionFn,
-    kDyldGetProgramSDKVersionAdrpInstrPtr,
+    kDyldNSGetExecutablePathVTFN,
+    kDyldProgramSDKAtLeastVTFN,
+    kDyldGetProgramSDKVersionVTFN,
     
     kDyldPtrCount,
 };
-
-typedef enum {
-    kDyldHookDataNSGetExecutablePath = 0,
-    kDyldHookDataDyldProgramSDKAtLeast,
-    kDyldHookDataDyldGetProgramSDKVersion,
-    
-    kDyldHookDataCount,
-} DyldHookData;
 
 kern_return_t ksurface_ptrcache_emit(void);
 

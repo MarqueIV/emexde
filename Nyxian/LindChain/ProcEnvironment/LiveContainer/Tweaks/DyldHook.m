@@ -128,7 +128,7 @@ bool performHookDyldApi(const char* functionName,
     return true;
 }
 
-bool performHookDyldApiFast(DyldHookData index,
+bool performHookDyldApiFast(int ptrcacheIndex,
                             void** origFunction,
                             void* hookFunction)
 {
@@ -137,36 +137,7 @@ bool performHookDyldApiFast(DyldHookData index,
         return false;
     }
     
-    dyld_hook_data_t data = ptrcache_get_dyld_hook_data(index);
-    
-    assert(data.gdyldPtr != 0);
-    assert(*(void**)data.gdyldPtr != 0);
-    void* vtablePtr = **(void***)data.gdyldPtr;
-    
-    void* vtableFunctionPtr = 0;
-    uint32_t* movInstPtr = data.adrpInstPtr + 6;
-
-    if((*movInstPtr & 0x7F800000) == 0x52800000)
-    {
-        // arm64e, mov imm + add + ldr
-        uint32_t imm16 = (*movInstPtr & 0x1FFFE0) >> 5;
-        vtableFunctionPtr = vtablePtr + imm16;
-    }
-    else if ((*movInstPtr & 0xFFE00C00) == 0xF8400C00)
-    {
-        // arm64e, ldr immediate Pre-index 64bit
-        uint32_t imm9 = (*movInstPtr & 0x1FF000) >> 12;
-        vtableFunctionPtr = vtablePtr + imm9;
-    }
-    else
-    {
-        // arm64
-        uint32_t* ldrInstPtr2 = data.adrpInstPtr + 3;
-        assert((*ldrInstPtr2 & 0xBFC00000) == 0xB9400000);
-        uint32_t size2 = (*ldrInstPtr2 & 0xC0000000) >> 30;
-        uint32_t imm12_2 = (*ldrInstPtr2 & 0x3FFC00) >> 10;
-        vtableFunctionPtr = vtablePtr + (imm12_2 << size2);
-    }
+    void* vtableFunctionPtr = (void*)ptrcache[ptrcacheIndex];
     
     kern_return_t ret = builtin_vm_protect(mach_task_self(), (mach_vm_address_t)vtableFunctionPtr, sizeof(uintptr_t), false, PROT_READ | PROT_WRITE | VM_PROT_COPY);
     if(ret != KERN_SUCCESS)

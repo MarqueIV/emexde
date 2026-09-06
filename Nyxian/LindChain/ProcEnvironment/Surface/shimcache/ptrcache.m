@@ -183,7 +183,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         uint32_t adrpOffset;
     } dyld_hook_segment_t;
     
-    static const dyld_hook_segment_t dyldNames[kDyldHookDataCount] = {
+    static const dyld_hook_segment_t dyldNames[3] = {
         {
             .name = "_NSGetExecutablePath",
             .adrpOffset = 2,
@@ -199,7 +199,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
     };
     
     int offset = kDyldGDyldPtr;
-    for(size_t i = 0; i < kDyldHookDataCount; i++)
+    for(size_t i = 0; i < 3; i++)
     {
         uint32_t* baseAddr = dlsym(RTLD_DEFAULT, dyldNames[i].name);
         if(baseAddr == NULL)
@@ -207,7 +207,6 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
             break;
         }
         
-        entries[offset + 1].found = baseAddr;
         uint32_t* adrpInstPtr = baseAddr + dyldNames[i].adrpOffset;
         
         // find the following instruction pattern: 1 adrp + 2 ldr
@@ -248,6 +247,37 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
             entries[kDyldGDyldPtr].found = (void*)aarch64_emulate_adrp_ldr(*adrpInstPtr, *(adrpInstPtr + 1), (uint64_t)adrpInstPtr);
         });
         
+        assert(entries[kDyldGDyldPtr].found != 0);
+        assert(*(void**)entries[kDyldGDyldPtr].found != 0);
+        void* vtablePtr = **(void***)entries[kDyldGDyldPtr].found;
+        
+        void* vtableFunctionPtr = 0;
+        uint32_t* movInstPtr = adrpInstPtr + 6;
+
+        if((*movInstPtr & 0x7F800000) == 0x52800000)
+        {
+            // arm64e, mov imm + add + ldr
+            uint32_t imm16 = (*movInstPtr & 0x1FFFE0) >> 5;
+            vtableFunctionPtr = vtablePtr + imm16;
+        }
+        else if ((*movInstPtr & 0xFFE00C00) == 0xF8400C00)
+        {
+            // arm64e, ldr immediate Pre-index 64bit
+            uint32_t imm9 = (*movInstPtr & 0x1FF000) >> 12;
+            vtableFunctionPtr = vtablePtr + imm9;
+        }
+        else
+        {
+            // arm64
+            uint32_t* ldrInstPtr2 = adrpInstPtr + 3;
+            assert((*ldrInstPtr2 & 0xBFC00000) == 0xB9400000);
+            uint32_t size2 = (*ldrInstPtr2 & 0xC0000000) >> 30;
+            uint32_t imm12_2 = (*ldrInstPtr2 & 0x3FFC00) >> 10;
+            vtableFunctionPtr = vtablePtr + (imm12_2 << size2);
+        }
+        
+        entries[kDyldNSGetExecutablePathVTFN + i].found = vtableFunctionPtr;
+        
         offset += 2;
     }
     
@@ -261,14 +291,9 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         
         "dyld.gptr",
         
-        "_NSGetExecutablePath.fn",
-        "_NSGetExecutablePath.adrpInstrPtr",
-        
-        "dyld_program_sdk_at_least.fn",
-        "dyld_program_sdk_at_least.adrpInstrPtr",
-        
-        "dyld_get_program_sdk_version.fn",
-        "dyld_get_program_sdk_version.adrpInstrPtr",
+        "_NSGetExecutablePath.vtable.fn",
+        "dyld_program_sdk_at_least.vtable.fn",
+        "dyld_get_program_sdk_version.vtable.fn",
     };
     
     for(size_t i = 0; i < kDyldPtrCount; i++)

@@ -43,7 +43,6 @@ static void fill_fake(struct statfs *f)
     strlcpy(f->f_mntfromname, "nyxian", sizeof(f->f_mntfromname));
 }
 
-
 static int ksurface_getmntinfo(struct statfs **buf, int m);
 static int ksurface_getmntinfo_r_np(struct statfs **buf, int m);
 
