@@ -36,8 +36,19 @@ enum {
     /* for the dlopen with the lock bypasses */
     kDyldLockUnlockFunc,
     
+    /* dyld hook ptrs */
+    kDyldNSGetExecutablePathFn,
+    kDyldNSGetExecutablePathAdrpInstrPtr,
+    kDyldNSGetExecutablePathGDyldPtr,
+    
     kDyldPtrCount,
 };
+
+typedef enum {
+    kDyldHookDataNSGetExecutablePath = 0,
+    
+    kDyldHookDataCount,
+} DyldHookData;
 
 kern_return_t ksurface_ptrcache_emit(void);
 

@@ -23,6 +23,7 @@
 #import <LindChain/Private/FoundationPrivate.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
 #import <LindChain/ProcEnvironment/LiveContainer/utils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/DyldHook.h>
 
 #include <mach/mach.h>
 #include <mach-o/dyld.h>
@@ -92,10 +93,10 @@ void LCOverwriteExecutablePath(NSString *executablePath)
      * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
      */
     int (*orig__NSGetExecutablePath)(void* dyldPtr, char* buf, uint32_t* bufsize);
-    performHookDyldApi("_NSGetExecutablePath", 2, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
+    performHookDyldApiFast(kDyldHookDataNSGetExecutablePath, (void**)&orig__NSGetExecutablePath, hook__NSGetExecutablePath_overwriteExecPath);
     _NSGetExecutablePath((char*)[executablePath UTF8String], NULL);
     /* put the original function back */
-    performHookDyldApi("_NSGetExecutablePath", 2, nil, orig__NSGetExecutablePath);
+    performHookDyldApiFast(kDyldHookDataNSGetExecutablePath, nil, orig__NSGetExecutablePath);
         
     /* overwriting remaining upper systems */
     NSString *procName = [executablePath lastPathComponent];

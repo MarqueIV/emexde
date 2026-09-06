@@ -25,6 +25,7 @@
 #import <LindChain/ProcEnvironment/Utils/klog.h>
 #import <LindChain/ProcEnvironment/litehook/litehook.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCMachOUtils.h>
+#import <LindChain/ProcEnvironment/LiveContainer/utils.h>
 #include <string.h>
 #include <mach/mach.h>
 #include <mach/task_info.h>
@@ -32,6 +33,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <dlfcn.h>
 #import <Foundation/Foundation.h>
 
 typedef struct {
@@ -149,10 +151,12 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         },
         
         /* 2nd shit */
-        [kDyldLockUnlockFunc] = {
-            .signature = 0x0,
-            .found = NULL,
-        },
+        [kDyldLockUnlockFunc] = {},
+        
+        /* last shit */
+        [kDyldNSGetExecutablePathFn] = {},
+        [kDyldNSGetExecutablePathAdrpInstrPtr] = {},
+        [kDyldNSGetExecutablePathGDyldPtr] = {},
     };
     searchDyldFunctions(dyldBase, entries, kDyldPtrOpenat + 1);
     
@@ -179,6 +183,70 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
     
     entries[kDyldLockUnlockFunc].found = lockUnlockPtr;
     
+    /* now stuffing the hook data */
+    typedef struct {
+        const char *name;
+        uint32_t adrpOffset;
+    } dyld_hook_segment_t;
+    
+    static const dyld_hook_segment_t dyldNames[kDyldHookDataCount] = {
+        {
+            .name = "_NSGetExecutablePath",
+            .adrpOffset = 2,
+        }
+    };
+    
+    int offset = kDyldLockUnlockFunc;
+    for(size_t i = 0; i < kDyldHookDataCount; i++)
+    {
+        uint32_t* baseAddr = dlsym(RTLD_DEFAULT, dyldNames[i].name);
+        if(baseAddr == NULL)
+        {
+            break;
+        }
+        
+        entries[offset + 1].found = baseAddr;
+        uint32_t* adrpInstPtr = baseAddr + dyldNames[i].adrpOffset;
+        
+        // find the following instruction pattern: 1 adrp + 2 ldr
+        // adrp    x8, 0x1e6cf0000
+        // ldr     x0, [x8, #0x30]  {dyld4::gAPIs}
+        // ldr     x16, [x0]
+        
+        static long adrpExtraOffset = -1;
+        if(adrpExtraOffset == -1)
+        {
+            // let't hope the function is not longer than 200 instructions
+            uint32_t* end = baseAddr + 200;
+            for(uint32_t* cur = adrpInstPtr;cur < end;++cur)
+            {
+                if((*cur & 0x9f000000) != 0x90000000)
+                {
+                    continue;
+                }
+                if((*(cur+1) & 0xFFC00000) != 0xF9400000)
+                {
+                    continue;
+                }
+                if((*(cur+2) & 0xFFC00000) != 0xF9400000)
+                {
+                    continue;
+                }
+                adrpExtraOffset = cur - adrpInstPtr;
+                break;
+            }
+            assert(adrpExtraOffset != -1);
+        }
+        
+        adrpInstPtr += adrpExtraOffset;
+        entries[offset + 2].found = adrpInstPtr;
+        
+        void* gdyldPtr = (void*)aarch64_emulate_adrp_ldr(*adrpInstPtr, *(adrpInstPtr + 1), (uint64_t)adrpInstPtr);
+        entries[offset + 3].found = gdyldPtr;
+        
+        offset += 3;
+    }
+    
     static const char *names[kDyldPtrCount] = {
         "open",
         "fcntl",
@@ -186,6 +254,10 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         "stat64",
         "openat",
         "lockUnlockFunc",
+        
+        "_NSGetExecutablePath.fn",
+        "_NSGetExecutablePath.adrpInstrPtr",
+        "_NSGetExecutablePath.gDYLDPtr",
     };
     
     for(size_t i = 0; i < kDyldPtrCount; i++)
