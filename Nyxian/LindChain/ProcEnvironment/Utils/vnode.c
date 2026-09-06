@@ -182,6 +182,7 @@ int vnode_inaccessible_close(int fd,
     if(fstat(fd, &vnstat) != 0)
     {
         os_unfair_lock_unlock(&g_vnode_inaccessible_inode_lock);
+        close(fd);
         return -1;
     }
     
@@ -189,12 +190,14 @@ int vnode_inaccessible_close(int fd,
     if(accessiblePath == NULL)
     {
         errno = ENOENT;
+        close(fd);
         os_unfair_lock_unlock(&g_vnode_inaccessible_inode_lock);
         return -1;
     }
     
     if(refresh && !vnode_recover_with_fd_to_path(fd, accessiblePath))
     {
+        close(fd);
         os_unfair_lock_unlock(&g_vnode_inaccessible_inode_lock);
         return -1;
     }
@@ -203,10 +206,12 @@ int vnode_inaccessible_close(int fd,
     char path[PATH_MAX];
     if(fcntl(fd, F_GETPATH, path) != 0)
     {
+        close(fd);
         os_unfair_lock_unlock(&g_vnode_inaccessible_inode_lock);
         return -1;
     }
     unlink(path);
+    close(fd);
     
     os_unfair_lock_unlock(&g_vnode_inaccessible_inode_lock);
     return 0;

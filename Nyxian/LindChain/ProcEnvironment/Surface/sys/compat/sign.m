@@ -64,25 +64,48 @@ DEFINE_SYSCALL_HANDLER(sign)
     }
     
     char path[MAXPATHLEN];
-    int ret = fcntl(fd, F_GETPATH, path);
-    close(fd);
-    if(ret != 0)
+    if(fcntl(fd, F_GETPATH, path) != 0)
     {
+        close(fd);
+        sys_return_failure_with_errno(EBADF);
+    }
+    
+    char *cdhash = cdhash_of_fd(fd);
+    close(fd);
+    if(cdhash == NULL)
+    {
+        sys_return_failure_with_errno(ENOEXEC);
+    }
+    
+    int vfd = vnode_inaccessible_open(path, O_RDWR);
+    kern_return_t kr = CDHashMatchesCodeDirectoryFD(vfd, (const unsigned char*)cdhash);
+    free(cdhash);
+    if(kr != KERN_SUCCESS)
+    {
+        vnode_inaccessible_close(vfd, false);
+        sys_return_failure_with_errno(EIO); /* file got swapped */
+    }
+    
+    if(fcntl(vfd, F_GETPATH, path) != 0)
+    {
+        vnode_inaccessible_close(vfd, false);
         sys_return_failure_with_errno(EBADF);
     }
     
     NSString *nsPath = [NSString stringWithCString:path encoding:NSUTF8StringEncoding];
     if(nsPath == nil)
     {
+        vnode_inaccessible_close(vfd, false);
         sys_return_failure_with_errno(ENOMEM);
     }
     
     /* signing that shit */
     if(![LCUtils signMachOAtURL:[NSURL fileURLWithPath:nsPath]])
     {
+        vnode_inaccessible_close(vfd, false);
         sys_return_failure_with_errno(ENOEXEC);
     }
-    vnode_refresh_with_path([nsPath UTF8String]);
+    vnode_inaccessible_close(vfd, true);
     
     sys_return;
 }
