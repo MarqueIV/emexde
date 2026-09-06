@@ -32,6 +32,7 @@
 #import <LindChain/ProcEnvironment/Shims/environment.h>
 #import <LindChain/ProcEnvironment/Surface/trust/cdhash.h>
 #import <LindChain/ProcEnvironment/LiveContainer/Tweaks/Tweaks.h>
+#import <LindChain/ProcEnvironment/LiveContainer/Tweaks/DyldHook.h>
 #import <LindChain/Utils/CFTools.h>
 #import <LiveShim/LiveShimSyscall.h>
 #import <LiveShim/ptrcache.h>
@@ -475,8 +476,8 @@ void DyldHooksInit(void)
         
         guestAppSdkVersion = getDyldImageBuildVersion(getGuestAppHeader()).version;
         if(!initGuestSDKVersionInfo() ||
-           !performHookDyldApi("dyld_program_sdk_at_least", 1, NULL, hook_dyld_program_sdk_at_least) ||
-           !performHookDyldApi("dyld_get_program_sdk_version", 0, NULL, hook_dyld_get_program_sdk_version))
+           !performHookDyldApiFast(kDyldHookDataDyldProgramSDKAtLeast, NULL, hook_dyld_program_sdk_at_least) ||
+           !performHookDyldApiFast(kDyldHookDataDyldGetProgramSDKVersion, NULL, hook_dyld_get_program_sdk_version))
         {
             exit(0);
         }

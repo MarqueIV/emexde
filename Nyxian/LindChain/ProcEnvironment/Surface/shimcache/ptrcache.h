@@ -41,11 +41,21 @@ enum {
     kDyldNSGetExecutablePathAdrpInstrPtr,
     kDyldNSGetExecutablePathGDyldPtr,
     
+    kDyldProgramSDKAtLeastFn,
+    kDyldProgramSDKAtLeastAdrpInstrPtr,
+    kDyldProgramSDKAtLeastGDyldPtr,
+    
+    kDyldGetProgramSDKVersionFn,
+    kDyldGetProgramSDKVersionAdrpInstrPtr,
+    kDyldGetProgramSDKVersionGDyldPtr,
+    
     kDyldPtrCount,
 };
 
 typedef enum {
     kDyldHookDataNSGetExecutablePath = 0,
+    kDyldHookDataDyldProgramSDKAtLeast,
+    kDyldHookDataDyldGetProgramSDKVersion,
     
     kDyldHookDataCount,
 } DyldHookData;

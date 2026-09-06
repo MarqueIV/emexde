@@ -193,6 +193,14 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         {
             .name = "_NSGetExecutablePath",
             .adrpOffset = 2,
+        },
+        {
+            .name = "dyld_program_sdk_at_least",
+            .adrpOffset = 1,
+        },
+        {
+            .name = "dyld_get_program_sdk_version",
+            .adrpOffset = 0,
         }
     };
     
@@ -258,6 +266,14 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         "_NSGetExecutablePath.fn",
         "_NSGetExecutablePath.adrpInstrPtr",
         "_NSGetExecutablePath.gDYLDPtr",
+        
+        "dyld_program_sdk_at_least.fn",
+        "dyld_program_sdk_at_least.adrpInstrPtr",
+        "dyld_program_sdk_at_least.gDYLDPtr",
+        
+        "dyld_get_program_sdk_version.fn",
+        "dyld_get_program_sdk_version.adrpInstrPtr",
+        "dyld_get_program_sdk_version.gDYLDPtr",
     };
     
     for(size_t i = 0; i < kDyldPtrCount; i++)
