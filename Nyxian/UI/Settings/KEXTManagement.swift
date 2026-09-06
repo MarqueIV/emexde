@@ -92,6 +92,7 @@ class KextToggleTableCell: UITableViewCell {
 class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDelegate, UIDocumentPickerDelegate, UIAdaptivePresentationControllerDelegate {
     
     var kexts: [PEKext] = []
+    static var kextConfigChanged: Bool = false
     
     override init(style: UITableView.Style) {
         super.init(style: style)
@@ -106,8 +107,18 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
         self.tableView.register(ProjectTableCell.self, forCellReuseIdentifier: ProjectTableCell.reuseIdentifier)
         LDEApplicationWorkspace.shared().ping()
         self.title = "KEXTs"
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(plusButtonPressed))
-
+        
+        if KEXTManagementViewController.kextConfigChanged {
+            self.navigationItem.rightBarButtonItems = [
+                UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(plusButtonPressed)),
+                UIBarButtonItem(title: nil, image: UIImage(systemName: "arrow.clockwise"), target: self, action: #selector(rebootButtonPressed)),
+            ]
+        } else {
+            self.navigationItem.rightBarButtonItems = [
+                UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(plusButtonPressed)),
+            ]
+        }
+        
         do {
             let kextURLs: [URL] = try FileManager.default.contentsOfDirectory(at: NXBootstrap.shared().rootURL.appendingPathComponent("/mntfs/kextfs"), includingPropertiesForKeys: [])
             for kextURL in kextURLs {
@@ -136,6 +147,11 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
         let cell: KextToggleTableCell = self.tableView.dequeueReusableCell(withIdentifier: KextToggleTableCell.reuseIdentifier, for: indexPath) as! KextToggleTableCell
         cell.configure(title: kext.bundleID, defaultValue: kext.isEnabled) { newValue in
             kext.isEnabled = newValue
+            KEXTManagementViewController.kextConfigChanged = true
+            self.navigationItem.setRightBarButtonItems([
+                UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(self.plusButtonPressed)),
+                UIBarButtonItem(title: nil, image: UIImage(systemName: "arrow.clockwise"), target: self, action: #selector(self.rebootButtonPressed)),
+            ], animated: true)
         }
         return cell
     }
@@ -155,6 +171,12 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                                 self.tableView.reloadData()
                             }
                         }
+                        
+                        KEXTManagementViewController.kextConfigChanged = true
+                        self.navigationItem.setRightBarButtonItems([
+                            UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(self.plusButtonPressed)),
+                            UIBarButtonItem(title: nil, image: UIImage(systemName: "arrow.clockwise"), target: self, action: #selector(self.rebootButtonPressed)),
+                        ], animated: true)
                     }
                 }
             }
@@ -172,6 +194,10 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
         documentPicker.delegate = self
         documentPicker.modalPresentationStyle = .formSheet
         self.present(documentPicker, animated: true)
+    }
+    
+    @objc func rebootButtonPressed() {
+        PERestartSelf()
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
@@ -293,16 +319,13 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
                                         }
                                     }
                                     
-                                    ret = ksurface_fs_load_kext_with_bundleid(bundle.bundleIdentifier, nil)
-                                    if ret != 0 {
-                                        DispatchQueue.main.async {
-                                            alert.dismiss(animated: true) {
-                                                NotificationServer.NotifyUser(level: .error, notification: "Failed to inject kext: \(String(cString: mach_error_string(ret)))")
-                                            }
-                                        }
-                                    }
-                                    
                                     DispatchQueue.main.async {
+                                        KEXTManagementViewController.kextConfigChanged = true
+                                        self.navigationItem.setRightBarButtonItems([
+                                            UIBarButtonItem(title: nil, image: UIImage(systemName: "square.and.arrow.down.fill"), target: self, action: #selector(self.plusButtonPressed)),
+                                            UIBarButtonItem(title: nil, image: UIImage(systemName: "arrow.clockwise"), target: self, action: #selector(self.rebootButtonPressed)),
+                                        ], animated: true)
+                                        
                                         self.kexts.removeAll()
                                         do {
                                             let kextURLs: [URL] = try FileManager.default.contentsOfDirectory(at: NXBootstrap.shared().rootURL.appendingPathComponent("/mntfs/kextfs"), includingPropertiesForKeys: [])
