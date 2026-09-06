@@ -34,6 +34,69 @@
 
 #if KSURFACE_SYS_PROC_ENABLED
 
+DEFINE_HOOK(proc_pidinfo, int, (pid_t pid,
+                                int flavor,
+                                uint64_t arg,
+                                void * buffer,
+                                int buffersize))
+{
+    errno = 0;
+    int ret = (int)liveshim_syscall(SYS_proc_info, PROC_INFO_CALL_PIDINFO, pid, flavor, 0, buffer, buffersize);
+    if(errno == ENOSYS)
+    {
+        return ORIG_FUNC(proc_pidinfo)(pid, flavor, arg, buffer, buffersize);
+    }
+    return ret;
+}
+
+DEFINE_HOOK(proc_name, int, (pid_t pid,
+                             void *buffer,
+                             uint32_t buffersize))
+{
+    struct proc_bsdinfo pbsd;
+    if(buffersize < sizeof(pbsd.pbi_name))
+    {
+        errno = ENOMEM;
+        return 0;
+    }
+    
+    int retval = HOOK_FUNC(proc_pidinfo)(pid, PROC_PIDTBSDINFO, 0,  &pbsd, sizeof(pbsd));
+    if(retval != 0)
+    {
+        if(pbsd.pbi_name[0])
+        {
+            bcopy(&pbsd.pbi_name, buffer, sizeof(pbsd.pbi_name));
+        }
+        else
+        {
+            bcopy(&pbsd.pbi_comm, buffer, sizeof(pbsd.pbi_comm));
+        }
+        return (int)strlen(buffer);
+    }
+    return 0;
+}
+
+DEFINE_HOOK(proc_pidpath, int, (pid_t pid,
+                                void *buffer,
+                                uint32_t buffersize))
+{
+    /* sanity check */
+    if(buffersize == 0 || buffer == NULL)
+    {
+        return 0;
+    }
+    
+    /* syscall with SYS_PROCPATH */
+    int retval = HOOK_FUNC(proc_pidinfo)(pid, PROC_PIDPATHINFO, 0, buffer, buffersize);
+    if(retval != 0)
+    {
+        return 0;
+    }
+    
+    /* final return of lenght */
+    return (int)strlen((char*)buffer);
+}
+
 DEFINE_HOOK(proc_listallpids, int, (void *buffer,
                                     int buffersize))
 {
@@ -77,92 +140,6 @@ DEFINE_HOOK(proc_listallpids, int, (void *buffer,
     return (int)(n * sizeof(pid_t));
 }
 
-DEFINE_HOOK(proc_name, int, (pid_t pid,
-                             void *buffer,
-                             uint32_t buffersize))
-{
-    if(buffersize == 0 || buffer == NULL)
-    {
-        return 0;
-    }
-
-    int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)pid };
-    kinfo_proc_t kp;
-    size_t olen = sizeof(kp);
-    int64_t retval = liveshim_syscall(SYS_sysctl, mib, 4, &kp, &olen, NULL, 0);
-    if(retval != 0 || olen < sizeof(kp))
-    {
-        return (int)retval;
-    }
-
-    size_t full_len = strlen(kp.kp_proc.p_comm);
-    size_t copy_len = (full_len >= buffersize) ? buffersize - 1 : full_len;
-
-    strlcpy((char*)buffer, kp.kp_proc.p_comm, buffersize);
-    return (int)copy_len;
-}
-
-DEFINE_HOOK(proc_pidpath, int, (pid_t pid,
-                                void *buffer,
-                                uint32_t buffersize))
-{
-    /* sanity check */
-    if(buffersize == 0 || buffer == NULL)
-    {
-        return 0;
-    }
-    
-    /* syscall with SYS_PROCPATH */
-    int64_t retval = liveshim_syscall(SYS_proc_info, PROC_INFO_CALL_PIDINFO, pid, PROC_PIDPATHINFO, 0, buffer, buffersize);
-    if(retval != 0)
-    {
-        return 0;
-    }
-    
-    /* final return of lenght */
-    return (int)strlen((char*)buffer);
-}
-
-/*int proc_libproc_pidinfo(pid_t pid,
-                         int flavor,
-                         uint64_t arg,
-                         void * buffer,
-                         int buffersize)
-{
-    if(buffer == NULL || buffersize <= 0)
-    {
-        return 0;
-    }
-    
-    ksurface_proc_t proc = {};
-    ksurface_error_t error = proc_for_pid(pid, &proc);
-    if(error != kSurfaceErrorSuccess)
-    {
-        return 0;
-    }
-
-    switch(flavor)
-    {
-        case PROC_PIDTASKINFO:
-            memset(buffer, 0, buffersize);
-            return sizeof(struct proc_taskinfo);
-        case PROC_PIDTASKALLINFO: {
-            if(buffersize < sizeof(struct proc_taskallinfo))
-            {
-                return 0;
-            }
-            struct proc_taskallinfo *info = (struct proc_taskallinfo*)buffer;
-            memset(info, 0, sizeof(*info));
-            memcpy(&info->pbsd, &proc.bsd, sizeof(proc.bsd) < sizeof(info->pbsd) ? sizeof(proc.bsd) : sizeof(info->pbsd));
-            return sizeof(struct proc_taskallinfo);
-    }
-
-    default:
-        errno = ENOTSUP;
-        return 0;
-    }
-}*/
-
 DEFINE_HOOK(kill, int, (pid_t pid, int sig))
 {
     return (int)liveshim_syscall(SYS_kill, pid, sig);
@@ -175,9 +152,10 @@ DEFINE_HOOK(raise, int, (int sig))
 
 void environment_libproc_init(void)
 {
-    DO_HOOK_GLOBAL(proc_listallpids);
+    DO_HOOK_GLOBAL(proc_pidinfo);
     DO_HOOK_GLOBAL(proc_name);
     DO_HOOK_GLOBAL(proc_pidpath);
+    DO_HOOK_GLOBAL(proc_listallpids);
     DO_HOOK_GLOBAL(kill);
     DO_HOOK_GLOBAL(raise);
 }
