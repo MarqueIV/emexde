@@ -297,6 +297,20 @@ DEFINE_SYSCALL_HANDLER(proc_info_dirtycontrol)
 
 DEFINE_SYSCALL_HANDLER(proc_info_pidrusage)
 {
+    uint32_t u_flavour = (uint32_t)args[2];
+    
+    switch(u_flavour)
+    {
+        case RUSAGE_INFO_V0:
+        case RUSAGE_INFO_V1:
+        case RUSAGE_INFO_V2:
+        case RUSAGE_INFO_V3:
+        case RUSAGE_INFO_V4:
+        case RUSAGE_INFO_V5:
+        case RUSAGE_INFO_V6:
+        default:
+            break;
+    }
     sys_return_failure_with_errno(ENOSYS);
 }
 
