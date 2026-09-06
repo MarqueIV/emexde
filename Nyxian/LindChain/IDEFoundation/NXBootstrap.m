@@ -403,7 +403,8 @@ BOOL PEURLIsContainedIn(NSURL *candidate,
         if(!(url == self.rootURL && ([entry.lastPathComponent isEqualToString:@"Projects"] ||
                                      [entry.lastPathComponent isEqualToString:@"rootfs"] ||
                                      [entry.lastPathComponent isEqualToString:@"mntfs"] ||
-                                     [entry.lastPathComponent isEqualToString:@"kmsg.txt"])))
+                                     [entry.lastPathComponent isEqualToString:@"kmsg.txt"] ||
+                                     [entry.lastPathComponent isEqualToString:@"kmsg_old.txt"])))
         {
             [[NSFileManager defaultManager] removeItemAtURL:entry error:nil];
         }

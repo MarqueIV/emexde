@@ -331,23 +331,15 @@ void ksurface_kinit(void)
         ksurface_panic("keychain didn't initialize");
     }
     
-    /* put logs where they actually belong to */
+    /* put log devices where they actually belong to */
     NSString *kfd_path = [NSString stringWithFormat:@"%@/Documents/mntfs/devfs/kmsg", NSHomeDirectory()];
     NSString *kfd_path_old = [NSString stringWithFormat:@"%@/Documents/mntfs/devfs/kmsg_old", NSHomeDirectory()];
     NSString *entry_path = [NSString stringWithFormat:@"%@/Documents/kmsg.txt", NSHomeDirectory()];
-    
-    unlink([NSString stringWithFormat:@"%@/Documents/mntfs/devfs/klog", NSHomeDirectory()].UTF8String);
-    unlink([NSString stringWithFormat:@"%@/Documents/mntfs/devfs/klog_old", NSHomeDirectory()].UTF8String);
+    NSString *entry_old_path = [NSString stringWithFormat:@"%@/Documents/kmsg_old.txt", NSHomeDirectory()];
     
     /* now mapping klog to its dev device position */
-    if([[NSFileManager defaultManager] fileExistsAtPath:kfd_path])
-    {
-        unlink([kfd_path_old UTF8String]);
-        rename([kfd_path UTF8String], [kfd_path_old UTF8String]);
-    }
-    
-    if(rename([entry_path UTF8String], [kfd_path UTF8String]) != 0)
-    {
-        perror("rename");
-    }
+    unlink([kfd_path UTF8String]);
+    unlink([kfd_path_old UTF8String]);
+    rename([entry_path UTF8String], [kfd_path UTF8String]);
+    rename([entry_old_path UTF8String], [kfd_path_old UTF8String]);
 }

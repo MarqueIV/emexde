@@ -79,7 +79,7 @@ kern_return_t ksurface_fs_init(void)
             [[NSString stringWithFormat:@"%s/Documents/rootfs", home] UTF8String],
         },
         {
-            kFSMountAttrRead,
+            kFSMountAttrRead | kFSMountAttrClear,
             "/dev/nounlink",
             [[NSString stringWithFormat:@"%s/Documents/mntfs/devfs", home] UTF8String],
         },
