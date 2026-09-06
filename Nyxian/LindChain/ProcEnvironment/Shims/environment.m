@@ -62,6 +62,28 @@ void environment_client_connect_to_syscall_proxy(PEMachPort *port)
 
 #pragma mark - Initilizer
 
+static void PEInsertLibrariesIfNeeded(void)
+{
+    const char *librariesToInsert = getenv("DYLD_INSERT_LIBRARIES");
+    if(librariesToInsert == NULL)
+    {
+        return;
+    }
+    
+    NSString *nsLibrariesToInsert = [NSString stringWithCString:librariesToInsert encoding:NSUTF8StringEncoding];
+    NSArray<NSString*> *librariesToInsertArray = [nsLibrariesToInsert componentsSeparatedByString:@":"];
+    for(NSString *library in librariesToInsertArray)
+    {
+        void *handle = dlopen([library UTF8String], RTLD_GLOBAL | RTLD_NOW);
+        if(handle == NULL)
+        {
+            const char *error = dlerror();
+            fprintf(stderr, "%s\n", error);
+            exit(1);
+        }
+    }
+}
+
 int environment_init(EnvironmentExec exec,
                      NSString *executablePath,
                      int argc,
@@ -114,6 +136,8 @@ int environment_init(EnvironmentExec exec,
                 }
             }
         }
+        
+        PEInsertLibrariesIfNeeded();
         
         /*
          * since PEProcess needs to register this process

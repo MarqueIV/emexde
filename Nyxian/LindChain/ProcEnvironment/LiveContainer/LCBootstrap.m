@@ -132,29 +132,6 @@ void LCOverwriteExecutablePath(NSString *executablePath)
     }
 }
 
-static void LCInsertLibrariesIfNeeded(void)
-{
-    const char *librariesToInsert = getenv("DYLD_INSERT_LIBRARIES");
-    if(librariesToInsert == NULL)
-    {
-        return;
-    }
-    
-    NSString *nsLibrariesToInsert = [NSString stringWithCString:librariesToInsert encoding:NSUTF8StringEncoding];
-    NSArray<NSString*> *librariesToInsertArray = [nsLibrariesToInsert componentsSeparatedByString:@":"];
-    
-    for(NSString *library in librariesToInsertArray)
-    {
-        void *handle = dlopen([library UTF8String], RTLD_GLOBAL | RTLD_NOW);
-        if(handle == NULL)
-        {
-            const char *error = dlerror();
-            fprintf(stderr, "%s\n", error);
-            exit(1);
-        }
-    }
-}
-
 int LCBootstrapMain(NSString *executablePath,
                     int argc,
                     char *argv[])
@@ -163,9 +140,6 @@ int LCBootstrapMain(NSString *executablePath,
     {
         return 1;
     }
-    
-    /* insert the libraries before everything else */
-    LCInsertLibrariesIfNeeded();
     
     /* preload executable to bypass RT_NOLOAD */
     char cdhash[USER_FSIGNATURES_CDHASH_LEN];
