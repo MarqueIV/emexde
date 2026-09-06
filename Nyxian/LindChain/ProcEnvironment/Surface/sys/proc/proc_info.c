@@ -295,56 +295,6 @@ DEFINE_SYSCALL_HANDLER(proc_info_dirtycontrol)
     sys_return_failure_with_errno(ENOSYS);
 }
 
-/*
- STILL UNIMPLEMENTED RUSAGE FIELDS:
- 
-     uint8_t  ri_uuid[16];
-     uint64_t ri_wired_size;                        // not possible for now, only XNU knows
-     uint64_t ri_child_user_time;                   // technicaly possible, recurse needed?
-     uint64_t ri_child_system_time;                 // technicaly possible, recurse needed?
-     uint64_t ri_child_pkg_idle_wkups;              // technicaly possible, recurse needed?
-     uint64_t ri_child_interrupt_wkups;             // technicaly possible, recurse needed?
-     uint64_t ri_child_pageins;                     // technicaly possible, recurse needed?
-     uint64_t ri_child_elapsed_abstime;             // technicaly possible, recurse needed?
-     uint64_t ri_diskio_bytesread;                  // not possible for now, only XNU knows
-     uint64_t ri_diskio_byteswritten;               // not possible for now, only XNU knows
- 
-     // V3+ zone:   (eta s0n tm)
-     uint64_t ri_cpu_time_qos_default;
-     uint64_t ri_cpu_time_qos_maintenance;
-     uint64_t ri_cpu_time_qos_background;
-     uint64_t ri_cpu_time_qos_utility;
-     uint64_t ri_cpu_time_qos_legacy;
-     uint64_t ri_cpu_time_qos_user_initiated;
-     uint64_t ri_cpu_time_qos_user_interactive;
-     uint64_t ri_billed_system_time;
-     uint64_t ri_serviced_system_time;
-     uint64_t ri_logical_writes;
-     uint64_t ri_lifetime_max_phys_footprint;
-     uint64_t ri_instructions;
-     uint64_t ri_cycles;
-     uint64_t ri_billed_energy;
-     uint64_t ri_serviced_energy;
-     uint64_t ri_interval_max_phys_footprint;
-     uint64_t ri_runnable_time;
-     uint64_t ri_flags;
-     uint64_t ri_user_ptime;
-     uint64_t ri_system_ptime;
-     uint64_t ri_pinstructions;
-     uint64_t ri_pcycles;
-     uint64_t ri_energy_nj;
-     uint64_t ri_penergy_nj;
-     uint64_t ri_secure_time_in_system;
-     uint64_t ri_secure_ptime_in_system;
-     uint64_t ri_neural_footprint;
-     uint64_t ri_lifetime_max_neural_footprint;
-     uint64_t ri_interval_max_neural_footprint;
-     uint64_t ri_conclave_footprint;
-     uint64_t ri_page_wait_time_mach;
-     uint64_t ri_page_cache_hits;
-     uint64_t ri_reserved[6];
- */
-
 DEFINE_SYSCALL_HANDLER(proc_info_pidrusage)
 {
     /* parse arguments */
@@ -373,90 +323,169 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidrusage)
         sys_return_failure_with_errno(ESRCH);
     }
     
-    struct rusage_info_v6 rv6 = {};
-    
     task_t target_task;
     kern_return_t kr = proc_task_for_proc(target, TASK_NAME_PORT, &target_task);
-    if(kr == KERN_SUCCESS)
+    if(kr != KERN_SUCCESS)
     {
-        {
-            task_power_info_data_t pi;
-            mach_msg_type_number_t count = TASK_POWER_INFO_COUNT;
-            if(task_info(target_task, TASK_POWER_INFO, (task_info_t)&pi, &count) == KERN_SUCCESS)
-            {
-                rv6.ri_user_time = pi.total_user;
-                rv6.ri_system_time = pi.total_system;
-                rv6.ri_interrupt_wkups = pi.task_interrupt_wakeups;
-                rv6.ri_pkg_idle_wkups = pi.task_platform_idle_wakeups;
-            }
-        }
-        {
-            mach_task_basic_info_data_t bi;
-            mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
-            if(task_info(target_task, MACH_TASK_BASIC_INFO, (task_info_t)&bi, &count) == KERN_SUCCESS)
-            {
-                rv6.ri_resident_size = bi.resident_size;
-                rv6.ri_lifetime_max_phys_footprint = bi.resident_size_max;
-            }
-        }
-        {
-            task_vm_info_data_t vmi;
-            mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
-            if(task_info(target_task, TASK_VM_INFO, (task_info_t)&vmi, &count) == KERN_SUCCESS)
-            {
-                rv6.ri_resident_size = vmi.resident_size;
-                if(count >= TASK_VM_INFO_REV1_COUNT)
-                {
-                    rv6.ri_phys_footprint = (uint64_t)vmi.phys_footprint;
-                }
-            }
-        }
-        {
-            task_events_info_data_t ev;
-            mach_msg_type_number_t count = TASK_EVENTS_INFO_COUNT;
-            if(task_info(target_task, TASK_EVENTS_INFO, (task_info_t)&ev, &count) == KERN_SUCCESS)
-            {
-                rv6.ri_pageins = (uint64_t)(uint32_t)ev.pageins;
-            }
-        }
-        mach_port_deallocate(mach_task_self(), target_task);
+        kvo_release(target);
+        sys_return_failure_with_errno(ESRCH);
     }
     
+    struct rusage_info_v6 rv6 = {};
     kvo_rdlock(target);
-    rv6.ri_proc_start_abstime = target->nyx.start_abstime;
-    rv6.ri_proc_exit_abstime = target->nyx.exit_abstime;
-    kvo_unlock(target);
-    kvo_release(target);
-    
-    size_t rsize = 0;
     switch(u_flavour)
     {
-        case RUSAGE_INFO_V0:
-            rsize = sizeof(struct rusage_info_v0);
-            break;
-        case RUSAGE_INFO_V1:
-            rsize = sizeof(struct rusage_info_v1);
-            break;
-        case RUSAGE_INFO_V2:
-            rsize = sizeof(struct rusage_info_v2);
-            break;
-        case RUSAGE_INFO_V3:
-            rsize = sizeof(struct rusage_info_v3);
-            break;
-        case RUSAGE_INFO_V4:
-            rsize = sizeof(struct rusage_info_v4);
-            break;
-        case RUSAGE_INFO_V5:
-            rsize = sizeof(struct rusage_info_v5);
-            break;
         case RUSAGE_INFO_V6:
-            rsize = sizeof(struct rusage_info_v6);
-            break;
+        {
+            /*
+             * UNIMPLEMENTED
+             *
+             * uint64_t ri_user_ptime;
+             * uint64_t ri_system_ptime;
+             * uint64_t ri_pinstructions;
+             * uint64_t ri_pcycles;
+             * uint64_t ri_energy_nj;
+             * uint64_t ri_penergy_nj;
+             * uint64_t ri_secure_time_in_system;
+             * uint64_t ri_secure_ptime_in_system;
+             * uint64_t ri_neural_footprint;
+             * uint64_t ri_lifetime_max_neural_footprint;
+             * uint64_t ri_interval_max_neural_footprint;
+             * uint64_t ri_conclave_footprint;
+             * uint64_t ri_page_wait_time_mach;
+             * uint64_t ri_page_cache_hits;
+             * uint64_t ri_reserved[6];
+             */
+            [[fallthrough]];
+        }
+        case RUSAGE_INFO_V5:
+        {
+            struct rusage_info_v5 *rv5 __attribute__((unused)) = (struct rusage_info_v5*)&rv6;
+            /*
+             * UNIMPLEMENTED
+             *
+             * uint64_t ri_flags;
+             */
+            [[fallthrough]];
+        }
+        case RUSAGE_INFO_V4:
+        {
+            struct rusage_info_v4 *rv4 __attribute__((unused)) = (struct rusage_info_v4*)&rv6;
+            /*
+             * UNIMPLEMENTED
+             *
+             * uint64_t ri_logical_writes;
+             * uint64_t ri_lifetime_max_phys_footprint;
+             * uint64_t ri_instructions;
+             * uint64_t ri_cycles;
+             * uint64_t ri_billed_energy;
+             * uint64_t ri_serviced_energy;
+             * uint64_t ri_interval_max_phys_footprint;
+             * uint64_t ri_runnable_time;
+             */
+            [[fallthrough]];
+        }
+        case RUSAGE_INFO_V3:
+        {
+            struct rusage_info_v3 *rv3 __attribute__((unused)) = (struct rusage_info_v3*)&rv6;
+            /*
+             * UNIMPLEMENTED
+             *
+             * uint64_t ri_cpu_time_qos_default;
+             * uint64_t ri_cpu_time_qos_maintenance;
+             * uint64_t ri_cpu_time_qos_background;
+             * uint64_t ri_cpu_time_qos_utility;
+             * uint64_t ri_cpu_time_qos_legacy;
+             * uint64_t ri_cpu_time_qos_user_initiated;
+             * uint64_t ri_cpu_time_qos_user_interactive;
+             * uint64_t ri_billed_system_time;
+             * uint64_t ri_serviced_system_time;
+             */
+            [[fallthrough]];
+        }
+        case RUSAGE_INFO_V2:
+        {
+            struct rusage_info_v2 *rv2 __attribute__((unused)) = (struct rusage_info_v2*)&rv6;
+            /*
+             * UNIMPLEMENTED
+             *
+             * uint64_t ri_diskio_bytesread;        // not possible for now, only XNU knows
+             * uint64_t ri_diskio_byteswritten;     // not possible for now, only XNU knows
+             */
+            [[fallthrough]];
+        }
+        case RUSAGE_INFO_V1:
+        {
+            struct rusage_info_v1 *rv1 __attribute__((unused)) = (struct rusage_info_v1*)&rv6;
+            /*
+             * UNIMPLEMENTED
+             *
+             * uint64_t ri_child_user_time;         // technicaly possible, recurse needed?
+             * uint64_t ri_child_system_time;       // technicaly possible, recurse needed?
+             * uint64_t ri_child_pkg_idle_wkups;    // technicaly possible, recurse needed?
+             * uint64_t ri_child_interrupt_wkups;   // technicaly possible, recurse needed?
+             * uint64_t ri_child_pageins;           // technicaly possible, recurse needed?
+             * uint64_t ri_child_elapsed_abstime;   // technicaly possible, recurse needed?
+             */
+            [[fallthrough]];
+        }
+        case RUSAGE_INFO_V0:
+        {
+            struct rusage_info_v0 *rv0 = (struct rusage_info_v0*)&rv6;
+            //rv0->ri_uuid = (unimplemented)
+            {
+                task_power_info_data_t pi;
+                mach_msg_type_number_t count = TASK_POWER_INFO_COUNT;
+                if(task_info(target_task, TASK_POWER_INFO, (task_info_t)&pi, &count) == KERN_SUCCESS)
+                {
+                    rv0->ri_user_time = pi.total_user;
+                    rv0->ri_system_time = pi.total_system;
+                    rv0->ri_interrupt_wkups = pi.task_interrupt_wakeups;
+                    rv0->ri_pkg_idle_wkups = pi.task_platform_idle_wakeups;
+                }
+            }
+            {
+                task_events_info_data_t ev;
+                mach_msg_type_number_t count = TASK_EVENTS_INFO_COUNT;
+                if(task_info(target_task, TASK_EVENTS_INFO, (task_info_t)&ev, &count) == KERN_SUCCESS)
+                {
+                    rv0->ri_pageins = (uint64_t)(uint32_t)ev.pageins;
+                }
+            }
+            //rv0->ri_wired_size = (unimplemented, cause only XNU can know this)
+            {
+                task_vm_info_data_t vmi;
+                mach_msg_type_number_t count = TASK_VM_INFO_COUNT;
+                if(task_info(target_task, TASK_VM_INFO, (task_info_t)&vmi, &count) == KERN_SUCCESS)
+                {
+                    rv0->ri_resident_size = vmi.resident_size;
+                    if(count >= TASK_VM_INFO_REV1_COUNT)
+                    {
+                        rv0->ri_phys_footprint = (uint64_t)vmi.phys_footprint;
+                    }
+                }
+            }
+            rv0->ri_proc_start_abstime = target->nyx.start_abstime;
+            rv0->ri_proc_exit_abstime = target->nyx.exit_abstime;
+            [[fallthrough]];
+        }
         default:
             break;
     }
+    kvo_unlock(target);
+    kvo_release(target);
     
-    if(!syscall_copy_out(sys_task_, rsize, &rv6, u_buffer_ptr))
+    static size_t russize[RUSAGE_INFO_V6 + 1] = {
+        sizeof(struct rusage_info_v0),
+        sizeof(struct rusage_info_v1),
+        sizeof(struct rusage_info_v2),
+        sizeof(struct rusage_info_v3),
+        sizeof(struct rusage_info_v4),
+        sizeof(struct rusage_info_v5),
+        sizeof(struct rusage_info_v6),
+    };
+    
+    if(!syscall_copy_out(sys_task_, russize[u_flavour], &rv6, u_buffer_ptr))
     {
         sys_return_failure_with_errno(EFAULT);
     }
