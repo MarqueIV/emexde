@@ -377,8 +377,6 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidrusage)
     
     task_t target_task;
     kern_return_t kr = proc_task_for_proc(target, TASK_NAME_PORT, &target_task);
-    kvo_rdlock(target);
-    
     if(kr == KERN_SUCCESS)
     {
         {
@@ -424,6 +422,7 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidrusage)
         mach_port_deallocate(mach_task_self(), target_task);
     }
     
+    kvo_rdlock(target);
     rv6.ri_proc_start_abstime = target->nyx.start_abstime;
     rv6.ri_proc_exit_abstime = target->nyx.exit_abstime;
     kvo_unlock(target);
