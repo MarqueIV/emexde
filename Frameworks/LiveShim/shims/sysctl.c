@@ -23,7 +23,7 @@
 
 #if LIVESHIM_SYSCTL_ENABLED
 
-static int ksurface_user_sysctl(int *name, u_int namelen, void *__sized_by(*oldlenp) oldp, size_t *oldlenp, void *__sized_by(newlen) newp, size_t newlen);
+int ksurface_user_sysctl(int *name, u_int namelen, void *__sized_by(*oldlenp) oldp, size_t *oldlenp, void *__sized_by(newlen) newp, size_t newlen);
 static int ksurface_user_gethostname(char *name, size_t len);
 static int ksurface_user_sethostname(char *name, size_t len);
 
@@ -31,12 +31,12 @@ INTERPOSE(ksurface_user_sysctl, sysctl);
 INTERPOSE(ksurface_user_gethostname, gethostname);
 INTERPOSE(ksurface_user_sethostname, sethostname);
 
-static int ksurface_user_sysctl(int *name,
-                                u_int namelen,
-                                void *__sized_by(*oldlenp) oldp,
-                                size_t *oldlenp,
-                                void *__sized_by(newlen) newp,
-                                size_t newlen)
+int ksurface_user_sysctl(int *name,
+                         u_int namelen,
+                         void *__sized_by(*oldlenp) oldp,
+                         size_t *oldlenp,
+                         void *__sized_by(newlen) newp,
+                         size_t newlen)
 {
     int ret = (int)liveshim_syscall(SYS_sysctl, name, namelen, oldp, oldlenp, newp, newlen);
     int (*darwin_user_sysctl)(int *name, u_int namelen, void *__sized_by(*oldlenp) oldp,size_t *oldlenp, void *__sized_by(newlen) newp, size_t newlen) = _interpose_sysctl.replacee;
@@ -47,7 +47,7 @@ static int ksurface_user_gethostname(char *name,
                                      size_t len)
 {
     int mib[2] = { CTL_KERN, KERN_HOSTNAME };
-    int retval = (int)liveshim_syscall(SYS_sysctl, mib, 2, name, &len, NULL, NULL);
+    int retval = (int)ksurface_user_sysctl(mib, 2, name, &len, NULL, 0);
     name[len] = '\0';
     return retval;
 }
@@ -56,7 +56,7 @@ static int ksurface_user_sethostname(char *name,
                                      size_t len)
 {
     int mib[2] = { CTL_KERN, KERN_HOSTNAME };
-    return (int)liveshim_syscall(SYS_sysctl, mib, 2, NULL, NULL, name, len);
+    return (int)ksurface_user_sysctl(mib, 2, NULL, NULL, name, len);
 }
 
 #endif /* LIVESHIM_SYSCTL_ENABLED */

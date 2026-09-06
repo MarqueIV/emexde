@@ -33,7 +33,6 @@
 #import <LindChain/ProcEnvironment/PEMachPort.h>
 #import <LindChain/ProcEnvironment/PEFileTable.h>
 #import <LindChain/ProcEnvironment/Shims/proxy.h>
-#import <LindChain/ProcEnvironment/Shims/libproc.h>
 #import <LindChain/ProcEnvironment/Shims/application.h>
 #import <LindChain/ProcEnvironment/Shims/posix_spawn.h>
 #import <LindChain/ProcEnvironment/Shims/vfork.h>

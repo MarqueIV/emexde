@@ -144,7 +144,6 @@ int environment_init(EnvironmentExec exec,
         #if KSURFACE_SYS_PROC_ENABLED
         environment_posix_spawn_init();
         environment_vfork_init();
-        environment_libproc_init();
         #endif /* KSURFACE_SYS_PROC_ENABLED */
         environment_application_init();
         
