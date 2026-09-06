@@ -472,6 +472,7 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidrusage)
         default:
             break;
     }
+    mach_port_deallocate(mach_task_self(), target_task);
     kvo_unlock(target);
     kvo_release(target);
     
