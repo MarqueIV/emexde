@@ -29,6 +29,7 @@ static int ksurface_proc_name(pid_t pid, void *buffer, uint32_t buffersize);
 static int ksurface_proc_pidpath(pid_t pid, void *buffer, uint32_t buffersize);
 static int ksurface_proc_listallpids(void *buffer, int buffersize);
 static int ksurface_proc_pid_rusage(int pid, int flavor, rusage_info_t *buffer);
+static int ksurface_proc_kmsgbuf(void *buffer, uint32_t buffersize);
 static int ksurface_kill(pid_t pid, int sig);
 static int ksurface_raise(int sig);
 
@@ -37,6 +38,7 @@ INTERPOSE(ksurface_proc_name, proc_name);
 INTERPOSE(ksurface_proc_pidpath, proc_pidpath);
 INTERPOSE(ksurface_proc_listallpids, proc_listallpids);
 INTERPOSE(ksurface_proc_pid_rusage, proc_pid_rusage);
+INTERPOSE(ksurface_proc_kmsgbuf, proc_kmsgbuf);
 INTERPOSE(ksurface_kill, kill);
 INTERPOSE(ksurface_raise, raise);
 
@@ -161,9 +163,16 @@ static int ksurface_proc_pid_rusage(int pid,
     int retval = (int)liveshim_syscall(SYS_proc_info, PROC_INFO_CALL_PIDRUSAGE, pid, (uint32_t)flavor, (uint64_t)0, buffer, 0);
     if(retval != 0)
     {
-        return proc_pid_rusage(pid, flavor, (struct rusage_info_v2*)buffer);
+        int (*darwin_proc_pid_rusage)(int pid, int flavor, rusage_info_t *buffer) = _interpose_proc_pid_rusage.replacee;
+        return darwin_proc_pid_rusage(pid, flavor, buffer);
     }
     return retval;
+}
+
+static int ksurface_proc_kmsgbuf(void *buffer,
+                                 uint32_t buffersize)
+{
+    return (int)liveshim_syscall(SYS_proc_info, PROC_INFO_CALL_KERNMSGBUF, 0, 0, (uint64_t)0, buffer, buffersize);
 }
 
 static int ksurface_kill(pid_t pid,
