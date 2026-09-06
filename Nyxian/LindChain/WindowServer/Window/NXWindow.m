@@ -57,7 +57,7 @@
     _session.isFullscreen = NO;
     _delegate = delegate;
     
-    self.view = [[UIStackView alloc] initWithFrame:[_session startWindowRect]];
+    self.view = [[UIStackView alloc] initWithFrame:[_delegate window:self wantsToChangeToRect:[_session startWindowRect]]];
     self.view.backgroundColor = UIColor.clearColor;
     self.view.autoresizingMask = UIViewAutoresizingNone;
     
