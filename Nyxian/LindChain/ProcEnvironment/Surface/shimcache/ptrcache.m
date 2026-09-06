@@ -252,14 +252,14 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
     }
     
     static const char *names[kDyldPtrCount] = {
-        "open",
-        "fcntl",
-        "fstat64",
-        "stat64",
-        "openat",
-        "lockUnlockFunc",
+        "dyld.open",
+        "dyld.fcntl",
+        "dyld.fstat64",
+        "dyld.stat64",
+        "dyld.openat",
+        "dyld.lockUnlockFunc",
         
-        "gDyldPtr",
+        "dyld.gptr",
         
         "_NSGetExecutablePath.fn",
         "_NSGetExecutablePath.adrpInstrPtr",
