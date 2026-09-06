@@ -51,8 +51,9 @@
 
 - (UIImage*)snapshotWindow;
 
-- (void)beginInteractiveResize;
-- (void)commitInteractiveResize;
+- (void)windowBeganResizing;
+- (void)windowEndedResizing;
+- (void)windowDidMove;
 
 @end
 

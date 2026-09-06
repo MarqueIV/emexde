@@ -367,6 +367,7 @@
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
             [self updateOriginalFrame];
+            [self.session windowDidMove];
         default:
             break;
     }
@@ -404,7 +405,7 @@ static inline CGSize EVSizeForAspect(CGSize base,
         case UIGestureRecognizerStateBegan:
             [self focusWindow];
             [gesture setTranslation:CGPointZero inView:self.view.superview];
-            [self.session beginInteractiveResize];
+            [self.session windowBeganResizing];
             [_windowBar collapseIsland];
             if(self.ratioLocked)
             {
@@ -480,7 +481,7 @@ static inline CGSize EVSizeForAspect(CGSize base,
         case UIGestureRecognizerStateCancelled:
         case UIGestureRecognizerStateFailed:
             [self updateOriginalFrame];
-            [self.session commitInteractiveResize];
+            [self.session windowEndedResizing];
             break;
         default:
             break;
