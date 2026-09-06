@@ -23,6 +23,7 @@
 #import <LindChain/ProcEnvironment/Surface/extra/relax.h>
 #import <LindChain/ProcEnvironment/LiveContainer/LCBootstrap.h>
 #import <LiveShim/LiveShimSyscall.h>
+#import <LindChain/Utils/CFTools.h>
 #include <LindChain/ProcEnvironment/Utils/ktfp.h>
 #include <dlfcn.h>
 #import <ksurface_config.h>
@@ -84,6 +85,32 @@ static void PEInsertLibrariesIfNeeded(void)
     }
 }
 
+void PEOverwriteExecutablePath(NSString *executablePath)
+{
+    /* literally swapping CFBundle CFRuntime instances */
+    CFBundleRef currentMainCFBundle = CFBundleGetMainBundle();
+    assert(currentMainCFBundle != NULL);
+    CFAllocatorRef allocator = CFGetAllocator(currentMainCFBundle); /* doesnt matter if zero */
+    CFURLRef urlRef = CFURLCreateWithFileSystemPath(allocator, (__bridge CFStringRef)[executablePath stringByDeletingLastPathComponent], kCFURLPOSIXPathStyle, true);
+    assert(urlRef != NULL);
+    CFBundleRef guestMainCFBundle = CFBundleCreate(allocator, urlRef);
+    CFRelease(urlRef);  /* took a reference of it most probably */
+    assert(guestMainCFBundle != NULL);
+    
+    /*
+     * Swaps both bundles simply, not leaking any memory
+     * as both internal states are stable by CFRuntime it
+     * self we can safely exploit that angle to swap both
+     * and release the original bundle. To my knowledge
+     * CFBundle also doesn't cary any extra inline
+     * buffers but relies on other CF types.
+     */
+    assert(CFSwap(currentMainCFBundle, guestMainCFBundle));
+    CFRelease(guestMainCFBundle);                   /* destroys the real bundle, sounds like swizzling x3 */
+    
+    LCOverwriteExecutablePath(executablePath);
+}
+
 int environment_init(EnvironmentExec exec,
                      NSString *executablePath,
                      int argc,
@@ -105,7 +132,7 @@ int environment_init(EnvironmentExec exec,
          * the executable it self and other executables
          * expect of the values to be.
          */
-        LCOverwriteExecutablePath(executablePath);
+        PEOverwriteExecutablePath(executablePath);
         
         /*
          * initializing subsystems of the guest, basically

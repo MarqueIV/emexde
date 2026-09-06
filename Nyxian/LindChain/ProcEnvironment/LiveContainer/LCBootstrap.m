@@ -87,27 +87,6 @@ int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char
 
 void LCOverwriteExecutablePath(NSString *executablePath)
 {
-    /* literally swapping CFBundle CFRuntime instances */
-    CFBundleRef currentMainCFBundle = CFBundleGetMainBundle();
-    assert(currentMainCFBundle != NULL);
-    CFAllocatorRef allocator = CFGetAllocator(currentMainCFBundle); /* doesnt matter if zero */
-    CFURLRef urlRef = CFURLCreateWithFileSystemPath(allocator, (__bridge CFStringRef)[executablePath stringByDeletingLastPathComponent], kCFURLPOSIXPathStyle, true);
-    assert(urlRef != NULL);
-    CFBundleRef guestMainCFBundle = CFBundleCreate(allocator, urlRef);
-    CFRelease(urlRef);  /* took a reference of it most probably */
-    assert(guestMainCFBundle != NULL);
-    
-    /*
-     * Swaps both bundles simply, not leaking any memory
-     * as both internal states are stable by CFRuntime it
-     * self we can safely exploit that angle to swap both
-     * and release the original bundle. To my knowledge
-     * CFBundle also doesn't cary any extra inline
-     * buffers but relies on other CF types.
-     */
-    assert(CFSwap(currentMainCFBundle, guestMainCFBundle));
-    CFRelease(guestMainCFBundle);                   /* destroys the real bundle, sounds like swizzling x3 */
-    
     /*
      * dyld4 stores executable path in a different place (iOS 15.0 +)
      * https://github.com/apple-oss-distributions/dyld/blob/ce1cc2088ef390df1c48a1648075bbd51c5bbc6a/dyld/DyldAPIs.cpp#L802
