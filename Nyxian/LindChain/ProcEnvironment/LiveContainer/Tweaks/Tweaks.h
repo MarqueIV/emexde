@@ -36,7 +36,6 @@ void NSFMGuestHooksInit(void);
 extern uint32_t appMainImageIndex;
 extern void* appExecutableHandle;
 extern bool tweakLoaderLoaded;
-void* getGuestAppHeader(void);
 void* dlopenBypassingLockWithTrust(const char *path, int mode, const char *cdhash);
 void initDead10ccFix(void);
 void UIKitGuestHooksInit(void);

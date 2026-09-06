@@ -272,7 +272,11 @@ bool performHookDyldApi(const char* functionName,
     
     adrpInstPtr += adrpExtraOffset;
 
-    void* gdyldPtr = (void*)aarch64_emulate_adrp_ldr(*adrpInstPtr, *(adrpInstPtr + 1), (uint64_t)adrpInstPtr);
+    static void* gdyldPtr = NULL;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        gdyldPtr = (void*)aarch64_emulate_adrp_ldr(*adrpInstPtr, *(adrpInstPtr + 1), (uint64_t)adrpInstPtr);
+    });
     
     assert(gdyldPtr != 0);
     assert(*(void**)gdyldPtr != 0);
@@ -385,11 +389,6 @@ static dyld_build_version_t getDyldImageBuildVersion(const struct mach_header *m
     return result;
 }
 
-void* getGuestAppHeader(void)
-{
-    return (void*)ORIG_FUNC(_dyld_get_image_header)(appMainImageIndex);
-}
-
 bool initGuestSDKVersionInfo(void)
 {
     void* dyldBase = getDyldBase();
@@ -474,7 +473,7 @@ void DyldHooksInit(void)
         DO_HOOK_GLOBAL(_dyld_get_image_name);
         DO_HOOK_GLOBAL(dlopen);
         
-        guestAppSdkVersion = getDyldImageBuildVersion(getGuestAppHeader()).version;
+        guestAppSdkVersion = getDyldImageBuildVersion((void*)ORIG_FUNC(_dyld_get_image_header)(appMainImageIndex)).version;
         if(!initGuestSDKVersionInfo() ||
            !performHookDyldApiFast(kDyldHookDataDyldProgramSDKAtLeast, NULL, hook_dyld_program_sdk_at_least) ||
            !performHookDyldApiFast(kDyldHookDataDyldGetProgramSDKVersion, NULL, hook_dyld_get_program_sdk_version))
