@@ -80,7 +80,7 @@ static void PEInsertLibrariesIfNeeded(void)
         {
             const char *error = dlerror();
             fprintf(stderr, "%s\n", error);
-            exit(1);
+            __builtin_unreachable();
         }
     }
 }
