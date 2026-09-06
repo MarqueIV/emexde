@@ -517,7 +517,7 @@ void klog_log_internal(const char *system, const char *format, ...)
         
         static dispatch_once_t onceToken;
         dispatch_once(&onceToken, ^{
-            NSString *entry_path = [NSString stringWithFormat:@"%@/Documents/klog.txt", NSHomeDirectory()];
+            NSString *entry_path = [NSString stringWithFormat:@"%@/Documents/kmsg.txt", NSHomeDirectory()];
             kfd = open([entry_path UTF8String], O_RDWR | O_CREAT | O_TRUNC, 0644);
             if(kfd == -1)
             {
