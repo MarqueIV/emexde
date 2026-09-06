@@ -145,6 +145,18 @@ class KEXTManagementViewController: UIThemedTableViewController, UITextFieldDele
         
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak kext] _ in
             let deleteAction = UIAction(title: "Delete", image: UIImage(systemName: "trash.fill"), attributes: .destructive) { _ in
+                if let bundlePath = kext?.bundlePath {
+                    try? FileManager.default.removeItem(atPath: bundlePath)
+                    if let kextURLs: [URL] = try? FileManager.default.contentsOfDirectory(at: NXBootstrap.shared().rootURL.appendingPathComponent("/mntfs/kextfs"), includingPropertiesForKeys: []) {
+                        self.kexts.removeAll()
+                        for kextURL in kextURLs {
+                            if let kext: PEKext = PEKext(path: kextURL.path) {
+                                self.kexts.append(kext)
+                                self.tableView.reloadData()
+                            }
+                        }
+                    }
+                }
             }
             
             return UIMenu(title: "", children: [deleteAction])
