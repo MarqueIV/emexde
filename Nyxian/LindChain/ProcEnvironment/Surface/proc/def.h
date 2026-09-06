@@ -135,6 +135,9 @@ struct ksurface_proc {
         /* wait4 markers */
         int64_t p_status;
         
+        uint64_t start_abstime;
+        uint64_t exit_abstime;
+        
         /* for creation from it, please hold lock to the proc object */
         ksurface_trust_identity_t *identity;
         

@@ -140,6 +140,18 @@ DEFINE_HOOK(proc_listallpids, int, (void *buffer,
     return (int)(n * sizeof(pid_t));
 }
 
+DEFINE_HOOK(proc_pid_rusage, int, (int pid,
+                                   int flavor,
+                                   rusage_info_t *buffer))
+{
+    int retval = (int)liveshim_syscall(SYS_proc_info, PROC_INFO_CALL_PIDRUSAGE, pid, (uint32_t)flavor, (uint64_t)0, buffer, 0);
+    if(retval != 0)
+    {
+        return proc_pid_rusage(pid, flavor, (struct rusage_info_v2*)buffer);
+    }
+    return retval;
+}
+
 DEFINE_HOOK(kill, int, (pid_t pid, int sig))
 {
     return (int)liveshim_syscall(SYS_kill, pid, sig);
@@ -156,6 +168,7 @@ void environment_libproc_init(void)
     DO_HOOK_GLOBAL(proc_name);
     DO_HOOK_GLOBAL(proc_pidpath);
     DO_HOOK_GLOBAL(proc_listallpids);
+    DO_HOOK_GLOBAL(proc_pid_rusage);
     DO_HOOK_GLOBAL(kill);
     DO_HOOK_GLOBAL(raise);
 }

@@ -73,6 +73,7 @@ DEFINE_KVOBJECT_MAIN_EVENT_HANDLER(proc)
             {
                 return -1;
             }
+            proc->nyx.start_abstime = mach_absolute_time();
             
             if(pthread_mutex_init(&(proc->children.mutex), NULL) != 0)
             {
