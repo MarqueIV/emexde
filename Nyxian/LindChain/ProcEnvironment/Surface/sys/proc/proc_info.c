@@ -201,15 +201,20 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidfdinfo)
 
 DEFINE_SYSCALL_HANDLER(proc_info_kernmsgbuf)
 {
+    /* parsing arguments */
+    userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
+    int32_t u_buffersize = (int32_t)args[5];
+    
+    if(u_buffersize < 0)
+    {
+        sys_return_failure_with_errno(EINVAL);
+    }
+    
     /* first permission checks */
     if(proc_geteuid(sys_proc_snapshot_) != 0 && !entitlement_got_entitlement(proc_getmaxentitlements(sys_proc_snapshot_), kPEEntitlementFlagPlatform))
     {
         sys_return_failure_with_errno(EPERM);
     }
-    
-    /* parsing arguments */
-    userspace_pointer_t u_buffer = (userspace_pointer_t)args[4];
-    int32_t u_buffersize = (int32_t)args[5];
     
     /* getting size */
     extern int kfd; /* file descriptor to kernel log */
