@@ -77,7 +77,7 @@ kern_return_t ksurface_shimcache_build(void)
     [[NSFileManager defaultManager] removeItemAtURL:shimcacheBuildURL error:nil];
     if(![[NSFileManager defaultManager] createDirectoryAtURL:shimcacheBuildURL withIntermediateDirectories:YES attributes:@{} error:nil])
     {
-        klog_log("shimcache:build", "couldn't create build directory");
+        klog_log("shimcache:emit:error", "couldn't create build directory");
         os_unfair_lock_unlock(&g_shimcache_lock);
         return KERN_FAILURE;
     }
@@ -102,7 +102,7 @@ kern_return_t ksurface_shimcache_build(void)
                 fileExtension = @"mm";
                 break;
             default:
-                klog_log("shimcache:build", "file type %d is not supported yet", g_shimcache_seg[index].fileType);
+                klog_log("shimcache:emit:error", "file type %d is not supported yet", g_shimcache_seg[index].fileType);
                 goto just_continue;
         }
         
@@ -122,6 +122,7 @@ kern_return_t ksurface_shimcache_build(void)
     
     if([codeFiles count] <= 0)
     {
+        klog_log("shimcache:emit", "nothing to build", codeFiles);
         os_unfair_lock_unlock(&g_shimcache_lock);
         return KERN_SUCCESS;
     }
@@ -144,10 +145,12 @@ kern_return_t ksurface_shimcache_build(void)
     MDKDriver *driver = [MDKDriver driverWithArguments:driverFlags withType:kCCDriverTypeClang];
     if(driver == NULL)
     {
+        klog_log("shimcache:emit", "couldn't get driver object", driverFlags);
         os_unfair_lock_unlock(&g_shimcache_lock);
         return KERN_FAILURE;
     }
     
+    klog_log("shimcache:emit", "building shims into shimcache");
     NSArray<MDKJob*> *jobs = [driver generateJobs];
     for(MDKJob *job in jobs)
     {
@@ -155,10 +158,10 @@ kern_return_t ksurface_shimcache_build(void)
         NSString *mainSourceFile = nil;
         if(![job executeJobWithOutDiagnostics:&outDiagnostic withOutMainSource:&mainSourceFile])
         {
-            klog_log("shimcache:build:error", "%@:", mainSourceFile);
+            klog_log("shimcache:emit:error", "%@:", mainSourceFile);
             for(MDKDiagnostic *diagnostic in outDiagnostic)
             {
-                klog_log("shimcache:build:error", "    %@", diagnostic.message);
+                klog_log("shimcache:emit:error", "    %@", diagnostic.message);
             }
             os_unfair_lock_unlock(&g_shimcache_lock);
             return KERN_FAILURE;
@@ -169,16 +172,24 @@ kern_return_t ksurface_shimcache_build(void)
     /* sign it */
     if(![LCUtils signMachOWithoutPatchAtURL:[NSURL fileURLWithPath:shimCacheDylib]])
     {
-        klog_log("shimcache:build", "couldn't sign shimcache");
+        klog_log("shimcache:emit", "couldn't sign shimcache");
         os_unfair_lock_unlock(&g_shimcache_lock);
         return KERN_SUCCESS;
+    }
+    else
+    {
+        klog_log("shimcache:emit", "signed shimcache", driverFlags);
     }
     
     if(!vnode_refresh_with_path(shimCacheDylib.UTF8String))
     {
-        klog_log("shimcache:build", "couldn't refresh vnode of shimcache");
+        klog_log("shimcache:emit", "couldn't refresh vnode of shimcache");
         os_unfair_lock_unlock(&g_shimcache_lock);
         return KERN_SUCCESS;
+    }
+    else
+    {
+        klog_log("shimcache:emit", "refreshed vnode of shimcache", driverFlags);
     }
     
     os_unfair_lock_unlock(&g_shimcache_lock);

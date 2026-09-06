@@ -225,7 +225,6 @@ kern_return_t ksurface_ptrcache_emit(void)
         klog_log("ptrcache:emit", "couldn't write dyld.ptrs: %@", error);
         return KERN_FAILURE;
     }
-    klog_log("ptrcache:emit", "wrote %lu-byte pointer blob to %@", (unsigned long)data.length, url.path);
     
     return KERN_SUCCESS;
 }
