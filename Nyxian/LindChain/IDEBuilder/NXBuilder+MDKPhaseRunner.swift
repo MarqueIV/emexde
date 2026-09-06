@@ -24,7 +24,9 @@ import MobileDevelopmentKit
 extension NXBuilder: MDKPhaseRunnerDelegate {
     func runner(_ runner: MDKPhaseRunner,
                 multithreadingThreadCountFor phase: MDKPhase) -> CFIndex {
-        return CFIndex(LDEGetUserSetThreadCount())
+        let userSelectedValue: NSNumber? = UserDefaults.standard.object(forKey: "cputhreads") as? NSNumber
+        let userSelected = userSelectedValue?.intValue ?? CCGetMaximumPerformanceCores()
+        return CFIndex(userSelected == 0 ? 1 : userSelected)
     }
     
     func runner(_ runner: MDKPhaseRunner,

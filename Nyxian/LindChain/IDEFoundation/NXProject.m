@@ -20,7 +20,6 @@
 */
 
 #import <LindChain/IDEFoundation/NXProject.h>
-#import <LindChain/Utils/Utils.h>
 #import <LindChain/IDEFoundation/NXCodeTemplate.h>
 #import <LindChain/IDEFoundation/NXUser.h>
 #import <LindChain/IDEFoundation/NXUtils.h>

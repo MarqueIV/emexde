@@ -22,7 +22,6 @@
 #import <LindChain/IDEFoundation/NXDocumentManager.h>
 #import <os/lock.h>
 #import <MobileDevelopmentKit/MDKThreadPoolGroup.h>
-#import <LindChain/Utils/Utils.h>
 
 @implementation NXDocumentManager {
     NSMutableDictionary<NSURL*,NXDocument*> *_documents;
@@ -108,7 +107,7 @@ out_complete:
     os_unfair_lock_unlock(&_lock);
     
     dispatch_async(dispatch_get_global_queue(QOS_CLASS_UTILITY, 0), ^{
-        MDKThreadPoolGroup *threadPoolGroup = [[MDKThreadPoolGroup alloc] initWithThreads:LDEGetUserSetThreadCount()];
+        MDKThreadPoolGroup *threadPoolGroup = [[MDKThreadPoolGroup alloc] initWithThreads:CCGetMaximumPerformanceCores()];
 
         for(NXDocument *document in documents)
         {
