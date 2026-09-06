@@ -65,6 +65,9 @@
     }
 
 #define sys_in_ports ((mach_port_t*)in_ports.address)
+
+#define sys_export_port(port) \
+    (*out_ports)[(*out_ports_cnt)++] = (port);
     
 
 /* request message coming from the client */
