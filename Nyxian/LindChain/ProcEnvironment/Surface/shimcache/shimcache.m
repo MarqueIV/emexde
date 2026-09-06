@@ -156,7 +156,38 @@ kern_return_t ksurface_shimcache_build(void)
     {
         NSArray<MDKDiagnostic*> *outDiagnostic = nil;
         NSString *mainSourceFile = nil;
-        if(![job executeJobWithOutDiagnostics:&outDiagnostic withOutMainSource:&mainSourceFile])
+        BOOL success = [job executeJobWithOutDiagnostics:&outDiagnostic withOutMainSource:&mainSourceFile];
+        if(outDiagnostic.count > 0)
+        {
+            klog_log("shimcache:emit:diagnostic", "%@:", mainSourceFile);
+        }
+        for(MDKDiagnostic *diagnostic in outDiagnostic)
+        {
+            const char *domain = NULL;
+            switch(diagnostic.level)
+            {
+                case kCCDiagnosticLevelNote:
+                    domain = "shimcache:emit:diagnostic:note";
+                    break;
+                case kCCDiagnosticLevelRemark:
+                    domain = "shimcache:emit:diagnostic:remark";
+                    break;
+                case kCCDiagnosticLevelWarning:
+                    domain = "shimcache:emit:diagnostic:warning";
+                    break;
+                case kCCDiagnosticLevelError:
+                    domain = "shimcache:emit:diagnostic:error";
+                    break;
+                case kCCDiagnosticLevelFatal:
+                    domain = "shimcache:emit:diagnostic:fatal";
+                    break;
+                default:
+                    domain = "shimcache:emit:diagnostic:unknown";
+                    break;
+            }
+            klog_log(domain, "    %@", diagnostic.message);
+        }
+        if(!success)
         {
             klog_log("shimcache:emit:error", "%@:", mainSourceFile);
             for(MDKDiagnostic *diagnostic in outDiagnostic)
@@ -174,6 +205,7 @@ kern_return_t ksurface_shimcache_build(void)
     {
         klog_log("shimcache:emit", "couldn't sign shimcache");
         os_unfair_lock_unlock(&g_shimcache_lock);
+        [[NSFileManager defaultManager] removeItemAtPath:shimCacheDylib error:nil];
         return KERN_SUCCESS;
     }
     else
@@ -185,6 +217,7 @@ kern_return_t ksurface_shimcache_build(void)
     {
         klog_log("shimcache:emit", "couldn't refresh vnode of shimcache");
         os_unfair_lock_unlock(&g_shimcache_lock);
+        [[NSFileManager defaultManager] removeItemAtPath:shimCacheDylib error:nil];
         return KERN_SUCCESS;
     }
     else
