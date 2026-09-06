@@ -53,6 +53,7 @@ DEFINE_SYSCALL_HANDLER(gettask)
         if(errno != ESRCH &&    /* making sure we can see the target */
            entitlement_got_entitlement(proc_getentitlements(sys_proc_snapshot_), kPEEntitlementFlagSystemTaskPorts | kPEEntitlementFlagTaskForPid | kPEEntitlementFlagPlatform))
         {
+            sys_set_errno(0);
             goto skip_bsd_primitive_semantic_check;
         }
         
