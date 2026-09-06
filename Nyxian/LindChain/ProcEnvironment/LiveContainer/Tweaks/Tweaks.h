@@ -23,7 +23,7 @@
 #ifndef TWEAKS_TWEAKS_H
 #define TWEAKS_TWEAKS_H
 
-bool performHookDyldApi(const char* functionName, uint32_t adrpOffset, void** origFunction, void* hookFunction);
+#include <LindChain/ProcEnvironment/LiveContainer/Tweaks/DyldHook.h>
 
 void NUDGuestHooksInit(void);
 void DyldHooksInit(void);

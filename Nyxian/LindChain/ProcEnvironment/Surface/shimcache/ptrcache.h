@@ -37,17 +37,16 @@ enum {
     kDyldLockUnlockFunc,
     
     /* dyld hook ptrs */
+    kDyldGDyldPtr,
+    
     kDyldNSGetExecutablePathFn,
     kDyldNSGetExecutablePathAdrpInstrPtr,
-    kDyldNSGetExecutablePathGDyldPtr,
     
     kDyldProgramSDKAtLeastFn,
     kDyldProgramSDKAtLeastAdrpInstrPtr,
-    kDyldProgramSDKAtLeastGDyldPtr,
     
     kDyldGetProgramSDKVersionFn,
     kDyldGetProgramSDKVersionAdrpInstrPtr,
-    kDyldGetProgramSDKVersionGDyldPtr,
     
     kDyldPtrCount,
 };

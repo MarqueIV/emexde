@@ -127,7 +127,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         return KERN_FAILURE;
     }
     
-    dyld_search_entry_t entries[kDyldPtrCount] = {
+    static dyld_search_entry_t entries[kDyldPtrCount] = {
         /* first shit */
         [kDyldPtrOpen] = {
             .signature = 0xD4001001D28000B0ULL,
@@ -150,13 +150,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
             .found = NULL,
         },
         
-        /* 2nd shit */
-        [kDyldLockUnlockFunc] = {},
-        
-        /* last shit */
-        [kDyldNSGetExecutablePathFn] = {},
-        [kDyldNSGetExecutablePathAdrpInstrPtr] = {},
-        [kDyldNSGetExecutablePathGDyldPtr] = {},
+        /* rest is null by default */
     };
     searchDyldFunctions(dyldBase, entries, kDyldPtrOpenat + 1);
     
@@ -204,7 +198,7 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         }
     };
     
-    int offset = kDyldLockUnlockFunc;
+    int offset = kDyldGDyldPtr;
     for(size_t i = 0; i < kDyldHookDataCount; i++)
     {
         uint32_t* baseAddr = dlsym(RTLD_DEFAULT, dyldNames[i].name);
@@ -249,10 +243,12 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         adrpInstPtr += adrpExtraOffset;
         entries[offset + 2].found = adrpInstPtr;
         
-        void* gdyldPtr = (void*)aarch64_emulate_adrp_ldr(*adrpInstPtr, *(adrpInstPtr + 1), (uint64_t)adrpInstPtr);
-        entries[offset + 3].found = gdyldPtr;
+        static dispatch_once_t onceToken;
+        dispatch_once(&onceToken, ^{
+            entries[kDyldGDyldPtr].found = (void*)aarch64_emulate_adrp_ldr(*adrpInstPtr, *(adrpInstPtr + 1), (uint64_t)adrpInstPtr);
+        });
         
-        offset += 3;
+        offset += 2;
     }
     
     static const char *names[kDyldPtrCount] = {
@@ -263,17 +259,16 @@ static kern_return_t findDyldFunctionPointers(uint64_t out[kDyldPtrCount])
         "openat",
         "lockUnlockFunc",
         
+        "gDyldPtr",
+        
         "_NSGetExecutablePath.fn",
         "_NSGetExecutablePath.adrpInstrPtr",
-        "_NSGetExecutablePath.gDYLDPtr",
         
         "dyld_program_sdk_at_least.fn",
         "dyld_program_sdk_at_least.adrpInstrPtr",
-        "dyld_program_sdk_at_least.gDYLDPtr",
         
         "dyld_get_program_sdk_version.fn",
         "dyld_get_program_sdk_version.adrpInstrPtr",
-        "dyld_get_program_sdk_version.gDYLDPtr",
     };
     
     for(size_t i = 0; i < kDyldPtrCount; i++)

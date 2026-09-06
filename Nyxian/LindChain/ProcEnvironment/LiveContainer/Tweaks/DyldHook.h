@@ -26,6 +26,7 @@
 #include <stdint.h>
 #include <LiveShim/ptrcache.h>
 
+bool performHookDyldApi(const char* functionName, uint32_t adrpOffset, void** origFunction, void* hookFunction);
 bool performHookDyldApiFast(DyldHookData index, void** origFunction, void* hookFunction);
 
 #endif /* DYLD_HOOK_H */

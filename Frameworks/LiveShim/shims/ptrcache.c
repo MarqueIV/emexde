@@ -84,10 +84,10 @@ bool load_ptrcache(void)
 
 dyld_hook_data_t ptrcache_get_dyld_hook_data(DyldHookData index)
 {
-    int rindex = kDyldLockUnlockFunc + 1 + (index * 3);
+    int rindex = kDyldGDyldPtr + 1 + (index * 2);
     return (dyld_hook_data_t){
         .functionPtr = (void*)ptrcache[rindex],
         .adrpInstPtr = (uint32_t*)ptrcache[rindex + 1],
-        .gdyldPtr = (void*)ptrcache[rindex + 2],
+        .gdyldPtr = (void*)ptrcache[kDyldGDyldPtr],
     };
 }
