@@ -42,7 +42,75 @@ DEFINE_SYSCALL_HANDLER(proc_info_pidinfo)
     {
         case PROC_PIDLISTFDS:
         case PROC_PIDTASKALLINFO:
+            sys_return_failure_with_errno(ENOSYS);
         case PROC_PIDTBSDINFO:
+        {
+            /* prepare arguments */
+            pid_t u_pid = (pid_t)args[1];
+            userspace_pointer_t u_buffer_ptr = (userspace_pointer_t)args[4];
+            int32_t u_size = (int32_t)args[5];
+            
+            if(u_size < sizeof(struct proc_bsdinfo))
+            {
+                sys_set_errno(ENOMEM);
+                return (int)sizeof(struct proc_bsdinfo);
+            }
+            
+            if(u_size > sizeof(struct proc_bsdinfo))
+            {
+                sys_set_errno(EOVERFLOW);
+                return (int)sizeof(struct proc_bsdinfo);
+            }
+            
+            /* getting target process */
+            ksurface_proc_t *target;
+            kern_return_t ret = proc_for_pid(u_pid, &target);
+            if(ret != KERN_SUCCESS)
+            {
+                sys_return_failure_with_errno(ESRCH);
+            }
+            
+            /* checking if caller can see target process */
+            proc_visibility_t vis = proc_get_proc_visibility(sys_proc_snapshot_);
+            if(!proc_can_see_proc(sys_proc_snapshot_, target, vis))
+            {
+                kvo_release(target);
+                sys_return_failure_with_errno(ESRCH);
+            }
+            
+            kvo_rdlock(target);
+            struct proc_bsdinfo bsd_pcb;    /* BSD process control block likely idk */
+            bsd_pcb.pbi_flags = target->bsd.kp_proc.p_flag;     /* idk */
+            bsd_pcb.pbi_status = target->bsd.kp_proc.p_stat;    /* idk */
+            bsd_pcb.pbi_xstatus = target->bsd.kp_proc.p_stat;   /* idk */
+            bsd_pcb.pbi_pid = proc_getpid(target);
+            bsd_pcb.pbi_ppid = proc_getppid(target);
+            bsd_pcb.pbi_uid = proc_geteuid(target);
+            bsd_pcb.pbi_gid = proc_getegid(target);
+            bsd_pcb.pbi_ruid = proc_getruid(target);
+            bsd_pcb.pbi_rgid = proc_getrgid(target);
+            bsd_pcb.pbi_svuid = proc_getsvuid(target);
+            bsd_pcb.pbi_svgid = proc_getsvgid(target);
+            strlcpy(bsd_pcb.pbi_comm, target->bsd.kp_proc.p_comm, MAXCOMLEN);
+            strlcpy(bsd_pcb.pbi_name, target->bsd.kp_proc.p_comm, MAXCOMLEN);
+            bsd_pcb.pbi_nfiles = 0;
+            bsd_pcb.pbi_pgid = proc_getpid(target); /* no process groups yet */
+            bsd_pcb.pbi_pjobc = 0;  /* no job control yet */
+            bsd_pcb.e_tdev = 0;     /* controlling tty dev */
+            bsd_pcb.e_tpgid = 0;    /* tty process group id */
+            bsd_pcb.pbi_nice = 0;
+            bsd_pcb.pbi_start_tvsec = target->bsd.kp_proc.p_un.__p_starttime.tv_sec;
+            bsd_pcb.pbi_start_tvusec = target->bsd.kp_proc.p_un.__p_starttime.tv_usec;
+            kvo_unlock(target);
+            kvo_release(target);
+            
+            if(!syscall_copy_out(sys_task_, sizeof(struct proc_bsdinfo), &bsd_pcb, u_buffer_ptr))
+            {
+                sys_return_failure_with_errno(EFAULT);
+            }
+            
+            sys_return;
+        }
         case PROC_PIDTASKINFO:
         case PROC_PIDTHREADINFO:
         case PROC_PIDLISTTHREADS:
