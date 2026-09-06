@@ -46,6 +46,8 @@
 #include <ksurface_config.h>
 #include <ksurface_abi.h>
 
+#import <LindChain/ProcEnvironment/Utils/PEMachOUtils.h>
+
 int hook__NSGetExecutablePath_overwriteExecPath(char*** dyldApiInstancePtr, char* newPath, uint32_t* bufsize)
 {
     assert(dyldApiInstancePtr != 0);
@@ -130,25 +132,6 @@ void LCOverwriteExecutablePath(NSString *executablePath)
     }
 }
 
-static void *LCGetMachOEntryPoint(void *handle)
-{
-    const struct mach_header_64 *header = (const struct mach_header_64 *)getGuestAppHeader();
-    const struct load_command *cmd = (const struct load_command *) ((uintptr_t)header + sizeof(struct mach_header_64));
-
-    for(uint32_t i = 0; i < header->ncmds; i++)
-    {
-        if(__builtin_expect(cmd->cmd == LC_MAIN, 0))
-        {
-            const struct entry_point_command *ec = (const struct entry_point_command *)cmd;
-            assert(ec->entryoff > 0);
-            return (void *)((uintptr_t)header + ec->entryoff);
-        }
-        cmd = (const struct load_command *)((uintptr_t)cmd + cmd->cmdsize);
-    }
-
-    return NULL;
-}
-
 static void LCInsertLibrariesIfNeeded(void)
 {
     const char *librariesToInsert = getenv("DYLD_INSERT_LIBRARIES");
@@ -189,16 +172,16 @@ int LCBootstrapMain(NSString *executablePath,
     int64_t ret = liveshim_syscall(SYS_pectl, kPECTLCategoryCodeSigning, kPECTLCodeSigningGetCDHash, cdhash, NULL, MACH_PORT_NULL);
     appMainImageIndex = _dyld_image_count();
     /* makes sure the binary gets loaded that is meant to have the ksurface capabilities */
-    void *appHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, ret != 0 ? NULL : cdhash);
-    appExecutableHandle = appHandle;
-    if(!appHandle || (uint64_t)appHandle > 0xf00000000000)
+    void *guestHandle = dlopenBypassingLockWithTrust(executablePath.fileSystemRepresentation, RTLD_LAZY | RTLD_GLOBAL | RTLD_FIRST | RTLD_NODELETE, ret != 0 ? NULL : cdhash);
+    appExecutableHandle = guestHandle;
+    if(!guestHandle || (uint64_t)guestHandle > 0xf00000000000)
     {
         printf("%s\n", dlerror());
         return 1;
     }
     
     /* find main */
-    int (*entry)(int, char**) = LCGetMachOEntryPoint(appHandle);
+    int (*entry)(int, char**) = PEGetMachOEntryPointOfHeader(guestHandle);
     assert(entry);
     
     /*
