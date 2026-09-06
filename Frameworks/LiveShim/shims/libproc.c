@@ -24,6 +24,9 @@
 
 #if LIVESHIM_PROC_ENABLED
 
+extern int __proc_info(int32_t callnum, int32_t pid, uint32_t flavor, uint64_t arg, user_addr_t buffer, int32_t buffersize);
+
+static int __ksurface_proc_info(int32_t callnum, int32_t pid, uint32_t flavor, uint64_t arg, user_addr_t buffer, int32_t buffersize);
 static int ksurface_proc_pidinfo(pid_t pid, int flavor, uint64_t arg, void * buffer, int buffersize);
 static int ksurface_proc_name(pid_t pid, void *buffer, uint32_t buffersize);
 static int ksurface_proc_pidpath(pid_t pid, void *buffer, uint32_t buffersize);
@@ -33,6 +36,7 @@ static int ksurface_proc_kmsgbuf(void *buffer, uint32_t buffersize);
 static int ksurface_kill(pid_t pid, int sig);
 static int ksurface_raise(int sig);
 
+INTERPOSE(__ksurface_proc_info, __proc_info);
 INTERPOSE(ksurface_proc_pidinfo, proc_pidinfo);
 INTERPOSE(ksurface_proc_name, proc_name);
 INTERPOSE(ksurface_proc_pidpath, proc_pidpath);
@@ -41,6 +45,23 @@ INTERPOSE(ksurface_proc_pid_rusage, proc_pid_rusage);
 INTERPOSE(ksurface_proc_kmsgbuf, proc_kmsgbuf);
 INTERPOSE(ksurface_kill, kill);
 INTERPOSE(ksurface_raise, raise);
+
+static int __ksurface_proc_info(int32_t callnum,
+                                int32_t pid,
+                                uint32_t flavor,
+                                uint64_t arg,
+                                user_addr_t buffer,
+                                int32_t buffersize)
+{
+    errno = 0;
+    int ret = (int)liveshim_syscall(SYS_proc_info, callnum, pid, flavor, arg, buffer, buffersize);
+    if(errno == ENOSYS)
+    {
+        int (*__darwin_proc_info)(int32_t callnum, int32_t pid, uint32_t flavor, uint64_t arg, user_addr_t buffer, int32_t buffersize) = _interpose___proc_info.replacee;
+        __darwin_proc_info(callnum, pid, flavor, arg, buffer, buffersize);
+    }
+    return ret;
+}
 
 static int ksurface_proc_pidinfo(pid_t pid,
                                  int flavor,
